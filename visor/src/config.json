@@ -1,0 +1,564 @@
+{
+    "map": {
+        "center": [-32.805745, -56.018085],
+        "zoom": 7
+    },
+    "inventory_layers": ["ws_jrodrigo:alcantarilla"],
+    "user": {
+        "name": "Javier Rodrigo",
+        "email": "jrodrigo@scolab.es"
+    },
+    "baselayers": {
+        "groups": [{
+            "title" : "Capas base",
+            "expanded" : true,
+            "layers": [
+                {
+                    "type": "tilelayer",
+                    "url": "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    "name": "osm",
+                    "title": "OpenStreetMap",
+                    "visible": true
+                },
+                {
+                    "type": "bing",
+                    "name": "AerialWithLabels",
+                    "title": "Bing Aerial con etiquetas",
+                    "visible": false,
+                    "api_key": "AuhiCJHlGzhg93IqUH_oCpl_-ZUrIE6SPftlyGYUvr9Amx5nzA-WqGcPquyFZl4L"
+                },
+                {
+                    "type": "bing",
+                    "name": "Road",
+                    "title": "Bing Roads",
+                    "visible": false,
+                    "api_key": "AuhiCJHlGzhg93IqUH_oCpl_-ZUrIE6SPftlyGYUvr9Amx5nzA-WqGcPquyFZl4L"
+                },
+                {
+                    "type": "empty",
+                    "name": "empty",
+                    "title": "Capa vacia",
+                    "visible": false
+                }
+            ]
+        }]
+    },
+    "overlays": {
+        "groups": [{
+            "title" : "Capas de apoyo",
+            "expanded" : false,
+            "layers": [
+                {
+                    "type": "wms",
+                    "url": "https://www.dinama.gub.uy/geoserver/u19600217/wms",
+                    "name": "u19600217:c258",
+                    "title": "Espejos de agua",
+                    "visible": false,
+                    "editable": false,  
+                    "showTable": false,
+                    "showInSearch": false,                  
+                    "hasMetadata": true,
+                    "metadata": "https://vanilla.geocat.net/geonetwork/srv/spa/catalog.search;jsessionid=0590273B370B98076472E1023A494182#/metadata/spacarcapaemerppmax25awmstematica20140408"
+                },{
+                    "type": "wms",
+                    "url": "https://www.dinama.gub.uy/geoserver/u19600217/wms",
+                    "name": "u19600217:c004",
+                    "title": "Departamentos",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": false,
+                    "hasMetadata": false,
+                    "metadata": ""
+                },{
+                    "type": "wms",
+                    "url": "https://www.dinama.gub.uy/geoserver/u19600217/wms",
+                    "name": "u19600217:c257",
+                    "title": "Cursos de agua",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": false,
+                    "hasMetadata": false,
+                    "metadata": ""
+                }
+                
+            ]
+        },{
+            "title" : "Inventario",
+            "expanded" : true,
+            "layers": [
+                {
+                    "type": "wfs",
+                    "url": "https://demo.gvsigonline.com/geoserver/ws_jrodrigo/wfs",
+                    "wms_url": "http://geoportal.opp.com/geoserver/camineria/wms",
+                    "name": "ws_jrodrigo:alcantarilla",
+                    "history_layer_name": "ws_jrodrigo:crh_alcantarillas",
+                    "title": "Alcantarillas",
+                    "visible": true,
+                    "editable": true,
+                    "showTable": true,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "point",
+                    "geom_style": "point",
+                    "style": {
+                        "radius": 5,
+                        "fillColor": "#686562",
+                        "color": "#686562",
+                        "weight": 1,
+                        "opacity": 1
+                    },
+                    "fields": [{
+                        "name": "actualizacion", 
+                        "type": "date", 
+                        "label": "ACTUALIZACIÓN DE ATRIBUTOS", 
+                        "definition": "FECHA EN LA QUE SE REALIZAN CAMBIOS A NIVEL DE ALGÚN ATRIBUTO"
+                    }, {
+                        "name": "codigo_camino", 
+                        "type": "string", 
+                        "label": "Código de camino", 
+                        "definition": "IDENTIFICADOR DEL CAMINO SEGÚN ESPECIFICACIÓN TÉCNICA DE CODIFICACIÓN Y DEBE COINCIDIR CON EL CÓDIGO ASIGNADO A CADA CAMINO EN LA CAPA DE CAMINOS DEL MTOP", 
+                        "typeparams": "8"
+                    }, {
+                        "name": "tipo_alcantarilla", 
+                        "type": "stringdomain", 
+                        "label": "Tipo de alcantarilla", 
+                        "domain": [
+                            {"code": "CRUCE CAÑO", "definition": "CRUCE CAÑO"}, 
+                            {"code": "Z", "definition": "Z"}, 
+                            {"code": "H", "definition": "H"}, 
+                            {"code": "A", "definition": "A"}, 
+                            {"code": "B", "definition": "B"}, 
+                            {"code": "C", "definition": "C"}, 
+                            {"code": "D", "definition": "D"}, 
+                            {"code": "E", "definition": "E"}, 
+                            {"code": "F", "definition": "F"}, 
+                            {"code": "F", "definition": "F"}
+                        ], 
+                        "definition": "CARACTERIZACIÓN DE ALCANTARILLAS SEGÚN TIPOS ESTABLECIDOS POR EL MTOP"
+                    }, {
+                        "name": "rodadura", 
+                        "type": "stringdomain", 
+                        "label": "Rodadura", 
+                        "domain": [
+                            {"code": "r1", "definition": "GRANULAR"}, 
+                            {"code": "R2", "definition": "HORMIGON"}, 
+                            {"code": "R3", "definition": "CARPETA ASFALTICA"}, 
+                            {"code": "R4", "definition": "TRATAMIENTO BITUMINOSO"}, 
+                            {"code": "R5", "definition": "MEJORADO"}, 
+                            {"code": "R6", "definition": "CEMENTADO"}, 
+                            {"code": "R7", "definition": "CEMENTADO Y TRATAMIENTO BITUMINOSO"}, 
+                            {"code": "R8", "definition": "TERRENO NATURAL"}, 
+                            {"code": "R9", "definition": "EMPEDRADO"}, 
+                            {"code": "R99", "definition": "OTRO"}
+                        ], 
+                        "definition": "TIPO DE MATERIAL DE RECUBRIMIENTO"
+                    }, {
+                        "name": "estado_conservacion", 
+                        "type": "stringdomain", 
+                        "label": "Estado de conservación", 
+                        "domain": [
+                            {"code": "BUENO", "definition": "BUENO"}, 
+                            {"code": "MALO", "definition": "MALO"}, 
+                            {"code": "REGULAR", "definition": "REGULAR"}
+                        ], 
+                        "definition": "CATEGORÍA DE CONSERVACIÓN PREESTABLECIDAS "
+                    }, {
+                        "name": "numero_bocas", 
+                        "type": "string", 
+                        "label": "Cantidad de bocas", 
+                        "definition": "NÚMERO DE CONDUCTOS"
+                    }, {
+                        "name": "dimensiones", 
+                        "type": "string", 
+                        "label": "Dimensiones", 
+                        "definition": "ESPECIFICACIONES NO CONTEMPLADAS EN LOS ATRIBUTOS", 
+                        "typeparams": "255"
+                    }, {
+                        "name": "observaciones", 
+                        "type": "string", 
+                        "label": "Observaciones", 
+                        "definition": "ESPECIFICACIONES NO CONTEMPLADAS EN LOS ATRIBUTOS", 
+                        "typeparams": "255"
+                    }, {
+                        "name": "departamento", 
+                        "type": "string", 
+                        "label": "Departamento", 
+                        "definition": "DEPARTAMENTO"
+                    }]
+                }
+            ]
+        },{
+            "title" : "Caminería MTOP",
+            "expanded" : true,
+            "layers": [
+                {
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_artigas",
+                    "title": "Caminería Artigas",
+                    "visible": false,
+                    "editable": true,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_canelones",
+                    "title": "Caminería Canelones",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_cerro_largo",
+                    "title": "Caminería Cerro Largo",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_colonia",
+                    "title": "Caminería Colonia",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_durazno",
+                    "title": "Caminería Durazno",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_flores",
+                    "title": "Caminería Flores",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_florida",
+                    "title": "Caminería Florida",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_lavalleja",
+                    "title": "Caminería Lavalleja",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_maldonado",
+                    "title": "Caminería Maldonado",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_montevideo",
+                    "title": "Caminería Montevideo",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_paysandu",
+                    "title": "Caminería Paysandu",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_rio_negro",
+                    "title": "Caminería Rio Negro",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_rivera",
+                    "title": "Caminería Rivera",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_rocha",
+                    "title": "Caminería Rocha",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_salto",
+                    "title": "Caminería Salto",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_san_jose",
+                    "title": "Caminería San José",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_soriano",
+                    "title": "Caminería Soriano",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_tacuarembo",
+                    "title": "Caminería Tacuarembo",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                },{
+                    "type": "wfs",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "name": "caminerias_intendencias:v_camineria_treinta_y_tres",
+                    "title": "Caminería Treinta y Tres",
+                    "visible": false,
+                    "editable": false,
+                    "showTable": false,
+                    "showInSearch": true,
+                    "download": true,
+                    "hasMetadata": false,
+                    "metadata": "",
+                    "geom_type": "line",
+                    "geom_style": "line",
+                    "style": {
+                        "color": "#848484",
+                        "weight": 2,
+                        "opacity": 0.65
+                    }
+                }
+                
+            ]
+        }]
+    }
+}

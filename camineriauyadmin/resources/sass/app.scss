@@ -1,0 +1,114 @@
+
+// Fonts
+@import '~@fortawesome/fontawesome-free/css/all.css';
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import '~bootstrap/dist/css/bootstrap.css';
+
+// leaflet
+@import '~leaflet/dist/leaflet.css';
+
+.navbar-laravel {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+// sidebar basic css
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+}
+
+#sidebar.active {
+    margin-left: -250px;
+}
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+.dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -250px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+}
+// additional sidebar css
+#sidebar {
+    background: #000;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#sidebar .card-body, #sidebar .card-header {
+    padding: 0px;
+}
+
+#sidebar .list-group-item {
+    background: rgb(44, 59, 65);
+    color: #fff;
+}
+#sidebar div, #sidebar ul, #sidebar li, #sidebar button, #sidebar .btn-link {
+    background: #000;
+    color: #fff;
+}
+
+#sidebar .btn-link {
+    color: #fff;
+    text-decoration: none;
+}
+
+#sidebar .sidebar-header {
+    padding: 11px;
+    background: #343a40;
+}
+
+#sidebar .sidebar-subheader {
+    padding: 7px;
+    background: #f68e2b;
+}
+
+#sidebar h1, #sidebar h2, #sidebar h3, #sidebar h4, #sidebar h5 {
+    margin-bottom: 0px;
+}
+
+#sidebar ul li.active > a {
+    color: #f68e2b;
+}
+
+#sidebar .card {
+    background-color: #000;
+}
+
+#sidebar .card .list-group-item {
+    background-color: #000;
+}
+
+.container-fluid {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.dashboard-map {
+    height: 300px;
+}
