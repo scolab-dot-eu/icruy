@@ -6,6 +6,7 @@ use App\EditableLayerDef;
 use App\Http\Requests\EditableLayerDefCreateFormRequest;
 use App\Http\Requests\EditableLayerDefUpdateFormRequest;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -130,6 +131,22 @@ class EditableLayerDefController extends Controller
         return redirect()->route('editablelayerdefs.index');
     }
 
+
+    public function enable(Request $request, $id)
+    {
+        $editablelayerdef = EditableLayerDef::findOrFail($id);
+        $editablelayerdef->enabled = True;
+        $editablelayerdef->save();
+        return redirect()->route('editablelayerdefs.index');
+    }
+    public function disable(Request $request, $id)
+    {
+        $editablelayerdef = EditableLayerDef::findOrFail($id);
+        $editablelayerdef->enabled = False;
+        $editablelayerdef->save();
+        return redirect()->route('editablelayerdefs.index');
+    }
+    
     /**
      * Remove the specified resource from storage.
      *

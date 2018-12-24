@@ -258,7 +258,6 @@ class EditableLayerDef extends Model
             ];
         }
         
-        
         $response = $client->request('POST', $url, [
             'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
             'json' => $jsonBody

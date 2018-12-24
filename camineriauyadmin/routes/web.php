@@ -24,8 +24,10 @@ Route::prefix('dashboard')
             'show'
         ]]);
         Route::resource('editablelayerdefs', 'EditableLayerDefController', ['except' => [
-            'show'
+            'show', 'destroy'
         ]]);
+        Route::post('editablelayerdefs/{id}/enable', 'EditableLayerDefController@enable')->name('editablelayerdefs.enable');
+        Route::post('editablelayerdefs/{id}/disable', 'EditableLayerDefController@disable')->name('editablelayerdefs.disable');
         Route::resource('supportlayerdefs', 'SupportLayerDefController', ['except' => [
             'show'
         ]]);
