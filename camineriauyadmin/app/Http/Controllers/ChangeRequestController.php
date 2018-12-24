@@ -93,7 +93,9 @@ class ChangeRequestController extends Controller
      */
     public function edit(ChangeRequest $changerequest)
     {
+        $previousFeature = json_decode($changerequest->feature_previous);
         $proposedFeature = json_decode($changerequest->feature);
+        /*
         $layer = $changerequest->layer;
 //         Log::error('id: ');
 //         Log::error($changerequest->feature_id);
@@ -108,6 +110,7 @@ class ChangeRequestController extends Controller
 //         $feat_id = ChangeRequest::getFeatureId($feat_id);
 //         Log::error($feat_id);
         $previousFeatureArray = [];
+        
         $the_geom = '';
         if ($feat_id > 0) {
             $currentFeature = ChangeRequest::getCurrentFeature($layer, $feat_id);
@@ -118,10 +121,8 @@ class ChangeRequestController extends Controller
                 }
             }
         }
-        return view('changerequest.edit', ['changerequest'=>$changerequest,
-            'previousFeature'=>$previousFeatureArray,
-            'previousFeatureGeom'=>$the_geom,
-            'proposedFeature'=>$proposedFeature->properties
+        */
+        return view('changerequest.edit', ['changerequest'=>$changerequest
         ]);
     }
 

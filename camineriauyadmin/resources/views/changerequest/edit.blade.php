@@ -63,14 +63,10 @@
         return theMap;
     }
 
-    console.log('current feature');
-    console.log('change request feature');
-    console.log('{{ $changerequest->feature }}');
-
     var proposedFeatStr = '{!! $changerequest->feature !!}';
     var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr));
     
-    var previousFeatStr = '{!! $previousFeatureGeom !!}';
+    var previousFeatStr = '{!! $changerequest->feature_previous !!}';
     try {
         var previousFeat = JSON.parse(previousFeatStr);
     } catch (error) {

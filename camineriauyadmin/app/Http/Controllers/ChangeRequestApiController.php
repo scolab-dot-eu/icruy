@@ -47,9 +47,9 @@ class ChangeRequestApiController extends Controller
         $feature = $validated['feature'];
         $feature_id = array_get($feature, "properties.id");
         $changerequest->departamento = array_get($feature, "properties.departamento");
-        $changerequest->feature_previous = ChangeRequest::getCurrentFeatureAsGeojson($validated['layer'], $feature_id);
-        Log::error('feature_previous');
-        Log::error($changerequest->feature_previous);
+        if ($changerequest->operation != ChangeRequest::OPERATION_CREATE) {
+            $changerequest->feature_previous = ChangeRequest::getCurrentFeatureAsGeojson($validated['layer'], $feature_id);
+        }
         
         // parse as a Geometry object to ensure we have a valid geom
         $geom = Geometry::fromJson(json_encode($feature));
