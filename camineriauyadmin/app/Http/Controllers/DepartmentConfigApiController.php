@@ -79,7 +79,7 @@ class DepartmentConfigApiController extends Controller
         $default_workspace = env('DEFAULT_GS_WORKSPACE','camineria');
         $wms_url = env('WMS_URL','');
         
-        foreach (EditableLayerDef::all() as $lyr) {
+        foreach (EditableLayerDef::where('enabled', 1)->get() as $lyr) {
             $conf = json_decode($lyr->conf, true);
             $conf['name'] = $default_workspace.":".$lyr->name;
             $conf['title'] = $lyr->title;

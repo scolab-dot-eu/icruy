@@ -80,6 +80,7 @@ class EditableLayerDefController extends Controller
         $validated['conf'] = '{"visible": true, "download": true, "editable": true, "showTable":true, "showInSearch": true}';
 
         EditableLayerDef::createTable($validated['name'], $validated['fields'], $validated['geom_type']);
+        EditableLayerDef::publishLayer($validated['title'], $validated['title']);
         try {
             EditableLayerDef::create($validated);
         } catch(QueryException $e) {

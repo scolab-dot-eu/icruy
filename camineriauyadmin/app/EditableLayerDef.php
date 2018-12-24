@@ -8,6 +8,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
 
 class EditableLayerDef extends Model
 {
@@ -51,22 +53,40 @@ class EditableLayerDef extends Model
         Schema::dropIfExists(EditableLayerDef::getHistoricTableName($name));
     }
     
+    public static function getMysqlVersion() {
+        $pdo = DB::connection()->getPdo();
+        return $pdo->query('select version()')->fetchColumn();
+    }
+    
     public static function doCreateTable($name, $fields_str, $geom_type, $historic=false) {
         $fields = json_decode($fields_str);
         $errors = [];
         Schema::create($name, function (Blueprint $table) use ($fields, $geom_type, $historic, &$errors) {
+            $version = EditableLayerDef::getMysqlVersion();
             $table->increments('id');
             if (strtolower($geom_type) == 'point') {
-                //$table->point('thegeom', 4326); // SRID is only supported from MySQL v8.0
-                $table->point('thegeom');
+                if (version_compare($version, '8.0') >= 0) { // SRID is only supported from MySQL v8.0
+                    $table->point('thegeom', 4326);
+                }
+                else {
+                    $table->point('thegeom');
+                }
             }
             elseif (strtolower($geom_type) == 'linestring') {
-                // $table->lineString('thegeom', 4326); // SRID is only supported from MySQL v8.0
-                $table->lineString('thegeom');
+                if (version_compare($version, '8.0') >= 0) { // SRID is only supported from MySQL v8.0
+                    $table->lineString('thegeom', 4326);
+                }
+                else {
+                    $table->lineString('thegeom');
+                }
             }
-            elseif (strtolower($geom_type) == 'Polygon') {
-                // $table->polygon('thegeom', 4326); // SRID is only supported from MySQL v8.0
-                $table->polygon('thegeom');
+            elseif (strtolower($geom_type) == 'polygon') {
+                if (version_compare($version, '8.0') >= 0) { // SRID is only supported from MySQL v8.0
+                    $table->polygon('thegeom', 4326);
+                }
+                else {
+                    $table->polygon('thegeom');
+                }
             }
             else {
                 $errors['thegeom'] = 'Tipo de geometría no permitido';
@@ -189,6 +209,69 @@ class EditableLayerDef extends Model
             throw $error;
         }
     }
+    
+    public static function publishLayer($name, $title) {
+        EditableLayerDef::doPublishLayer($name, $title);
+        $history_name = EditableLayerDef::getHistoricTableName($name);
+        $history_title = $title . " históricos";
+        EditableLayerDef::doPublishLayer($history_name, $history_title, True);
+    }
+    
+    public static function doPublishLayer($name, $title, $historyDim = False) {
+        //FIXME: publicar también la simbología
+        $client = new Client();
+        $baseUrl = env('GEOSERVER_URL');
+        $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
+        $datastore = env('DEFAULT_GEOSERVER_DS', 'mysqlcamineria');
+        $url = $baseUrl . "/rest/workspaces/" . $workspace . "/datastores/" . $datastore . "/featuretypes";
+        error_log($url);
+        $qualified_store = $workspace . ":" . $datastore;
+        $jsonBody = ["featureType"=> [
+            "name" => $name,
+            "title" => $title,
+            "enabled" => True,
+            "store" => ["@class" => "dataStore", "name" => $qualified_store],
+            "nativeBoundingBox" => ["minx"=> -58.439349, "maxx"=> -53.181052, "miny"=> -34.973977, "maxy"=> -30.085504, "crs" => "EPSG:4326"],
+            "srs"=> "EPSG:4326"
+        ]];
+
+        if ($historyDim) {
+            $jsonBody['featureType']['metadata'] = [
+                "entry" => [
+                    [
+                        "@key" => "elevation",
+                        "dimensionInfo" => ["enabled"=> False]
+                    ],
+                    [
+                        "@key" => "time",
+                        "dimensionInfo" => [
+                            "enabled"=> True,
+                            "attribute" => "valid_from",
+                            "endAttribute" => "valid_to",
+                            "presentation" => "CONTINUOUS_INTERVAL",
+                            "units" => "ISO8601",
+                            "defaultValue" => ["strategy" => "MAXIMUM"]
+                        ]
+                        
+                    ]
+                ]
+            ];
+        }
+        
+        
+        $response = $client->request('POST', $url, [
+            'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+            'json' => $jsonBody
+        ]);
+        
+        if ($response->getStatusCode() != 201) {
+            Log::error('Error publishing layer'.$name);
+            // FIXME: which error should be raised
+            $error = \Illuminate\Validation\ValidationException::withMessages('Error publishing layer'.$name);
+            throw $error;
+        }
+    }
+    
     
     
 }

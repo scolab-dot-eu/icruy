@@ -30,6 +30,7 @@ class CreateEditablelayerdefsTable extends Migration
             $table->boolean('showInSearch');*/
             $table->text('metadata', 200)->nullable();
             $table->json('conf')->nullable();
+            $table->boolean('enabled')->default(True);
             $table->timestamps();
         });
     }
