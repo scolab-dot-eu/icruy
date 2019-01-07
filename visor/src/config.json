@@ -108,7 +108,7 @@
                         "radius": 5,
                         "fillColor": "#686562",
                         "color": "#686562",
-                        "weight": 1,
+                        "weight": 2,
                         "opacity": 1
                     },
                     "fields": [{

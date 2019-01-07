@@ -58,7 +58,7 @@ Legend.prototype = {
                         html += '<tr>';
                         html +=     '<td>';
                         html +=         '<svg height="25" width="25">';
-                        html +=             '<circle cx="12" cy="12" r="' + this.overlays[i].style.radius + '" stroke="' + this.overlays[i].style.color + '" opacity="0.5" stroke-width="' + this.overlays[i].style.weight + '" fill="' + this.overlays[i].style.fillColor + '" />';
+                        html +=             '<circle cx="12" cy="12" r="' + this.overlays[i].style.radius + '" stroke="' + this.overlays[i].style.color + '" fill-opacity="0.1" stroke-width="' + this.overlays[i].style.weight + '" fill="' + this.overlays[i].style.fillColor + '" />';
                         html +=         '</svg>';
                         html +=     '</td>';
                         html +=     '<td>' + this.overlays[i].title + ' (PENDIENTE)</td>';

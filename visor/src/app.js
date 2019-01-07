@@ -2,9 +2,9 @@
  * Importamos las librerías, estilos y componentes
  */
 
-//window.serviceURL = 'http://geoportal.opp.com';
+window.serviceURL = 'http://geoportal.opp.com';
 //window.serviceURL = 'https://geoportal.opp.localhost';
-window.serviceURL = 'http://geoportal.opp.localhost';
+//window.serviceURL = 'http://geoportal.opp.localhost';
 //window.serviceURL = 'http://localhost:8000';
 window.editionMode = false;
 
@@ -202,7 +202,7 @@ function loadOverlays(map) {
                     version: '1.0.0',
                     request: 'getFeature',
                     typeName: config.overlays.groups[i].layers[j].name,
-                    maxFeatures: 500,
+                    //maxFeatures: 500,
                     outputFormat: 'application/json'
                 };
 
@@ -230,35 +230,35 @@ function loadOverlays(map) {
                             }
                         }
 
-                        if (editable) {
-                            html += '<div>';
-                            html += '<table>';
-                            for (var key in f.properties) {
-                                if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification') {
-                                    html += '<tr>';
-                                    html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
-                                    html +=     '<td style="padding: 2px;">' + f.properties[key] + '</td>';
-                                    html += '</tr>';
-                                }
+                        
+                        html += '<div>';
+                        html += '<table>';
+                        for (var key in f.properties) {
+                            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification') {
+                                html += '<tr>';
+                                html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
+                                html +=     '<td style="padding: 2px;">' + f.properties[key] + '</td>';
+                                html += '</tr>';
+                            }
 
-                            }
-                            html += '</table>';
-                            html += '</div>';
-                            html += '<ul class="custom-actions">';
-                            if (window.editionMode) {
-                                if (f.properties.status == 'VALIDADO') {
-                                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
-                                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit"><i class="fa fa-edit m-r-5"></i> Editar</a></li>';
-                                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete"><i class="fa fa-trash m-r-5"></i> Eliminar</a></li>';
-                                } else {
-                                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-cancel"><i class="fa fa-times m-r-5"></i> Cancelar solicitud</a></li>';    
-                                }
-                                
-                            } else {
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
-                            }
-                            html += '</ul>';
                         }
+                        html += '</table>';
+                        html += '</div>';
+                        html += '<ul class="custom-actions">';
+                        if (window.editionMode) {
+                            if (f.properties.status == 'VALIDADO') {
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit"><i class="fa fa-edit m-r-5"></i> Editar</a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete"><i class="fa fa-trash m-r-5"></i> Eliminar</a></li>';
+                            } else {
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-cancel"><i class="fa fa-times m-r-5"></i> Cancelar solicitud</a></li>';    
+                            }
+                            
+                        } else {
+                            html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
+                        }
+                        html += '</ul>';
+                        
                         l.bindPopup(html, {closeOnClick: false});
 
                         
@@ -312,7 +312,7 @@ function loadOverlays(map) {
                                 pointToLayer: function (feature, latlng) {
                                     var pointStyle = styles[feature.id.split('.')[0]];
                                     if (feature.properties.status == 'PENDIENTE:BORRADO' || feature.properties.status == 'PENDIENTE:CREACIÓN' || feature.properties.status == 'PENDIENTE:ACTUALIZACIÓN') {
-                                        pointStyle.fillOpacity = 0.5;
+                                        pointStyle.fillOpacity = 0.1;
             
                                     } else if(feature.properties.status == 'VALIDADO') {
                                         pointStyle.fillOpacity = 1;
@@ -591,7 +591,7 @@ function deleteElement(editableLayer, element) {
             });
             element.setIcon(pendingIcon);*/
             var style = element.options;
-            style.fillOpacity = 0.5;          
+            style.fillOpacity = 0.1;          
             element.setStyle(style);
         }
 
@@ -637,7 +637,7 @@ function updateElement(map, toc, element, editableLayer) {
             });
             element.setIcon(pendingIcon);*/
             var style = element.options;
-            style.fillOpacity = 0.5;          
+            style.fillOpacity = 0.1;          
             element.setStyle(style);
             
         }

@@ -331,7 +331,7 @@ Draw.prototype = {
                 });
                 element.setIcon(pendingIcon);*/
                 var style = element.options;
-                style.fillOpacity = 0.5;          
+                style.fillOpacity = 0.1;          
                 element.setStyle(style);
             }
     
@@ -378,7 +378,7 @@ Draw.prototype = {
                 });
                 element.setIcon(pendingIcon);*/
                 var style = element.options;
-                style.fillOpacity = 0.5;          
+                style.fillOpacity = 0.1;          
                 element.setStyle(style);
                 
             }
