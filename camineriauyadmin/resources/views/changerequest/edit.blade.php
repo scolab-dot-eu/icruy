@@ -27,8 +27,8 @@
 
 @section('custom_scripts')
     <script type="text/javascript">
-    function createMap(div_id, feature) {
-        var zoom = 11;
+    function createMap(div_id, feature, zoom, center=null) {
+        var zoom = 12;
         var center;
         if (feature) {
             var layer = L.geoJSON(feature, {
@@ -47,12 +47,9 @@
                 }
             });
         }
-        if (layer && layer.getBounds()) {
+        if (center==null && layer && layer.getBounds()) {
             center = layer.getBounds().getCenter();
         }
-        else {
-            center = L.latLng(-32.720750, -55.910880);
-        } 
         var theMap = L.map(div_id, {"zoom": zoom, "center": center});
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -64,35 +61,22 @@
     }
 
     var proposedFeatStr = '{!! $changerequest->feature !!}';
-    var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr));
-    
     var previousFeatStr = '{!! $changerequest->feature_previous !!}';
-    try {
-        var previousFeat = JSON.parse(previousFeatStr);
-    } catch (error) {
-        console.log(error);
-        var previousFeat = null;
-    }
-    var previousFeatMap = createMap('map-previous-feat', previousFeat);
-    if (!previousFeat) {
-        previousFeatMap.setView(proposedFeatMap.getCenter(), proposedFeatMap.getZoom());
-    }
-
-
-
-    /*
-    var previousFeatMap = L.map('map-previous-feat').setView([-32.311509,-54.438629], 8);
-    var proposedFeatMap = L.map('map-proposed-feat').setView([-32.111659, -54.089813], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(previousFeatMap);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(proposedFeatMap);
     
-    var marker1 = L.marker([-32.311509, -54.438629]).addTo(previousFeatMap);
-    var marker2 = L.marker([-32.111659, -54.089813]).addTo(proposedFeatMap);
-    */
+    var operation = '{!! $changerequest->operation !!}';
+    var zoom = 12;
+    if (operation == 'create') {
+        var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
+        var previousFeatMap = createMap('map-previous-feat', null, zoom, proposedFeatMap.getCenter());
+    }
+    else if (operation == 'delete') {
+        var previousFeatMap = createMap('map-previous-feat', JSON.parse(previousFeatStr), zoom);
+        var proposedFeatMap = createMap('map-proposed-feat', null, zoom, previousFeatMap.getCenter());
+        
+    }
+    else {
+        var previousFeatMap = createMap('map-previous-feat', JSON.parse(previousFeatStr), zoom);
+        var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
+    }
     </script>
 @endsection

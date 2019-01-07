@@ -9,7 +9,7 @@
             <div class="col-md-3">
                 <div class="form-group">
                     {!! Form::label('operation', __('Operación')) !!}
-                    {!! Form::text('operation', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                    {!! Form::text('operation', $changerequest->operationLabel, ['readonly' => '', 'class' => 'form-control']) !!}
                 </div>
             </div>
             <div class="col-md-3">
@@ -56,6 +56,14 @@
                 </div>
             </div>
           </div> -->
+                    <div class="row">
+            <div class="col">
+                Elemento previo:
+            </div>
+            <div class="col">
+                Elemento propuesto:
+            </div>
+          </div>
           <div class="row">
             <div class="col">
                 <div class="dashboard-map" id="map-previous-feat">
@@ -68,14 +76,18 @@
           </div>
           <div class="row">
             <div class="col">
-                @foreach($previousFeature as $key => $value)
-                    {{ $key }}: {{ $value }} <br> 
-                @endforeach
+                @if ($previousFeature!==null)
+                    @foreach($previousFeature->properties as $key => $value)
+                        <span style="text-transform: uppercase; color: #e0a800">{{ $key }}:</span> {{ $value }} <br> 
+                    @endforeach
+                @endif
             </div>
             <div class="col">
-                @foreach($proposedFeature as $key => $value)
-                    {{ $key }}: {{ $value }} <br> 
-                @endforeach
+                @if ($proposedFeature!==null)
+                    @foreach($proposedFeature->properties as $key => $value)
+                        <span style="text-transform: uppercase; color: #e0a800">{{ $key }}:</span> {{ $value }} <br> 
+                    @endforeach
+                @endif
             </div>
           </div>
         </div>

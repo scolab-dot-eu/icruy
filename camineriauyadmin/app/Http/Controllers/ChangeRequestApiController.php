@@ -47,19 +47,23 @@ class ChangeRequestApiController extends Controller
         $feature = $validated['feature'];
         $feature_id = array_get($feature, "properties.id");
         $changerequest->departamento = array_get($feature, "properties.departamento");
+        $feature_previous = ChangeRequest::getCurrentFeature($validated['layer'], $feature_id);
         if ($changerequest->operation != ChangeRequest::OPERATION_CREATE) {
-            $changerequest->feature_previous = ChangeRequest::getCurrentFeatureAsGeojson($validated['layer'], $feature_id);
+            $changerequest->feature_previous = ChangeRequest::feature2geojson($feature_previous);
         }
         
         // parse as a Geometry object to ensure we have a valid geom
         $geom = Geometry::fromJson(json_encode($feature));
         // validate all the fields before storing the ChR
         ChangeRequest::prepareFeature($validated['layer'], $feature, $validated['operation']);
-        Log::error('store feature');
-        Log::error($feature);
+        
+        if ($feature_previous != null) {
+            $feature['properties']['created_at'] = $feature_previous->created_at;
+        }
         if ($request->user()->isAdmin()) {
             ChangeRequest::applyValidatedChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
             $changerequest->status = ChangeRequest::STATUS_VALIDATED;
+            $changerequest->validator()->associate($request->user());
             //ChangeRequest::setValidated($changerequest, $request->user());
             
         }
@@ -67,15 +71,14 @@ class ChangeRequestApiController extends Controller
             $changerequest->status = ChangeRequest::STATUS_PENDING;
             ChangeRequest::applyPendingChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
         }
-        Log::error('CMI');
-        Log::error(json_encode($feature));
         $changerequest->feature_id = array_get($feature, "properties.id");
         $changerequest->feature = json_encode($feature);
         $request->user()->changeRequests()->save($changerequest);
         
         $response = $changerequest->toArray();
         $response['feature'] = $feature;
-        $response['status_label'] = ChangeRequest::$STATUS_LABELS[$response['status']];
+        $response['status_label'] = $changerequest->statusLabel;
+        $response['operation_label'] = $changerequest->operationLabel;
         return response()->json($response, 201);
     }
 

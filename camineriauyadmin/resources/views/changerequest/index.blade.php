@@ -58,7 +58,7 @@
             <tr>
                 <td>{{ $value->id }}</td>
                 <td>{{ $value->layer }}</td>
-                <td>{{ $value->operation }}</td>
+                <td>{{ $value->operationLabel }}</td>
                 <td>{{ $value->statusLabel }}</td>
                 <td>{{ $value->author->email }}</td>
                 <td>{{ $value->created_at }}</td>

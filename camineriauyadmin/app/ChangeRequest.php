@@ -62,6 +62,12 @@ class ChangeRequest extends Model
     const OPERATION_UPDATE = 'update';
     const OPERATION_DELETE = 'delete';
     
+    public static $OPERATION_LABELS = [
+        ChangeRequest::OPERATION_CREATE => 'Creación',
+        ChangeRequest::OPERATION_UPDATE => 'Modificación',
+        ChangeRequest::OPERATION_DELETE => 'Borrado',
+    ];
+    
     const MAX_DATETIME = '9999-12-31 23:59:59';
 
     
@@ -92,6 +98,10 @@ class ChangeRequest extends Model
     
     public function getStatusLabelAttribute(){
         return ChangeRequest::$STATUS_LABELS[$this->status];
+    }
+    
+    public function getOperationLabelAttribute(){
+        return ChangeRequest::$OPERATION_LABELS[$this->operation];
     }
     
     public function getIsOpenAttribute(){
@@ -337,15 +347,14 @@ class ChangeRequest extends Model
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error($e);
         }
+        return null;
     }
     
-    
-    public static function getCurrentFeatureAsGeojson($layer_name, $id) {
-        $currentFeature = ChangeRequest::getCurrentFeature($layer_name, $id);
-        if ($currentFeature) {
-            $the_feat = json_decode($currentFeature-> thegeomjson, true);
+    public static function feature2geojson($feature) {
+        if ($feature) {
+            $the_feat = json_decode($feature-> thegeomjson, true);
             $the_feat['properties'] = [];
-            foreach ($currentFeature as $key => $value) {
+            foreach ($feature as $key => $value) {
                 if ($key != 'thegeom' && $key != 'thegeomjson') {
                     $the_feat['properties'][$key] = $value;
                 }

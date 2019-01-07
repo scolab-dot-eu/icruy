@@ -94,7 +94,16 @@ class ChangeRequestController extends Controller
     public function edit(ChangeRequest $changerequest)
     {
         $previousFeature = json_decode($changerequest->feature_previous);
-        $proposedFeature = json_decode($changerequest->feature);
+        if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
+            $proposedFeature = null;
+        }
+        else {
+            $proposedFeature = json_decode($changerequest->feature);
+        }
+        
+        Log::error($changerequest->feature_previous);
+        Log::error($changerequest->feature);
+        
         /*
         $layer = $changerequest->layer;
 //         Log::error('id: ');
@@ -122,7 +131,9 @@ class ChangeRequestController extends Controller
             }
         }
         */
-        return view('changerequest.edit', ['changerequest'=>$changerequest
+        return view('changerequest.edit', ['changerequest'=>$changerequest,
+            'previousFeature'=>$previousFeature,
+            'proposedFeature'=>$proposedFeature
         ]);
     }
 
