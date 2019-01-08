@@ -12,11 +12,9 @@
               <label class="btn btn-secondary @if (request()->input('status')=='closed') active @endif">
                 <input type="radio" name="closed" id="btn_status_closed" autocomplete="off" @if (request()->input('status')=='open') checked @endif>{{ __('Cerradas') }}
               </label>
+              <!-- 
               <label class="btn btn-secondary @if (request()->input('status')=='pending') active @endif">
                 <input type="radio" name="pending" id="btn_status_pending" autocomplete="off" @if (request()->input('status')=='pending') checked @endif>{{ __('Pendientes') }}
-              </label>
-              <label class="btn btn-secondary @if (request()->input('status')=='all') active @endif">
-                <input type="radio" name="all" id="btn_status_all" autocomplete="off" @if (request()->input('status')=='all') checked @endif>{{ __('Todas') }}
               </label>
               <label class="btn btn-secondary @if (request()->input('status')=='userinfo') active @endif">
                 <input type="radio" name="userinfo" id="btn_status_userinfo" autocomplete="off" @if (request()->input('status')=='userinfo') checked @endif>{{ __('Info admin') }}
@@ -24,6 +22,7 @@
               <label class="btn btn-secondary @if (request()->input('status')=='admininfo') active @endif">
                 <input type="radio" name="admininfo" id="btn_status_admininfo" autocomplete="off" @if (request()->input('status')=='admininfo') checked @endif>{{ __('Info usuario') }}
               </label>
+               -->
               <label class="btn btn-secondary @if (request()->input('status')=='validated') active @endif">
                 <input type="radio" name="validated" id="btn_status_validated" autocomplete="off" @if (request()->input('status')=='validated') checked @endif>{{ __('Validadas') }}
               </label>
@@ -32,6 +31,9 @@
               </label>
               <label class="btn btn-secondary @if (request()->input('status')=='cancelled') active @endif">
                 <input type="radio" name="cancelled" id="btn_status_cancelled" autocomplete="off" @if (request()->input('status')=='cancelled') checked @endif>{{ __('Canceladas') }}
+              </label>
+              <label class="btn btn-secondary @if (request()->input('status')=='all') active @endif">
+                <input type="radio" name="all" id="btn_status_all" autocomplete="off" @if (request()->input('status')=='all') checked @endif>{{ __('Todas') }}
               </label>
             </div>
           </div>
@@ -61,7 +63,7 @@
                 <td>{{ $value->operationLabel }}</td>
                 <td>{{ $value->statusLabel }}</td>
                 <td>{{ $value->author->email }}</td>
-                <td>{{ $value->created_at }}</td>
+                <td>{{ $value->created_at_formatted }}</td>
                 <td>
                     <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/changerequests/' . $value->id . '/edit') }}">{{ __('Editar') }}</a>
                     <!-- <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="{{$value->id}}" data-name="{{$value->email}}">Borrar</button>  -->

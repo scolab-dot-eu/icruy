@@ -49,6 +49,9 @@ class ChangeRequestController extends Controller
         else {
             $data = ChangeRequest::open();
         }
+        if (!$request->user()->isAdmin()) {
+            $data = ChangeRequest::where('requested_by_id', $request->user()->id);
+        }
         $data->with(['author', 'validator']);
         return view('changerequest.index', ['changerequests' => $data->get()]);
     }
@@ -151,7 +154,30 @@ class ChangeRequestController extends Controller
         /*
         $feature = json_decode($origChangerequest->feature, true);
         $geom = Geometry::fromJson($origChangerequest->feature);*/
+        if (!empty($request->action_cancel)) {
+            // FIXME: we need a more meaningful name
+            if ($request->user()->id != $origChangerequest->requested_by_id) {
+                $message = 'El usuario intentó cancelar una petición que no inició: '.$request->user()->email;
+                Log::error($message);
+                $error = \Illuminate\Validation\ValidationException::withMessages([
+                    'user' => [$message],
+                ]);
+                throw $error;
+            }
+            ChangeRequest::setCancelled($origChangerequest, $request->user());
+            return;
+        }
+        if (!$request->user()->isAdmin()) {
+            $message = 'Un usuario no-administrador intentó modificar una petición: '.$request->user()->email;
+            Log::error($message);
+            $error = \Illuminate\Validation\ValidationException::withMessages([
+                'user' => [$message],
+            ]);
+            throw $error;
+        }
+        
         if (!empty($request->action_validate)) {
+            
             /*
             ChangeRequest::applyValidatedChangeRequest(
                 $origChangerequest->layer,
@@ -163,7 +189,7 @@ class ChangeRequestController extends Controller
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
             ChangeRequest::setRejected($origChangerequest, $request->user());
-        } // TODO: action_cancelled
+        }
         return redirect()->route('changerequests.index');
     }
 

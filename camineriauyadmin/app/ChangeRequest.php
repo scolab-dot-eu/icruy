@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use DateTime;
+use Carbon\Carbon;
 use Grimzy\LaravelMysqlSpatial\Types\Geometry;
 
 class ChangeRequest extends Model
@@ -110,6 +111,13 @@ class ChangeRequest extends Model
     
     public function getIsClosedAttribute(){
         return ($this->status >= ChangeRequest::STATUS_VALIDATED);
+    }
+    
+    public function getCreatedAtFormattedAttribute(){
+        return Carbon::parse($this->created_at)->format('d/m/Y');
+    }
+    public function getUpdatedAtFormattedAttribute(){
+        return Carbon::parse($this->updated_at)->format('d/m/Y');
     }
     
     public static function applyValidatedChangeRequest($layer_name, $operation, &$feature, $geom) {
@@ -489,6 +497,21 @@ class ChangeRequest extends Model
         
         $changerequest->status = ChangeRequest::STATUS_REJECTED;
         $changerequest->validator()->associate($user);
+        $changerequest->save();
+    }
+    
+    protected function setCancelled(ChangeRequest $changerequest, $user) {
+        $id = $changerequest->feature_id;
+        $table_name = ChangeRequest::getTableName($changerequest->layer);
+        if ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
+            ChangeRequest::deleteFeature($table_name, $id);
+        }
+        else {
+            ChangeRequest::setFeatureStatus($table_name, $changerequest->feature_id,
+                ChangeRequest::FEATURE_STATUS_VALIDATED);
+        }
+        
+        $changerequest->status = ChangeRequest::STATUS_CANCELLED;
         $changerequest->save();
     }
 }

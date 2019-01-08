@@ -61,6 +61,7 @@ class ChangeRequestApiController extends Controller
             $feature['properties']['created_at'] = $feature_previous->created_at;
         }
         if ($request->user()->isAdmin()) {
+            Log::error("user is admin!");
             ChangeRequest::applyValidatedChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
             $changerequest->status = ChangeRequest::STATUS_VALIDATED;
             $changerequest->validator()->associate($request->user());
@@ -68,6 +69,7 @@ class ChangeRequestApiController extends Controller
             
         }
         else {
+            Log::error("user is not admin!");
             $changerequest->status = ChangeRequest::STATUS_PENDING;
             ChangeRequest::applyPendingChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
         }

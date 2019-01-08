@@ -28,8 +28,8 @@
             </div>
             <div class="col-sm-5">
                 <div class="form-group">
-                    {!! Form::label('created_at', __('Fecha solicitud')) !!}
-                    {!! Form::text('created_at', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                    {!! Form::label('createdAtFormatted', __('Fecha solicitud')) !!}
+                    {!! Form::text('createdAtFormatted', null, ['readonly' => '', 'class' => 'form-control']) !!}
                 </div>
             </div>
           </div>
@@ -42,8 +42,8 @@
             </div>
             <div class="col-sm-5">
                 <div class="form-group">
-                    {!! Form::label('updated_at', __('Fecha actualización')) !!}
-                    {!! Form::text('updated_at', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                    {!! Form::label('updatedAtFormatted', __('Fecha actualización')) !!}
+                    {!! Form::text('updatedAtFormatted', null, ['readonly' => '', 'class' => 'form-control']) !!}
                 </div>
             </div>
           </div>
