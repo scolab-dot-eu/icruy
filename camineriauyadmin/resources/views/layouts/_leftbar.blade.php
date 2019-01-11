@@ -5,7 +5,7 @@
         <div class="sidebar-subheader">
             <h5>{{ __('Panel de control') }}</h5>
         </div>
-        <div class="card"></div>
+        <div class="card">
             <div class="card-header" id="headingOne">
                 <h5 class="mb-0">
                     <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne"
@@ -14,9 +14,12 @@
                     </button>
                 </h5>
             </div>
-            <div id="collapseOne" class="collapse{!! (Route::is(['changerequests.*', 'mtopchangerequests.*'])) ? ' show' : '' !!}" aria-labelledby="headingOne" data-parent="#sidebar">
+            <div id="collapseOne" class="collapse{!! (Route::is(['home', 'changerequests.*', 'mtopchangerequests.*'])) ? ' show' : '' !!}" aria-labelledby="headingOne" data-parent="#sidebar">
                 <div class="card-body">
                 <ul class="list-group list-group-flush" id="permissionsSubmenu">
+                    <li class="{!! (Route::is('home')) ? ' active' : '' !!}">
+                        <a class="list-group-item" href="{!! route('home') !!}">{{ __('Resumen') }}</a>
+                    </li>
                     <li class="{!! (Route::is('changerequests.index')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('changerequests.index') !!}">{{ __('Peticiones de cambios') }}</a>
                     </li>
@@ -25,9 +28,11 @@
                         <a class="list-group-item" href="">{{ __('Peticiones de cambios MTOP') }}</a>
                     </li>-->
                 </ul>
+                </div>
             </div>
         </div>
-        <div class="card"></div>
+        @if (Auth::user()->isAdmin())
+        <div class="card">
             <div class="card-header" id="headingTwo">
                 <h5 class="mb-0">
                     <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo"
@@ -52,6 +57,8 @@
                         <a class="list-group-item" href="/dashboard/supportlayerdefs">{{ __('Capas base o de apoyo') }}</a>
                     </li>
                 </ul>
+                </div>
             </div>
         </div>
+        @endif
     </nav>

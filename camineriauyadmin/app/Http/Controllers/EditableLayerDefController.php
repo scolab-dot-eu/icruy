@@ -82,6 +82,8 @@ class EditableLayerDefController extends Controller
 
         EditableLayerDef::createTable($validated['name'], $validated['fields'], $validated['geom_type']);
         EditableLayerDef::publishLayer($validated['name'], $validated['title']);
+        EditableLayerDef::publishStyle($validated['name'], $validated['title'], $color);
+        EditableLayerDef::setLayerStyle($validated['name'], $validated['name']);
         try {
             EditableLayerDef::create($validated);
         } catch(QueryException $e) {

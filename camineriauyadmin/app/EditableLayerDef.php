@@ -64,6 +64,12 @@ class EditableLayerDef extends Model
         Schema::create($name, function (Blueprint $table) use ($fields, $geom_type, $historic, &$errors) {
             $version = EditableLayerDef::getMysqlVersion();
             $table->increments('id');
+            if ($historic) {
+                $table->string('cod_elem');
+            }
+            else {
+                $table->string('cod_elem')->unique();
+            }
             if (strtolower($geom_type) == 'point') {
                 if (version_compare($version, '8.0') >= 0) { // SRID is only supported from MySQL v8.0
                     $table->point('thegeom', 4326);
@@ -103,6 +109,7 @@ class EditableLayerDef extends Model
             
             foreach ($fields as $field) {
                 if ($field->name == 'id' ||
+                    $field->name == 'cod_elem' ||
                     $field->name == 'status' ||
                     $field->name == 'departamento' ||
                     $field->name == 'codigo_camino' ||
@@ -271,6 +278,124 @@ class EditableLayerDef extends Model
         }
     }
     
+    public static function setLayerStyle($layerName, $styleName) {
+        EditableLayerDef::doSetLayerStyle($layerName, $styleName);
+        $historyName = EditableLayerDef::getHistoricTableName($layerName);
+        EditableLayerDef::doSetLayerStyle($historyName, $styleName);
+    }
+    
+    public static function doSetLayerStyle($layerName, $styleName) {
+        $client = new Client();
+        $baseUrl = env('GEOSERVER_URL');
+        $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
+        $url = $baseUrl . "/rest/workspaces/" . $workspace . "/layers/".$layerName;
+        error_log($url);
+        $response = $client->request('GET', $url, [
+            'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+            'headers' => [
+                'Accept'     => 'application/json',
+            ]
+        ]);
+        if ($response->getStatusCode() != 200) {
+            Log::error('Error getting layer configuration: '.$layerName);
+            // FIXME: which error should be raised
+            $error = \Illuminate\Validation\ValidationException::withMessages('Error getting layer configuration: '.$layerName);
+            throw $error;
+        }
+        $layerConf = json_decode($response->getBody(), true);
+        $qualifiedStyleName = $workspace.':'.$styleName;
+        $styleUrl = $baseUrl .  "/rest/workspaces/" . $workspace . "/styles/" . $styleName . '.json';
+        $layerConf['defaultStyle'] = ['name' => $qualifiedStyleName, 'workspace'=> $workspace, 'href' => $styleUrl];
+        error_log($layerConf);
+        $response = $client->request('PUT', $url, [
+            'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+            'json' => $layerConf
+        ]);
+        
+        if ($response->getStatusCode() != 201) {
+            Log::error('Error setting layer style: '.$layerName);
+            // FIXME: which error should be raised
+            $error = \Illuminate\Validation\ValidationException::withMessages('Error setting layer style: '.$$layerName);
+            throw $error;
+        }
+    }
     
     
+    public static function getCircleStyle($name, $title, $color) {
+        $style = <<<EOD
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.0.0"
+  xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns="http://www.opengis.net/sld"
+  xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <NamedLayer>
+    <Name>$name</Name>
+    <UserStyle>
+      <Name>$name</Name>
+      <Title>$title</Title>
+      <FeatureTypeStyle>
+        <Rule>
+          <Title>$title</Title>
+          <PointSymbolizer>
+            <Graphic>
+              <Mark>
+                <WellKnownName>circle</WellKnownName>
+                <Fill>
+                  <CssParameter name="fill">
+                    <ogc:Literal>$color</ogc:Literal>
+                  </CssParameter>
+                  <CssParameter name="fill-opacity">
+                    <ogc:Literal>1.0</ogc:Literal>
+                  </CssParameter>
+                </Fill>
+                <Stroke>
+                  <CssParameter name="stroke">
+                    <ogc:Literal>$color</ogc:Literal>
+                  </CssParameter>
+                  <CssParameter name="stroke-width">
+                    <ogc:Literal>1</ogc:Literal>
+                  </CssParameter>
+                  <CssParameter name="stroke-opacity">
+                    <ogc:Literal>1.0</ogc:Literal>
+                  </CssParameter>
+                </Stroke>
+              </Mark>
+              <Opacity>
+                <ogc:Literal>1.0</ogc:Literal>
+              </Opacity>
+              <Size>
+                <ogc:Literal>10</ogc:Literal>
+              </Size>
+              
+            </Graphic>
+          </PointSymbolizer>
+        </Rule>
+      </FeatureTypeStyle>
+    </UserStyle>
+  </NamedLayer>
+</StyledLayerDescriptor>
+EOD;
+        return $style;
+    }
+    
+    public static function publishStyle($name, $title, $color) {
+        $style = EditableLayerDef::getCircleStyle($name, $title, $color);
+        //FIXME: publicar también la simbología
+        $client = new Client();
+        $baseUrl = env('GEOSERVER_URL');
+        $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
+        $url = $baseUrl . "/rest/workspaces/" . $workspace . "/styles";
+        error_log($url);
+        $response = $client->request('POST', $url, [
+            'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+            'body' => $style,
+            'headers' => ['Content-Type' => 'application/vnd.ogc.sld+xml']
+        ]);
+        
+        if ($response->getStatusCode() != 201) {
+            Log::error('Error publishing layer'.$name);
+            // FIXME: which error should be raised
+            $error = \Illuminate\Validation\ValidationException::withMessages('Error publishing layer'.$name);
+            throw $error;
+        }
+    }
 }
