@@ -34,14 +34,10 @@ html, body {
     height: 50px;
     padding-right: 50px;
     opacity: .9;
-    border-radius: 50%;
     cursor: pointer;
-}
-
-.leaflet-logo-control {
-    border-radius: 5%;
+    border-radius: 1%;
     background-color: rgba(255, 255, 255, 1.0);
-    border: 2px solid rgba(0,0,0,0.2);
+    /*border: 2px solid rgba(0,0,0,0.2);*/
 }
 
 .leaflet-touch .leaflet-control-layers{

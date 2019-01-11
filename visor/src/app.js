@@ -2,7 +2,8 @@
  * Importamos las librerías, estilos y componentes
  */
 
-window.serviceURL = 'http://geoportal.opp.com';
+//window.serviceURL = 'http://geoportal.opp.com';
+window.serviceURL = 'http://icr-test.opp.gub.uy';
 //window.serviceURL = 'https://geoportal.opp.localhost';
 //window.serviceURL = 'http://geoportal.opp.localhost';
 //window.serviceURL = 'http://localhost:8000';
@@ -56,6 +57,12 @@ L_PREFER_CANVAS = true;
 
 var editableLayers = [];
 var inEdition = false;
+
+window.isMobile = false;
+if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+    window.isMobile = true;
+}
+
 initialize();
 
 function initialize() {
@@ -415,47 +422,56 @@ function loadOverlays(map) {
  */
 function loadControls(map, tocBaseLayers, overlays, utils) {
 
+    var logoPosition = 'topleft';
+    if (window.isMobile) {
+        logoPosition = 'topcenter';
+    }
     var lc = L.control.logo({
-        position: 'topleft',
+        position: logoPosition,
         link: '#',
         width: '150px',
         height: '36px',
         image: require('./../assets/images/logo_opp2.png')
     }).addTo(map);
+
+    if (window.isMobile) {
+        $('.leaflet-logo-control').css('margin-left', '50px !important');
+    }
     
     L.control.zoom({ position:'topright'}).addTo(map);
 
     L.control.navbar().addTo(map);
     
-    var minimap_layer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18
-    });
-    new MiniMap(minimap_layer, {toggleDisplay: true}).addTo(map);
+    if (!window.isMobile) {
+        var minimap_layer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18
+        });
+        new MiniMap(minimap_layer, {toggleDisplay: true}).addTo(map);
+
+        L.control.measure({ 
+            primaryLengthUnit: 'meters', 
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            activeColor: '#ff8000',
+            completedColor: '#ff8000'
+        }).addTo(map);
     
+        L.control.graphicScale({doubleLine: true, fill:true}).addTo(map);
+    
+        L.control.mousePosition({
+            position: 'bottomcenter',
+            separator: ' / ', //To separate longitude\latitude values
+            emptystring: 'Mover el ratón', //Initial text to display. Defaults to 'Unavailable'
+            numDigits: 4, //Number of digits. Defaults to 5
+            lngFirst: false, //Weather to put the longitude first or not. Defaults to false
+            //lngFormatter: Custom function to format the longitude value. Defaults to undefined
+            //latFormatter: Custom function to format the latitude value. Defaults to undefined
+            prefix: 'Latitud/Longitud: '//A string to be prepended to the coordinates. Defaults to the empty string ‘’.
+        }).addTo(map);
+    } 
     var toc = new Toc(config, map, tocBaseLayers, overlays, utils);
 
     new ToolBar(map);
-
-    L.control.measure({ 
-        primaryLengthUnit: 'meters', 
-        secondaryLengthUnit: 'kilometers',
-        primaryAreaUnit: 'sqmeters',
-        activeColor: '#ff8000',
-        completedColor: '#ff8000'
-    }).addTo(map);
-
-    L.control.graphicScale({doubleLine: true, fill:true}).addTo(map);
-
-    L.control.mousePosition({
-        position: 'bottomcenter',
-        separator: ' / ', //To separate longitude\latitude values
-        emptystring: 'Mover el ratón', //Initial text to display. Defaults to 'Unavailable'
-        numDigits: 4, //Number of digits. Defaults to 5
-        lngFirst: false, //Weather to put the longitude first or not. Defaults to false
-        //lngFormatter: Custom function to format the longitude value. Defaults to undefined
-        //latFormatter: Custom function to format the latitude value. Defaults to undefined
-        prefix: 'Latitud/Longitud: '//A string to be prepended to the coordinates. Defaults to the empty string ‘’.
-    }).addTo(map);
 
     return {
         toc: toc

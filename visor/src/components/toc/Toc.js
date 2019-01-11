@@ -18,7 +18,9 @@ function Toc(config, map, baseLayers, overlays, utils) {
     this.initialize();
     this.loadLayerSwitcher();
     this.loadLegend();
-    this.loadSearch();
+    if (!window.isMobile) {
+        this.loadSearch();
+    }
     this.loadLogin();
 }
    
@@ -30,7 +32,9 @@ Toc.prototype = {
         html += '    <ul role="tablist">';
         html += '        <li><a href="#toc-layers" role="tab"><i class="fa fa-layer-group"></i></a></li>';
         html += '        <li><a href="#toc-legend" role="tab"><i class="fa fa-palette"></i></a></li>';
-        html += '        <li><a href="#toc-search" role="tab"><i class="fa fa-search"></i></a></li>';
+        if (!window.isMobile) {
+            html += '        <li><a href="#toc-search" role="tab"><i class="fa fa-search"></i></a></li>';
+        }
         html += '        <li><a href="#toc-result" role="tab"><i class="fa fa-list"></i></a></li>';
         html += '    </ul>';
                 
@@ -48,11 +52,11 @@ Toc.prototype = {
         html += '        <h1 class="leaflet-sidebar-header">Leyenda<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';
         html += '        <div style="margin-top: 10px;" id="toc-legend-content"></div>'; 
         html += '    </div>';
-                
-        html += '    <div class="leaflet-sidebar-pane" id="toc-search">';
-        html += '        <h1 class="leaflet-sidebar-header">Buscar<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';
-        html += '    </div>';
-
+        if (!window.isMobile) {       
+            html += '    <div class="leaflet-sidebar-pane" id="toc-search">';
+            html += '        <h1 class="leaflet-sidebar-header">Buscar<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';
+            html += '    </div>';
+        }
         html += '    <div class="leaflet-sidebar-pane" id="toc-result">';
         html += '        <h1 class="leaflet-sidebar-header">Resultados<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';
         html += '        <div style="margin-top: 10px;" id="toc-result-content">No hay resultados que mostrar</div>';
