@@ -86,8 +86,8 @@
             "layers": [
                 {
                     "type": "wfs",
-                    "url": "http://geoportal.opp.com/geoserver/camineria/wfs",
-                    "wms_url": "http://geoportal.opp.com/geoserver/geoserver/camineria/wms",
+                    "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
                     "name": "camineria:cr_alcantarillas",
                     "history_layer_name": "camineria:crh_alcantarillas",
                     "title": "Alcantarillas",
@@ -201,8 +201,8 @@
 
                 }, {
                     "type": "wfs",
-                    "url": "http://geoportal.opp.com/geoserver/camineria/wfs",
-                    "wms_url": "http://geoportal.opp.com/geoserver/geoserver/camineria/wms",
+                    "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
                     "name": "camineria:cr_baden",
                     "history_layer_name": "camineria:crh_baden",
                     "title": "Badenes",
@@ -293,8 +293,8 @@
 
                 }, {
                     "type": "wfs",
-                    "url": "http://geoportal.opp.com/geoserver/camineria/wfs",
-                    "wms_url": "http://geoportal.opp.com/geoserver/geoserver/camineria/wms",
+                    "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
                     "name": "camineria:cr_puente",
                     "history_layer_name": "camineria:crh_puente",
                     "title": "Puentes",
@@ -426,8 +426,8 @@
                     }]
                 },{
                     "type": "wfs",
-                    "url": "http://geoportal.opp.com/geoserver/camineria/wfs",
-                    "wms_url": "http://geoportal.opp.com/geoserver/geoserver/camineria/wms",
+                    "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
                     "name": "camineria:cr_obstaculo",
                     "history_layer_name": "camineria:crh_obstaculo",
                     "title": "Obstáculos",
@@ -498,8 +498,8 @@
                     }]
                 },{
                     "type": "wfs",
-                    "url": "http://geoportal.opp.com/geoserver/camineria/wfs",
-                    "wms_url": "http://geoportal.opp.com/geoserver/geoserver/camineria/wms",
+                    "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
                     "name": "camineria:cr_paso",
                     "history_layer_name": "camineria:crh_paso",
                     "title": "Pasos",
@@ -558,8 +558,8 @@
                     }]
                 },{
                     "type": "wfs",
-                    "url": "http://geoportal.opp.com/geoserver/camineria/wfs",
-                    "wms_url": "http://geoportal.opp.com/geoserver/geoserver/camineria/wms",
+                    "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
                     "name": "camineria:cr_senyal",
                     "history_layer_name": "camineria:crh_senyal",
                     "title": "Señales",
