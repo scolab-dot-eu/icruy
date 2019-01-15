@@ -23,7 +23,7 @@ class CreateChangerequestsTable extends Migration
             $table->string('status');
             $table->string('operation');
             $table->json('feature_previous')->nullable();
-            $table->json('feature');
+            $table->json('feature')->nullable();
             $table->timestamps();
             $table->index(['status', 'layer', 'feature_id']);
             $table->index(['requested_by_id', 'status', 'layer']);

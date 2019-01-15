@@ -48,6 +48,7 @@ class EditableLayerDefCreateFormRequest extends FormRequest
         }
         return [
             'name'    => 'regex:/^[a-zA-Z_][a-zA-Z0-9_]*$/u|unique:editablelayerdefs,name,'.$id,
+            'abrev'    => 'regex:/^[a-zA-Z_][a-zA-Z_]$/u|unique:editablelayerdefs,abrev,'.$id,
             'title'  => 'required',
             'geom_type' => 'required',
             'protocol' => 'required',

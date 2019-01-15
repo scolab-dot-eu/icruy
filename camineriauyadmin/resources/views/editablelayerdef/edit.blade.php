@@ -15,6 +15,10 @@
                     {!! Form::text('name', null, ['readonly' => '', 'class' => 'form-control']) !!}
                 </div>
                 <div class="form-group">
+                    {!! Form::label('abrev', 'Abreviatura') !!}
+                    {!! Form::text('abrev', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                </div>
+                <div class="form-group">
                     {!! Form::label('title', 'Título') !!}
                     {!! Form::text('title', null, ['class' => 'form-control']) !!}
                 </div>

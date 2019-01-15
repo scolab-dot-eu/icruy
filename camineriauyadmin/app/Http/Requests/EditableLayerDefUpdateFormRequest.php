@@ -41,6 +41,7 @@ class EditableLayerDefUpdateFormRequest extends FormRequest
         }
         return [
             'name'    => 'regex:/^[a-zA-Z_]+$/u|unique:editablelayerdefs,name,'.$id,
+            'abrev'    => 'regex:/^[a-zA-Z_][a-zA-Z_]$/u|unique:editablelayerdefs,abrev,'.$id,
             'title'  => 'required',
             'url'  => 'required',
             'fields'  => 'required',
