@@ -65,7 +65,8 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    //'timezone' => 'UTC',America/Montevideo
+    'timezone' => 'America/Montevideo',
 
     /*
     |--------------------------------------------------------------------------
