@@ -44,8 +44,8 @@ class EditableLayerDef extends Model
     }
     
     public static function createTable($name, $abrev, $fields_str, $geom_type) {
-        EditableLayerDef::doCreateTable($name, $abrev, $fields_str, $geom_type);
-        EditableLayerDef::doCreateTable(EditableLayerDef::getHistoricTableName($name), $abrev, $fields_str, $geom_type, true);
+        EditableLayerDef::doCreateTable($name, $fields_str, $geom_type);
+        EditableLayerDef::doCreateTable(EditableLayerDef::getHistoricTableName($name), $fields_str, $geom_type, true);
     }
     
     public static function dropTable($name) {
@@ -58,11 +58,11 @@ class EditableLayerDef extends Model
         return $pdo->query('select version()')->fetchColumn();
     }
     
-    public static function doCreateTable($name, $abrev, $fields_str, $geom_type, $historic=false) {
+    public static function doCreateTable($name, $fields_str, $geom_type, $historic=false) {
         $fields = json_decode($fields_str);
         $errors = [];
         $specificFields = [];
-        Schema::create($name, function (Blueprint $table) use ($name, $abrev, $fields, $geom_type, $historic, &$specificFields, &$errors) {
+        Schema::create($name, function (Blueprint $table) use ($name, $fields, $geom_type, $historic, &$specificFields, &$errors) {
             $version = EditableLayerDef::getMysqlVersion();
             $table->increments('id');
             /*
@@ -255,7 +255,6 @@ class EditableLayerDef extends Model
                 CREATE TRIGGER ".$name."_after_insert
                 AFTER INSERT
                     ON ".$name." FOR EACH ROW BEGIN
-                    -- UPDATE ".$name." SET cod_elem = CONCAT('".$abrev."', id) WHERE id = NEW.id;
                     IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
                         -- Insert the new record into history table
                         INSERT INTO ".$historicName."
