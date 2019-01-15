@@ -14,6 +14,8 @@ use App\ChangeRequest;
 |
 */
 
+URL::forceRootUrl(getenv('APP_URL'));
+
 Route::get('/', function () {
     //return redirect('viewer_login');
     return redirect('visor');
