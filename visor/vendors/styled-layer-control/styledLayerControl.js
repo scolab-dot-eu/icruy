@@ -388,86 +388,88 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
         label.appendChild(name);
 
         if (obj.layer.StyledLayerControl) {
-            if (obj.layer.StyledLayerControl.historyLayerName) {
-                var bt_start_time = document.createElement("button");
-                bt_start_time.type = "button";
-                bt_start_time.className = "bt_start_time";
-                bt_start_time.title = "Iniciar consulta histórico";
-                var bt_start_time_icon = document.createElement("i");
-                bt_start_time_icon.className = "fa fa-clock";
-                bt_start_time.appendChild(bt_start_time_icon);
-                L.DomEvent.on(bt_start_time, 'click', this._onStartTimeClick, this);
-                label.appendChild(bt_start_time);
+            if (!window.isMobile) {
+                if (obj.layer.StyledLayerControl.historyLayerName) {
+                    var bt_start_time = document.createElement("button");
+                    bt_start_time.type = "button";
+                    bt_start_time.className = "bt_start_time";
+                    bt_start_time.title = "Iniciar consulta histórico";
+                    var bt_start_time_icon = document.createElement("i");
+                    bt_start_time_icon.className = "fa fa-clock";
+                    bt_start_time.appendChild(bt_start_time_icon);
+                    L.DomEvent.on(bt_start_time, 'click', this._onStartTimeClick, this);
+                    label.appendChild(bt_start_time);
 
-                var bt_stop_time = document.createElement("button");
-                bt_stop_time.type = "button";
-                bt_stop_time.className = "bt_stop_time hidden";
-                bt_stop_time.title = "Terminar consulta histórico";
-                var bt_stop_time_icon = document.createElement("i");
-                bt_stop_time_icon.className = "fa fa-times";
-                bt_stop_time.appendChild(bt_stop_time_icon);
-                L.DomEvent.on(bt_stop_time, 'click', this._onStopTimeClick, this);
-                label.appendChild(bt_stop_time);
-            }
-
-            // configure the delete button for layers with attribute isEditable = true
-            if (window.editionMode) {
-                if (obj.layer.StyledLayerControl.isEditable) {
-                    var bt_start_draw = document.createElement("button");
-                    bt_start_draw.type = "button";
-                    bt_start_draw.className = "bt_start_draw";
-                    bt_start_draw.title = "Editar capa";
-                    var bt_start_draw_icon = document.createElement("i");
-                    bt_start_draw_icon.className = "fa fa-edit";
-                    bt_start_draw.appendChild(bt_start_draw_icon);
-                    L.DomEvent.on(bt_start_draw, 'click', this._onStartDrawClick, this);
-                    label.appendChild(bt_start_draw);
-    
-                    var bt_stop_draw = document.createElement("button");
-                    bt_stop_draw.type = "button";
-                    bt_stop_draw.className = "bt_stop_draw hidden";
-                    bt_stop_draw.title = "Terminar edición";
-                    var bt_stop_draw_icon = document.createElement("i");
-                    bt_stop_draw_icon.className = "fa fa-times";
-                    bt_stop_draw.appendChild(bt_stop_draw_icon);
-                    L.DomEvent.on(bt_stop_draw, 'click', this._onStopDrawClick, this);
-                    label.appendChild(bt_stop_draw);
+                    var bt_stop_time = document.createElement("button");
+                    bt_stop_time.type = "button";
+                    bt_stop_time.className = "bt_stop_time hidden";
+                    bt_stop_time.title = "Terminar consulta histórico";
+                    var bt_stop_time_icon = document.createElement("i");
+                    bt_stop_time_icon.className = "fa fa-times";
+                    bt_stop_time.appendChild(bt_stop_time_icon);
+                    L.DomEvent.on(bt_stop_time, 'click', this._onStopTimeClick, this);
+                    label.appendChild(bt_stop_time);
                 }
-            }
 
-            if (obj.layer.StyledLayerControl.hasMetadata) {
-                var bt_metadata = document.createElement("a");
-                bt_metadata.href = obj.layer.StyledLayerControl.metadata;
-                bt_metadata.target = "_blank";
-                bt_metadata.className = "bt_metadata";
-                bt_metadata.title = "Abrir metadato";
-                var bt_metadata_icon = document.createElement("i");
-                bt_metadata_icon.className = "fa fa-link";
-                bt_metadata.appendChild(bt_metadata_icon);
-                label.appendChild(bt_metadata);
-            }
+                // configure the delete button for layers with attribute isEditable = true
+                if (window.editionMode) {
+                    if (obj.layer.StyledLayerControl.isEditable) {
+                        var bt_start_draw = document.createElement("button");
+                        bt_start_draw.type = "button";
+                        bt_start_draw.className = "bt_start_draw";
+                        bt_start_draw.title = "Editar capa";
+                        var bt_start_draw_icon = document.createElement("i");
+                        bt_start_draw_icon.className = "fa fa-edit";
+                        bt_start_draw.appendChild(bt_start_draw_icon);
+                        L.DomEvent.on(bt_start_draw, 'click', this._onStartDrawClick, this);
+                        label.appendChild(bt_start_draw);
+        
+                        var bt_stop_draw = document.createElement("button");
+                        bt_stop_draw.type = "button";
+                        bt_stop_draw.className = "bt_stop_draw hidden";
+                        bt_stop_draw.title = "Terminar edición";
+                        var bt_stop_draw_icon = document.createElement("i");
+                        bt_stop_draw_icon.className = "fa fa-times";
+                        bt_stop_draw.appendChild(bt_stop_draw_icon);
+                        L.DomEvent.on(bt_stop_draw, 'click', this._onStopDrawClick, this);
+                        label.appendChild(bt_stop_draw);
+                    }
+                }
 
-            if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.showTable) {
-                var bt_show_table = document.createElement("button");
-                bt_show_table.type = "button";
-                bt_show_table.className = "bt_show_table";
-                bt_show_table.title = "Tabla de atributos";
-                var bt_show_table_icon = document.createElement("i");
-                bt_show_table_icon.className = "fa fa-table";
-                bt_show_table.appendChild(bt_show_table_icon);
-                L.DomEvent.on(bt_show_table, 'click', this._onShowTableClick, this);
-                label.appendChild(bt_show_table);
-            }
+                if (obj.layer.StyledLayerControl.hasMetadata) {
+                    var bt_metadata = document.createElement("a");
+                    bt_metadata.href = obj.layer.StyledLayerControl.metadata;
+                    bt_metadata.target = "_blank";
+                    bt_metadata.className = "bt_metadata";
+                    bt_metadata.title = "Abrir metadato";
+                    var bt_metadata_icon = document.createElement("i");
+                    bt_metadata_icon.className = "fa fa-link";
+                    bt_metadata.appendChild(bt_metadata_icon);
+                    label.appendChild(bt_metadata);
+                }
 
-            if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.download) {
-                var bt_download = document.createElement("a");
-                bt_download.href = obj.layer.definedUrl + '?service=WFS&request=GetFeature&version=1.0.0&outputFormat=shape-zip&typeName=' + obj.layer.name;
-                bt_download.className = "bt_download";
-                bt_download.title = "Descargar capa en formato SHP";
-                var bt_download_icon = document.createElement("i");
-                bt_download_icon.className = "fa fa-download";
-                bt_download.appendChild(bt_download_icon);
-                label.appendChild(bt_download);
+                if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.showTable) {
+                    var bt_show_table = document.createElement("button");
+                    bt_show_table.type = "button";
+                    bt_show_table.className = "bt_show_table";
+                    bt_show_table.title = "Tabla de atributos";
+                    var bt_show_table_icon = document.createElement("i");
+                    bt_show_table_icon.className = "fa fa-table";
+                    bt_show_table.appendChild(bt_show_table_icon);
+                    L.DomEvent.on(bt_show_table, 'click', this._onShowTableClick, this);
+                    label.appendChild(bt_show_table);
+                }
+
+                if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.download) {
+                    var bt_download = document.createElement("a");
+                    bt_download.href = obj.layer.definedUrl + '?service=WFS&request=GetFeature&version=1.0.0&outputFormat=shape-zip&typeName=' + obj.layer.name;
+                    bt_download.className = "bt_download";
+                    bt_download.title = "Descargar capa en formato SHP";
+                    var bt_download_icon = document.createElement("i");
+                    bt_download_icon.className = "fa fa-download";
+                    bt_download.appendChild(bt_download_icon);
+                    label.appendChild(bt_download);
+                }
             }
 
             // configure the visible attribute to layer

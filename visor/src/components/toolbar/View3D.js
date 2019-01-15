@@ -9,12 +9,16 @@ View3D.prototype = {
     initialize: function() {
         var _this = this;
         var m = this.map;
+
+        $('#logo-3d').append('<img src="' + window.serviceURL + '/visor/assets/images/logo_opp2.png">');
+
         this.control = L.easyButton('fa-globe', function(btn, m){
             $('#map').addClass('hidden');
             $('#canvas-wrap').removeClass('hidden');
             _this.ww = new WorldWind.WorldWindow("canvasOne");
-            _this.ww.addLayer(new WorldWind.BMNGOneImageLayer());
-            _this.ww.addLayer(new WorldWind.BMNGLandsatLayer());
+            //_this.ww.addLayer(new WorldWind.BMNGOneImageLayer());
+            //_this.ww.addLayer(new WorldWind.BMNGLandsatLayer());
+            _this.ww.addLayer(new WorldWind.BingAerialLayer("AuhiCJHlGzhg93IqUH_oCpl_-ZUrIE6SPftlyGYUvr9Amx5nzA-WqGcPquyFZl4L"));
             _this.ww.addLayer(new WorldWind.StarFieldLayer());
             _this.ww.addLayer(new WorldWind.AtmosphereLayer());
             _this.ww.addLayer(new WorldWind.CoordinatesDisplayLayer(_this.ww));
@@ -37,6 +41,9 @@ View3D.prototype = {
         $('.goto-2d').on('click', function(){
             $('#map').removeClass('hidden');
             $('#canvas-wrap').addClass('hidden');
+            _this.viewControls = null;
+            _this.ww = null;
+            _this.control = null;
         });
     },
 
