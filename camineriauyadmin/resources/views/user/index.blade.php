@@ -29,7 +29,7 @@
         @endforeach
         </tbody>
     </table>
-    <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/users/create') }}">Nuevo rol</a>
+    <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/users/create') }}">Nuevo usuario</a>
 
     <div class="modal" id="deleteModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
