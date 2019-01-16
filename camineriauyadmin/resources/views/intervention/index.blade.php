@@ -13,6 +13,7 @@
                 <td>{{ __('Camino') }}</td>
                 <td>{{ __('Tarea') }}</td>
                 <td>{{ __('Longitud') }}</td>
+                <td></td>
             </tr>
         </thead>
         <tbody>
@@ -50,7 +51,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Cancelar</button>
-                    <button id="confirmDeleteButton" type="button" class="btn btn-danger">Borrar</button>
+                    <!-- <button id="confirmDeleteButton" type="button" class="btn btn-danger">Borrar</button> -->
                 </div>
                 <form id="deleteForm" method="POST" action="">
                     {{ csrf_field() }} {{ method_field('DELETE') }}
