@@ -50,6 +50,9 @@ Route::prefix('dashboard')
         Route::resource('users', 'UserController', ['except' => [
             'show'
         ]]);
+        Route::resource('interventions', 'InterventionController', ['except' => [
+            'show'
+        ]]);
     });
 });
 /* 
