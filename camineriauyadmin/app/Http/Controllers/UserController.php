@@ -160,14 +160,12 @@ class UserController extends Controller
         $user->email = $request ->input('email');
         $pass = $request ->input('password');
         if ($pass!='') {
-            $user->password = $pass;
+            $user->password = Hash::make($pass);
         }
         $user->save();
         
         $this->setRoles($request, $user);
         $this->setDepartments($request, $user);
-        //$departments = $request->validated()['departments'];
-        //$user->departments()->sync($departments);
         return redirect()->route('users.index');
     }
 
