@@ -394,6 +394,8 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_start_time.type = "button";
                     bt_start_time.className = "bt_start_time";
                     bt_start_time.title = "Iniciar consulta histórico";
+                    bt_start_time.dataset.layerLID = obj.layer._leaflet_id;
+                    bt_start_time.id = 'bt_start_time_' + obj.layer._leaflet_id;
                     var bt_start_time_icon = document.createElement("i");
                     bt_start_time_icon.className = "fa fa-clock";
                     bt_start_time.appendChild(bt_start_time_icon);
@@ -404,6 +406,8 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_stop_time.type = "button";
                     bt_stop_time.className = "bt_stop_time hidden";
                     bt_stop_time.title = "Terminar consulta histórico";
+                    bt_stop_time.dataset.layerLID = obj.layer._leaflet_id;
+                    bt_stop_time.id = 'bt_stop_time_' + obj.layer._leaflet_id;
                     var bt_stop_time_icon = document.createElement("i");
                     bt_stop_time_icon.className = "fa fa-times";
                     bt_stop_time.appendChild(bt_stop_time_icon);
@@ -418,6 +422,8 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                         bt_start_draw.type = "button";
                         bt_start_draw.className = "bt_start_draw";
                         bt_start_draw.title = "Editar capa";
+                        bt_start_draw.dataset.layerLID = obj.layer._leaflet_id;
+                        bt_start_draw.id = 'bt_start_draw_' + obj.layer._leaflet_id;
                         var bt_start_draw_icon = document.createElement("i");
                         bt_start_draw_icon.className = "fa fa-edit";
                         bt_start_draw.appendChild(bt_start_draw_icon);
@@ -428,6 +434,8 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                         bt_stop_draw.type = "button";
                         bt_stop_draw.className = "bt_stop_draw hidden";
                         bt_stop_draw.title = "Terminar edición";
+                        bt_stop_draw.dataset.layerLID = obj.layer._leaflet_id;
+                        bt_stop_draw.id = 'bt_stop_draw_' + obj.layer._leaflet_id;
                         var bt_stop_draw_icon = document.createElement("i");
                         bt_stop_draw_icon.className = "fa fa-times";
                         bt_stop_draw.appendChild(bt_stop_draw_icon);
@@ -442,6 +450,8 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_metadata.target = "_blank";
                     bt_metadata.className = "bt_metadata";
                     bt_metadata.title = "Abrir metadato";
+                    bt_metadata.dataset.layerLID = obj.layer._leaflet_id;
+                    bt_metadata.id = 'bt_metadata_' + obj.layer._leaflet_id;
                     var bt_metadata_icon = document.createElement("i");
                     bt_metadata_icon.className = "fa fa-link";
                     bt_metadata.appendChild(bt_metadata_icon);
@@ -453,6 +463,8 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_show_table.type = "button";
                     bt_show_table.className = "bt_show_table";
                     bt_show_table.title = "Tabla de atributos";
+                    bt_show_table.dataset.layerLID = obj.layer._leaflet_id;
+                    bt_show_table.id = 'bt_show_table_' + obj.layer._leaflet_id;
                     var bt_show_table_icon = document.createElement("i");
                     bt_show_table_icon.className = "fa fa-table";
                     bt_show_table.appendChild(bt_show_table_icon);
@@ -465,6 +477,8 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_download.href = obj.layer.definedUrl + '?service=WFS&request=GetFeature&version=1.0.0&outputFormat=shape-zip&typeName=' + obj.layer.name;
                     bt_download.className = "bt_download";
                     bt_download.title = "Descargar capa en formato SHP";
+                    bt_download.dataset.layerLID = obj.layer._leaflet_id;
+                    bt_download.id = 'bt_download_' + obj.layer._leaflet_id;
                     var bt_download_icon = document.createElement("i");
                     bt_download_icon.className = "fa fa-download";
                     bt_download.appendChild(bt_download_icon);
@@ -597,18 +611,10 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
     },
 
     _onStartDrawClick: function(obj) {
-        var node;
-        var startDrawBtn;
-        var stopDrawBtn;
-        if (typeof window.chrome === "object") {
-            node = obj.target.parentElement.parentElement.childNodes[0];
-            startDrawBtn = obj.target.parentElement.parentElement.childNodes[4];
-            stopDrawBtn = obj.target.parentElement.parentElement.childNodes[5];
-        } else {
-            node = obj.target.parentElement.parentElement.childNodes[0].childNodes[0];
-            startDrawBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[4];
-            stopDrawBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[5];
-        }
+        var node = document.getElementById('ac_layer_input_' + obj.currentTarget.dataset.layerLID);
+        var startDrawBtn = document.getElementById('bt_start_draw_' + obj.currentTarget.dataset.layerLID);
+        var stopDrawBtn = document.getElementById('bt_stop_draw_' + obj.currentTarget.dataset.layerLID);
+
         n_obj = this._layers[node.layerId];
 
         if (node.checked) {
@@ -628,18 +634,10 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
     },
 
     _onStopDrawClick: function(obj) {
-        var node;
-        var startDrawBtn;
-        var stopDrawBtn;
-        if (typeof window.chrome === "object") {
-            node = obj.target.parentElement.parentElement.childNodes[0];
-            startDrawBtn = obj.target.parentElement.parentElement.childNodes[4];
-            stopDrawBtn = obj.target.parentElement.parentElement.childNodes[5];
-        } else {
-            node = obj.target.parentElement.parentElement.childNodes[0].childNodes[0];
-            startDrawBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[4];
-            stopDrawBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[5];
-        }
+        var node = document.getElementById('ac_layer_input_' + obj.currentTarget.dataset.layerLID);
+        var startDrawBtn = document.getElementById('bt_start_draw_' + obj.currentTarget.dataset.layerLID);
+        var stopDrawBtn = document.getElementById('bt_stop_draw_' + obj.currentTarget.dataset.layerLID);
+
         var n_obj = this._layers[node.layerId];
 
         this._draw.stopDraw(n_obj.layer);
@@ -650,18 +648,10 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
     },
 
     _onStartTimeClick: function(obj) {
-        var node;
-        var startTimeBtn;
-        var stopTimeBtn;
-        if (typeof window.chrome === "object") {
-            node = obj.target.parentElement.parentElement.childNodes[0];
-            startTimeBtn = obj.target.parentElement.parentElement.childNodes[2];
-            stopTimeBtn = obj.target.parentElement.parentElement.childNodes[3];
-        } else {
-            node = obj.target.parentElement.parentElement.childNodes[0].childNodes[0];
-            startTimeBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[2];
-            stopTimeBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[3];
-        }
+        var node = document.getElementById('ac_layer_input_' + obj.currentTarget.dataset.layerLID);
+        var startTimeBtn = document.getElementById('bt_start_time_' + obj.currentTarget.dataset.layerLID);
+        var stopTimeBtn = document.getElementById('bt_stop_time_' + obj.currentTarget.dataset.layerLID);
+
         n_obj = this._layers[node.layerId];
 
         if (!this._time.isActive()) {
@@ -676,18 +666,10 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
     },
 
     _onStopTimeClick: function(obj) {
-        var node;
-        var startTimeBtn;
-        var stopTimeBtn;
-        if (typeof window.chrome === "object") {
-            node = obj.target.parentElement.parentElement.childNodes[0];
-            startTimeBtn = obj.target.parentElement.parentElement.childNodes[2];
-            stopTimeBtn = obj.target.parentElement.parentElement.childNodes[3];
-        } else {
-            node = obj.target.parentElement.parentElement.childNodes[0].childNodes[0];
-            startTimeBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[2];
-            stopTimeBtn = obj.target.parentElement.parentElement.childNodes[0].childNodes[3];
-        }
+        var node = document.getElementById('ac_layer_input_' + obj.currentTarget.dataset.layerLID);
+        var startTimeBtn = document.getElementById('bt_start_time_' + obj.currentTarget.dataset.layerLID);
+        var stopTimeBtn = document.getElementById('bt_stop_time_' + obj.currentTarget.dataset.layerLID);
+
         var n_obj = this._layers[node.layerId];
 
         this._time.stopTime();
@@ -698,12 +680,7 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
     },
 
     _onShowTableClick: function(obj) {
-        var node;
-        if (typeof window.chrome === "object") {
-            node = obj.target.parentElement.parentElement.childNodes[0];
-        } else {
-            node = obj.target.parentElement.parentElement.childNodes[0].childNodes[0];
-        }
+        var node = document.getElementById('ac_layer_input_' + obj.currentTarget.dataset.layerLID);
         var n_obj = this._layers[node.layerId];
         this._attributeTable.createTable(n_obj.layer, node.layerId);
         
@@ -711,7 +688,6 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
     },
 
     _onDownloadClick: function(obj) {
-        alert('download');
         return false;
     },
 

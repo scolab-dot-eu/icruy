@@ -42,12 +42,9 @@ Draw.prototype = {
             }
         );
 
-        var geomType = 'Point';
-        for (key in features._layers) {
-            geomType = features._layers[key].feature.geometry.type;
-            break;
-        }
-        if (geomType == 'Point') {
+        var geomType = layer.geom_style;
+ 
+        if (geomType == 'point') {
             options['draw'].marker = false;
             options['draw'].polyline = false;
             options['draw'].polygon = false;
@@ -56,7 +53,7 @@ Draw.prototype = {
             options['draw'].circlemarker = true;
             options['draw'].rectangle = false;
 
-        } else if (geomType == 'LineString' || geomType == 'MultiLineString') {
+        } else if (geomType == 'line') {
             options['draw'].marker = false;
             options['draw'].polygon = false;
             options['draw'].circle = false;
@@ -64,7 +61,7 @@ Draw.prototype = {
             options['draw'].circlemarker = false;
             options['draw'].rectangle = false;
         }
-        else if (geomType == 'Polygon' || geomType == 'MultiPolygon') {
+        else if (geomType == 'polygon') {
             options['draw'].marker = false;
             options['draw'].polyline = false;
             options['draw'].circle = false;
@@ -320,7 +317,7 @@ Draw.prototype = {
             contentType: "application/json; charset=utf-8",
     
         }).done(function(resp) {
-            if (config.user.isadmin) {
+            if (_this.config.user.isadmin) {
                 element.remove();
     
             } else {

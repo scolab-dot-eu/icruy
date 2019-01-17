@@ -57,8 +57,8 @@
                     "metadata": "https://vanilla.geocat.net/geonetwork/srv/spa/catalog.search;jsessionid=0590273B370B98076472E1023A494182#/metadata/spacarcapaemerppmax25awmstematica20140408"
                 },{
                     "type": "wms",
-                    "url": "https://www.dinama.gub.uy/geoserver/u19600217/wms",
-                    "name": "u19600217:c004",
+                    "url": "http://geoservicios.mtop.gub.uy:80/geoserver/geoportal_capas_base/departamentos/ows",
+                    "name": "departamentos",
                     "title": "Departamentos",
                     "visible": false,
                     "editable": false,
@@ -87,7 +87,7 @@
                 {
                     "type": "wfs",
                     "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
-                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/camineria/wms",
                     "name": "camineria:cr_alcantarillas",
                     "history_layer_name": "camineria:crh_alcantarillas",
                     "title": "Alcantarillas",
@@ -202,7 +202,7 @@
                 }, {
                     "type": "wfs",
                     "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
-                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/camineria/wms",
                     "name": "camineria:cr_baden",
                     "history_layer_name": "camineria:crh_baden",
                     "title": "Badenes",
@@ -294,7 +294,7 @@
                 }, {
                     "type": "wfs",
                     "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
-                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/camineria/wms",
                     "name": "camineria:cr_puente",
                     "history_layer_name": "camineria:crh_puente",
                     "title": "Puentes",
@@ -427,7 +427,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
-                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/camineria/wms",
                     "name": "camineria:cr_obstaculo",
                     "history_layer_name": "camineria:crh_obstaculo",
                     "title": "Obstáculos",
@@ -499,7 +499,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
-                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/camineria/wms",
                     "name": "camineria:cr_paso",
                     "history_layer_name": "camineria:crh_paso",
                     "title": "Pasos",
@@ -559,7 +559,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://icr-test.opp.gub.uy/geoserver/camineria/wfs",
-                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/geoserver/camineria/wms",
+                    "wms_url": "http://icr-test.opp.gub.uy/geoserver/camineria/wms",
                     "name": "camineria:cr_senyal",
                     "history_layer_name": "camineria:crh_senyal",
                     "title": "Señales",
@@ -636,6 +636,7 @@
                 {
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_artigas",
                     "title": "Caminería Artigas",
                     "visible": false,
@@ -655,6 +656,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_canelones",
                     "title": "Caminería Canelones",
                     "visible": false,
@@ -674,6 +676,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_cerro_largo",
                     "title": "Caminería Cerro Largo",
                     "visible": false,
@@ -693,6 +696,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_colonia",
                     "title": "Caminería Colonia",
                     "visible": false,
@@ -712,6 +716,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_durazno",
                     "title": "Caminería Durazno",
                     "visible": false,
@@ -731,6 +736,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_flores",
                     "title": "Caminería Flores",
                     "visible": false,
@@ -750,6 +756,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_florida",
                     "title": "Caminería Florida",
                     "visible": false,
@@ -769,6 +776,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_lavalleja",
                     "title": "Caminería Lavalleja",
                     "visible": false,
@@ -788,6 +796,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_maldonado",
                     "title": "Caminería Maldonado",
                     "visible": false,
@@ -807,6 +816,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_montevideo",
                     "title": "Caminería Montevideo",
                     "visible": false,
@@ -826,6 +836,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_paysandu",
                     "title": "Caminería Paysandu",
                     "visible": false,
@@ -845,6 +856,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_rio_negro",
                     "title": "Caminería Rio Negro",
                     "visible": false,
@@ -864,6 +876,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_rivera",
                     "title": "Caminería Rivera",
                     "visible": false,
@@ -883,6 +896,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_rocha",
                     "title": "Caminería Rocha",
                     "visible": false,
@@ -902,6 +916,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_salto",
                     "title": "Caminería Salto",
                     "visible": false,
@@ -921,6 +936,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_san_jose",
                     "title": "Caminería San José",
                     "visible": false,
@@ -940,6 +956,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_soriano",
                     "title": "Caminería Soriano",
                     "visible": false,
@@ -959,6 +976,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_tacuarembo",
                     "title": "Caminería Tacuarembo",
                     "visible": false,
@@ -978,6 +996,7 @@
                 },{
                     "type": "wfs",
                     "url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs",
+                    "wms_url": "http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms",
                     "name": "caminerias_intendencias:v_camineria_treinta_y_tres",
                     "title": "Caminería Treinta y Tres",
                     "visible": false,

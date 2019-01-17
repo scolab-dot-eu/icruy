@@ -251,20 +251,18 @@ function loadOverlays(map) {
                         }
                         html += '</table>';
                         html += '</div>';
-                        html += '<ul class="custom-actions">';
-                        if (window.editionMode) {
-                            if (f.properties.status == 'VALIDADO') {
+                        if (!window.isMobile) {
+                            html += '<ul class="custom-actions">';
+                            if (window.editionMode) {
                                 html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
                                 html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit"><i class="fa fa-edit m-r-5"></i> Editar</a></li>';
                                 html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete"><i class="fa fa-trash m-r-5"></i> Eliminar</a></li>';
+                                
                             } else {
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-cancel"><i class="fa fa-times m-r-5"></i> Cancelar solicitud</a></li>';    
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
                             }
-                            
-                        } else {
-                            html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
+                            html += '</ul>';
                         }
-                        html += '</ul>';
                         
                         l.bindPopup(html, {closeOnClick: false});
 
@@ -404,6 +402,8 @@ function loadOverlays(map) {
             };
             if (config.overlays.groups[i].layers[j].history_layer_name){
                 layer.StyledLayerControl.historyLayerName = config.overlays.groups[i].layers[j].history_layer_name;
+            }
+            if (config.overlays.groups[i].layers[j].wms_url) {
                 layer.StyledLayerControl.wmsUrl = config.overlays.groups[i].layers[j].wms_url;
             }
             tocOverlays.push(layer);
@@ -471,7 +471,7 @@ function loadControls(map, tocBaseLayers, overlays, utils) {
     } 
     var toc = new Toc(config, map, tocBaseLayers, overlays, utils);
 
-    new ToolBar(map);
+    new ToolBar(map, overlays);
 
     return {
         toc: toc
@@ -505,30 +505,25 @@ function registerMapEvents(map, controls, utils) {
         });
 
         $('.popup-toolbar-button-edit').click(function(e){
-            if (!inEdition) {
-                for (i in editableLayers) {
-                    if (editableLayers[i].name == this.dataset.layername) {
-                        var id = this.dataset.fid;
-                        var editableLayer = editableLayers[i].layer;
-                        editableLayer.eachLayer(function(layer) {
-                            if (layer.feature.id == id) {
-                                var clonedLayer = layer;
-                                if (layer.feature.geometry.type == 'Point') {
-                                    map.setView(layer.getLatLng(), 15);
-                                } else {
-                                    var bounds = layer.getBounds();
-                                    map.fitBounds(bounds);
-                                }
-                                layer.editing.enable();
-                                inEdition = true;
-                                loadFeatureForm(map, controls.toc, layer, clonedLayer, editableLayer, utils);
+            for (i in editableLayers) {
+                if (editableLayers[i].name == this.dataset.layername) {
+                    var id = this.dataset.fid;
+                    var editableLayer = editableLayers[i].layer;
+                    editableLayer.eachLayer(function(layer) {
+                        if (layer.feature.id == id) {
+                            var clonedLayer = layer;
+                            if (layer.feature.geometry.type == 'Point') {
+                                map.setView(layer.getLatLng(), 15);
+                            } else {
+                                var bounds = layer.getBounds();
+                                map.fitBounds(bounds);
                             }
-                        });
-                    }
+                            layer.editing.enable();
+                            inEdition = true;
+                            loadFeatureForm(map, controls.toc, layer, clonedLayer, editableLayer, utils);
+                        }
+                    });
                 }
-
-            } else {
-                alert('Otra capa en edición');
             }
             
         });
@@ -544,6 +539,7 @@ function registerMapEvents(map, controls, utils) {
                 modal: true,
                 buttons: {
                     "Borrar elemento": function() {
+                        $(this).dialog("close");
                         for (i in editableLayers) {
                             if (editableLayers[i].name == dataset.layername) {
                                 var id = dataset.fid;
@@ -555,7 +551,6 @@ function registerMapEvents(map, controls, utils) {
                                 });
                             }
                         }
-                        $(this).dialog("close");
                     },
                     Cancel: function() {
                         $(this).dialog("close");
@@ -563,25 +558,11 @@ function registerMapEvents(map, controls, utils) {
                 }
               });
         });
-
-        $('.popup-toolbar-button-cancel').click(function(e){
-            for (i in editableLayers) {
-                if (editableLayers[i].name == this.dataset.layername) {
-                    var id = this.dataset.fid;
-                    var editableLayer = editableLayers[i].layer;
-                    editableLayer.eachLayer(function(layer) {
-                        if (layer.feature.id == id) {
-                            cancelChangeRequest(controls.toc, layer);
-                        }
-                    });
-                }
-            }
-            
-        });
     });
 }
 
 function deleteElement(editableLayer, element) {
+    var c = config;
     var data = {
         'operation': 'delete',
         'layer': editableLayer.name,
@@ -596,7 +577,7 @@ function deleteElement(editableLayer, element) {
         contentType: "application/json; charset=utf-8",
 
     }).done(function(resp) {
-        if (config.user.isadmin) {
+        if (c.user.isadmin) {
             element.remove();
 
         } else {
@@ -736,35 +717,5 @@ function loadFeatureForm(map, toc, layer, clonedLayer, editableLayer, utils) {
     });
     
     toc.getSideBar().open('toc-result');
-}
-
-function cancelChangeRequest(editableLayer, element) {
-    var data = {
-        'status': 'CANCELADO',
-        'layer': editableLayer.name,
-        'feature': element.toGeoJSON()
-    };
-
-    $.ajax({
-        url: window.serviceURL + '/api/changerequest',
-        type: 'PUT',
-        async: false,
-        data: JSON.stringify(data),
-        contentType: "application/json; charset=utf-8",
-
-    }).done(function(resp) {
-        element.feature.properties.status = 'VALIDADO';
-        /*var pendingIcon = new L.Icon({
-            iconUrl: element._icon.src.replace('pending', 'validated'),
-            iconSize: [element._icon.width, element._icon.height]
-        });
-        element.setIcon(pendingIcon);*/
-        var style = element.options;
-        style.fillOpacity = 1;          
-        element.setStyle(style);
-
-    }).fail(function(error) {
-        console.log( "Error al cancelar" );
-    });
 }
 

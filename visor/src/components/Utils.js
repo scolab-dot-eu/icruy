@@ -111,9 +111,15 @@ Utils.prototype = {
             html += '<div class="form-group">';
             html +=     '<label for="' + field.name + '">' + field.label + '</label>';
             html +=     '<select style="font-size: 12px;" class="form-control" name="' + field.name + '" id="' + field.name + '">';
-            for (j in field.domain) {
-                html += '<option value="' + field.domain[j].code + '">' + field.domain[j].definition + '</option>';                           
+
+            for (i in field.domain) {
+                if (field.domain[i].code == this.departamento) {
+                    html += '<option selected value="' + field.domain[i].code + '">' + field.domain[i].definition + '</option>';
+                } else {
+                    html += '<option value="' + field.domain[i].code + '">' + field.domain[i].definition + '</option>';                           
+                }
             }
+
             html +=     '</select>';
             html += '</div>';
                 
