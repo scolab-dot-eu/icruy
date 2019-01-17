@@ -382,7 +382,8 @@ class EditableLayerDef extends Model
         $client = new Client();
         $baseUrl = env('GEOSERVER_URL');
         $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
-        $url = $baseUrl . "/rest/workspaces/" . $workspace . "/layers/".$layerName;
+        //$url = $baseUrl . "/rest/workspaces/" . $workspace . "/layers/".$layerName;
+        $url = $baseUrl . "/rest/layers/".$workspace.":".$layerName;
         error_log($url);
         $response = $client->request('GET', $url, [
             'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
@@ -399,7 +400,7 @@ class EditableLayerDef extends Model
         $layerConf = json_decode($response->getBody(), true);
         $qualifiedStyleName = $workspace.':'.$styleName;
         $styleUrl = $baseUrl .  "/rest/workspaces/" . $workspace . "/styles/" . $styleName . '.json';
-        $layerConf['defaultStyle'] = ['name' => $qualifiedStyleName, 'workspace'=> $workspace, 'href' => $styleUrl];
+        $layerConf['layer']['defaultStyle'] = ['name' => $qualifiedStyleName, 'workspace'=> $workspace, 'href' => $styleUrl];
         error_log($layerConf);
         $response = $client->request('PUT', $url, [
             'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
