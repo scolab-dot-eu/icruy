@@ -51,8 +51,16 @@ class UserController extends Controller
      */
     public function store(UserCreateFormRequest $request)
     {
-        error_log(json_encode($request->all()));
-        $user = User::create($request->validated());
+        $validated = $request->validated();
+        $user = new User;
+        $user->name = $validated['name'];
+        $user->phone = $validated['phone'];
+        $user->email = $validated['email'];
+        $pass = $validated['password'];
+        if ($pass!='') {
+            $user->password = Hash::make($pass);
+        }
+        $user->save();
         $this->setRoles($request, $user);
         $this->setDepartments($request, $user);
         return redirect()->route('users.index');
@@ -154,11 +162,11 @@ class UserController extends Controller
      */
     public function update(UserUpdateFormRequest $request, User $user)
     {
-        // $user->update($request->validated());
-        $user->name = $request->input('name');
-        $user->phone = $request->input('phone');
-        $user->email = $request ->input('email');
-        $pass = $request ->input('password');
+        $validated = $request->validated();
+        $user->name = $validated['name'];
+        $user->phone = $validated['phone'];
+        $user->email = $validated['email'];
+        $pass = $validated['password'];
         if ($pass!='') {
             $user->password = Hash::make($pass);
         }
