@@ -71,7 +71,17 @@ class UserController extends Controller
     
     private function setDepartments(Request $request, User $user) {
         $selected_deps = [];
+        if ($request->has('departments')) {
+            $deps_inputs = $request->input('departments');
+            $all_departments = Department::all();
+            foreach ($all_departments as $current_dep) {
+                if (array_key_exists($current_dep->code, $deps_inputs)) {
+                    $selected_deps[] = $current_dep->id;
+                }
+            }
+        }
         $user->departments()->sync($selected_deps, true);
+        Log::debug(json_encode($user->departments));
     }
     
     private function setRoles(Request $request, User $user) {
