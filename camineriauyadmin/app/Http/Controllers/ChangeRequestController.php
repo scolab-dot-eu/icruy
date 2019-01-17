@@ -26,7 +26,7 @@ class ChangeRequestController extends Controller
             $data = ChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
         }
         elseif ($status=='all') {
-            $data = ChangeRequest::all();
+            $data = ChangeRequest::with(['author', 'validator']);
         }
         elseif ($status=='closed') {
             $data = ChangeRequest::closed();
@@ -50,7 +50,7 @@ class ChangeRequestController extends Controller
             $data = ChangeRequest::open();
         }
         if (!$request->user()->isAdmin()) {
-            $data = ChangeRequest::where('requested_by_id', $request->user()->id);
+            $data = $data->where('requested_by_id', $request->user()->id);
         }
         $data->with(['author', 'validator'])->orderBy('updated_at', 'desc');
         return view('changerequest.index', ['changerequests' => $data->get()]);
@@ -111,8 +111,8 @@ class ChangeRequestController extends Controller
             }
         }
         
-        Log::error($changerequest->feature_previous);
-        Log::error($changerequest->feature);
+//        Log::error($changerequest->feature_previous);
+//        Log::error($changerequest->feature);
         
         /*
         $layer = $changerequest->layer;
@@ -172,7 +172,7 @@ class ChangeRequestController extends Controller
                 throw $error;
             }
             ChangeRequest::setCancelled($origChangerequest, $request->user());
-            return;
+            return redirect()->route('changerequests.index');
         }
         if (!$request->user()->isAdmin()) {
             $message = 'Un usuario no-administrador intentó modificar una petición: '.$request->user()->email;
