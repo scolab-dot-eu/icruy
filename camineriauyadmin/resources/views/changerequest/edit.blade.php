@@ -14,8 +14,12 @@
                 @if ($changerequest->isClosed)
                 <a href="{!! route('changerequests.index') !!}" role="button" class="btn btn-info">{{ __('Cerrar') }}</a>
                 @else
-                <input type="submit" class="btn btn-info" name="action_validate" value="{{ __('Validar') }}">
-                <input type="submit" class="btn btn-warning" name="action_reject" value="{{ __('Rechazar') }}">
+                    @if (Auth::user()->isAdmin())
+                    <input type="submit" class="btn btn-info" name="action_validate" value="{{ __('Validar') }}">
+                    <input type="submit" class="btn btn-warning" name="action_reject" value="{{ __('Rechazar') }}">
+                    @else
+                    <input type="submit" class="btn btn-warning" name="action_cancel" value="{{ __('Cancelar') }}">
+                    @endif
                 @endif
             {{ Form::close() }}
             <br />
