@@ -26,7 +26,7 @@ class ChangeRequestController extends Controller
             $data = ChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
         }
         elseif ($status=='all') {
-            $data = ChangeRequest::with(['author', 'validator']);
+            $data = ChangeRequest::all();
         }
         elseif ($status=='closed') {
             $data = ChangeRequest::closed();
@@ -52,7 +52,7 @@ class ChangeRequestController extends Controller
         if (!$request->user()->isAdmin()) {
             $data = ChangeRequest::where('requested_by_id', $request->user()->id);
         }
-        $data->with(['author', 'validator']);
+        $data->with(['author', 'validator'])->orderBy('updated_at', 'desc');
         return view('changerequest.index', ['changerequests' => $data->get()]);
     }
 
