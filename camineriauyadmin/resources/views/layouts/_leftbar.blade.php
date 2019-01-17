@@ -14,14 +14,17 @@
                     </button>
                 </h5>
             </div>
-            <div id="collapseOne" class="collapse{!! (Route::is(['home', 'changerequests.*', 'mtopchangerequests.*'])) ? ' show' : '' !!}" aria-labelledby="headingOne" data-parent="#sidebar">
+            <div id="collapseOne" class="collapse{!! (Route::is(['home', 'changerequests.*', 'mtopchangerequests.*', 'interventions.*'])) ? ' show' : '' !!}" aria-labelledby="headingOne" data-parent="#sidebar">
                 <div class="card-body">
                 <ul class="list-group list-group-flush" id="permissionsSubmenu">
                     <li class="{!! (Route::is('home')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('home') !!}">{{ __('Resumen') }}</a>
                     </li>
-                    <li class="{!! (Route::is('changerequests.index')) ? ' active' : '' !!}">
+                    <li class="{!! (Route::is('changerequests.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('changerequests.index') !!}">{{ __('Peticiones de cambios') }}</a>
+                    </li>
+                    <li class="{!! (Route::is('interventions.*')) ? ' active' : '' !!}">
+                        <a class="list-group-item" href="{!! route('interventions.index') !!}">{{ __('Intervenciones') }}</a>
                     </li>
                     <!-- 
                     <li class="{!! (Route::is('mtopchangerequests.index')) ? ' active' : '' !!}">

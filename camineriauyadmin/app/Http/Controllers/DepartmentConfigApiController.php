@@ -82,6 +82,7 @@ class DepartmentConfigApiController extends Controller
         foreach (EditableLayerDef::where('enabled', 1)->get() as $lyr) {
             $conf = json_decode($lyr->conf, true);
             $conf['name'] = $default_workspace.":".$lyr->name;
+            $conf['abrev'] = $lyr->abrev;
             $conf['title'] = $lyr->title;
             $inventory_layers[] = $lyr->name;
             $conf['type'] = $lyr->protocol;

@@ -11,6 +11,8 @@
 // leaflet
 @import '~leaflet/dist/leaflet.css';
 
+@import '~jquery-editable-select/dist/jquery-editable-select.css';
+
 .navbar-laravel {
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
@@ -123,4 +125,23 @@ a[data-toggle="collapse"] {
 
 .titulo-resumen {
     padding-top: 10px;
+}
+
+/** Apply custom arrow to es-input selects **/
+select.es-input {
+   -webkit-appearance: none; 
+   -moz-appearance: none;
+    appearance: none;       /* remove default arrow */
+    padding-right: 20px !important;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAICAYAAADJEc7MAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAG2YAABzjgAA4DIAAIM2AAB5CAAAxgwAADT6AAAgbL5TJ5gAAABGSURBVHjaYvz//z8DOYCJgUzA0tnZidPK8vJyRpw24pLEpwnuVHRFhDQxMDAwMPz//x+OOzo6/iPz8WFGuocqAAAA//8DAD/sORHYg7kaAAAAAElFTkSuQmCC) right center no-repeat; 
+}
+
+select.es-input::-ms-expand { 
+    display: none; /* hide the default arrow in ie10 and ie11 */
+}
+@media screen and (min-width:0\0) {
+    select.es-input {
+        background-image:none\9;
+        padding: 5px\9;
+    } 
 }

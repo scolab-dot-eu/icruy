@@ -7,7 +7,7 @@
         <div class="col-md-8 col-sm-12">
 
             <h3>
-                Nuevo rol
+                Nuevo usuario
             </h3>
             {{ Form::model( $user, ['route' => ['users.store'], 'method' => 'post', 'role' => 'form'] ) }}
                 @include('user._fields')

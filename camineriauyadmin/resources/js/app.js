@@ -7,6 +7,7 @@
 
 require('./bootstrap');
 require('leaflet');
+require('jquery-editable-select');
 
 $(document).ready(function () {
 

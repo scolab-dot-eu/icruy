@@ -16,7 +16,7 @@ class EditableLayerDef extends Model
     protected $table = 'editablelayerdefs';
     
     protected $fillable = [
-        'name', 'title', 'geom_type', 'protocol',
+        'name', 'abrev', 'title', 'geom_type', 'protocol',
         'url', 'fields', 'geom_style', 'style',
         'metadata', 'conf'
     ];
@@ -43,7 +43,7 @@ class EditableLayerDef extends Model
         return "crh".substr($tablename, 2);
     }
     
-    public static function createTable($name, $fields_str, $geom_type) {
+    public static function createTable($name, $abrev, $fields_str, $geom_type) {
         EditableLayerDef::doCreateTable($name, $fields_str, $geom_type);
         EditableLayerDef::doCreateTable(EditableLayerDef::getHistoricTableName($name), $fields_str, $geom_type, true);
     }
@@ -61,15 +61,17 @@ class EditableLayerDef extends Model
     public static function doCreateTable($name, $fields_str, $geom_type, $historic=false) {
         $fields = json_decode($fields_str);
         $errors = [];
-        Schema::create($name, function (Blueprint $table) use ($fields, $geom_type, $historic, &$errors) {
+        $specificFields = [];
+        Schema::create($name, function (Blueprint $table) use ($name, $fields, $geom_type, $historic, &$specificFields, &$errors) {
             $version = EditableLayerDef::getMysqlVersion();
             $table->increments('id');
+            /*
             if ($historic) {
                 $table->string('cod_elem');
             }
             else {
-                $table->string('cod_elem')->unique();
-            }
+                $table->string('cod_elem')->nullable()->unique()->default(null);
+            }*/
             if (strtolower($geom_type) == 'point') {
                 if (version_compare($version, '8.0') >= 0) { // SRID is only supported from MySQL v8.0
                     $table->point('thegeom', 4326);
@@ -104,11 +106,16 @@ class EditableLayerDef extends Model
                 $table->integer('feat_id');
             }
             else {
-                $table->string('status', 23)->default('VALIDADO');
+                $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
+                //$table->string('status', 23)->default('VALIDADO');
+                $table->string('origin', 9)->nullable();
             }
+            
+            $specificFields = [];
             
             foreach ($fields as $field) {
                 if ($field->name == 'id' ||
+                    $field->name == 'origin' ||
                     $field->name == 'cod_elem' ||
                     $field->name == 'status' ||
                     $field->name == 'departamento' ||
@@ -192,15 +199,17 @@ class EditableLayerDef extends Model
                 if (!isset($field->mandatory) || $field->mandatory!==true) {
                     $field_def->nullable();
                 }
+                
+                $specificFields[] = $field->name;
             }
-            $table->dateTime('updated_at')->nullable();
-            $table->dateTime('created_at')->nullable();
+            $table->date('updated_at')->nullable();
+            $table->date('created_at')->nullable();
             $table->index('codigo_camino');
             if ($historic) {
                 $table->dateTime('valid_from');
                 $table->dateTime('valid_to');
                 $table->index(['valid_to', 'valid_from', 'codigo_camino']);
-                $table->index(['valid_to', 'valid_from', 'departamento', 'codigo_camino'], 'crh_alcantarillas_valid_departamento_codigo_camino_index');
+                $table->index(['valid_to', 'valid_from', 'departamento', 'codigo_camino'], $name.'_valid_dep_cod_cam_idx');
             }
             else {
                 $table->index(['status', 'codigo_camino']);
@@ -208,6 +217,91 @@ class EditableLayerDef extends Model
             }
             $table->spatialIndex('thegeom');
         });
+        
+        if (!$historic) {
+            $historicName = EditableLayerDef::getHistoricTableName($name);
+            DB::unprepared("
+                CREATE TRIGGER ".$name."_before_insert
+                BEFORE INSERT
+                   ON ".$name." FOR EACH ROW
+                BEGIN
+                   IF NEW.origin <> '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
+                       SET NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."';
+                       IF NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                           SET NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."';
+                       END IF;
+                       SET NEW.created_at = CURDATE();
+                       SET NEW.updated_at = CURDATE();
+                   END IF;
+                END
+            ");
+            
+            DB::unprepared("
+                CREATE TRIGGER ".$name."_create_changerequest
+                AFTER INSERT
+                    ON ".$name." FOR EACH ROW BEGIN
+                    IF NEW.origin = 'batchload' THEN
+                        IF NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
+                            INSERT INTO changerequests
+                                (requested_by_id, layer, feature_id, departamento, status, operation)
+                            VALUES
+                                ('admin', '".$name."', NEW.id, NEW.departamento, 0, '".ChangeRequest::OPERATION_CREATE."');
+                        END IF;
+                    END IF;
+                END
+            ");
+            
+            DB::unprepared("
+                CREATE TRIGGER ".$name."_after_insert
+                AFTER INSERT
+                    ON ".$name." FOR EACH ROW BEGIN
+                    IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                        -- Insert the new record into history table
+                        INSERT INTO ".$historicName."
+                            ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
+                            ."`".implode('`, NEW.`', $specificFields)."` ) 
+                        VALUES
+                            ( NEW.thegeom, NEW.id, NOW(), '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
+                            ."NEW.`".implode('`, NEW.`', $specificFields)."` );
+                    END IF;
+                END
+            ");
+            
+            DB::unprepared("
+                CREATE TRIGGER ".$name."_before_update
+                BEFORE UPDATE
+                    ON ".$name." FOR EACH ROW BEGIN
+                    DECLARE theCurrentTime DATETIME;
+                    IF OLD.origin = '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
+                        IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                            SELECT NOW() INTO theCurrentTime;
+                            -- Insert the new record into history table
+                            UPDATE ".$historicName."
+                                SET valid_to = theCurrentTime
+                            WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
+                            INSERT INTO ".$historicName."
+                                ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
+                                    ."`".implode('`, NEW.`', $specificFields)."` )
+                            VALUES
+                                ( NEW.thegeom, NEW.id, theCurrentTime, '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
+                                    ."NEW.`".implode('`, NEW.`', $specificFields)."` );
+                        END IF;
+                    END IF;
+                END
+            ");
+            
+            DB::unprepared("
+                CREATE TRIGGER ".$name."_before_delete
+                BEFORE DELETE
+                   ON ".$name." FOR EACH ROW
+                BEGIN
+                  -- Set end of life for the old record
+                  UPDATE ".$historicName."
+                  SET valid_to = NOW()
+                  WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
+                END
+            ");
+        }
         if (count($errors) > 0) {
             Log::error('Error creating table'.$name);
             Log::error(json_encode($errors));

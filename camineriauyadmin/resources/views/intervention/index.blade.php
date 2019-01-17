@@ -2,34 +2,39 @@
 
 @section('content')
 
-    <h2>{{ __('Usuarios') }}</h2>
+    <h2>{{ __('Intervenciones') }}</h2>
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
                 <td>ID</td>
-                <td>{{ __('Nombre') }}</td>
-                <td>{{ __('Email') }}</td>
-                <td>{{ __('Teléfono') }}</td>
-                <td>{{ __('Email verificado') }}</td>
+                <td>{{ __('Tipo elemento') }}</td>
+                <td>{{ __('Año') }}</td>
+                <td>{{ __('Departamento') }}</td>
+                <td>{{ __('Camino') }}</td>
+                <td>{{ __('Tarea') }}</td>
+                <td>{{ __('Longitud') }}</td>
+                <td></td>
             </tr>
         </thead>
         <tbody>
-        @foreach($users as $value)
+        @foreach($interventions as $value)
             <tr>
                 <td>{{ $value->id }}</td>
-                <td>{{ $value->name }}</td>
-                <td>{{ $value->email }}</td>
-                <td>{{ $value->phone }}</td>
-                <td>{{ $value->email_verified_at }}</td>
+                <td>{{ $value->tipo_elem }}</td>
+                <td>{{ $value->anyo_interv }}</td>
+                <td>{{ $value->departamento }}</td>
+                <td>{{ $value->codigo_camino }}</td>
+                <td>{{ $value->tarea }}</td>
+                <td>{{ $value->longitud }}</td>
                 <td>
-                    <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/users/' . $value->id . '/edit') }}">Editar</a>
-                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="{{$value->id}}" data-name="{{$value->email}}">Borrar</button>
+                    <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/interventions/' . $value->id . '/edit') }}">Editar</a>
+                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="{{$value->id}}" data-name="{{ $value->anyo }} - {{$value->codigo_camino}}">Borrar</button>
                 </td>
             </tr>
         @endforeach
         </tbody>
     </table>
-    <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/users/create') }}">Nuevo usuario</a>
+    <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/interventions/create') }}">Nueva intervención</a>
 
     <div class="modal" id="deleteModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -46,7 +51,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Cancelar</button>
-                    <button id="confirmDeleteButton" type="button" class="btn btn-danger">Borrar</button>
+                    <!-- <button id="confirmDeleteButton" type="button" class="btn btn-danger">Borrar</button> -->
                 </div>
                 <form id="deleteForm" method="POST" action="">
                     {{ csrf_field() }} {{ method_field('DELETE') }}
@@ -67,7 +72,7 @@
               var modal = $(this);
               var text = '¿Borrar elemento "' + button.data('name') + '" (id: ' + id + ")?";
               modal.find('.modal-body p').text(text);
-              var action = '/dashboard/users/' + id;
+              var action = '/dashboard/interventions/' + id;
               $('#deleteForm').attr('action', action);
             });
         $('#confirmDeleteButton').on('click', function(event) {

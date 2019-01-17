@@ -80,7 +80,7 @@ class EditableLayerDefController extends Controller
         $validated['style'] = '{"radius": 5, "fillColor": "'. $color . '", "color": "' . $color .'", "weight": 1, "opacity": 1}';
         $validated['conf'] = '{"visible": true, "download": true, "editable": true, "showTable":true, "showInSearch": true}';
 
-        EditableLayerDef::createTable($validated['name'], $validated['fields'], $validated['geom_type']);
+        EditableLayerDef::createTable($validated['name'], $validated['abrev'], $validated['fields'], $validated['geom_type']);
         EditableLayerDef::publishLayer($validated['name'], $validated['title']);
         EditableLayerDef::publishStyle($validated['name'], $validated['title'], $color);
         EditableLayerDef::setLayerStyle($validated['name'], $validated['name']);

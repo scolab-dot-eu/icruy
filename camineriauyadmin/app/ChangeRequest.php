@@ -63,6 +63,9 @@ class ChangeRequest extends Model
     const OPERATION_UPDATE = 'update';
     const OPERATION_DELETE = 'delete';
     
+    const FEATURE_ORIGIN_ICRWEB = 'icrweb';
+    const FEATURE_ORIGIN_BATCHLOAD = 'batchload';
+    
     public static $OPERATION_LABELS = [
         ChangeRequest::OPERATION_CREATE => 'Creación',
         ChangeRequest::OPERATION_UPDATE => 'Modificación',
@@ -125,7 +128,7 @@ class ChangeRequest extends Model
         $table_name = ChangeRequest::getTableName($layer_name);
         if ($operation==ChangeRequest::OPERATION_CREATE) {
             $feature['properties']['id'] = ChangeRequest::insertFeature($table_name, $values, $geom);
-            ChangeRequest::historyInsert($table_name, $values);
+            //ChangeRequest::historyInsert($table_name, $values);
         }
         else {
             $id = array_get($feature, 'properties.id', null);
@@ -144,16 +147,17 @@ class ChangeRequest extends Model
             */
             if  ($operation==ChangeRequest::OPERATION_UPDATE) {
                 ChangeRequest::updateFeature($table_name, $id, $values, $geom);
-                ChangeRequest::historyUpdate($table_name, $values);
+                //ChangeRequest::historyUpdate($table_name, $values);
             }
             elseif  ($operation==ChangeRequest::OPERATION_DELETE) {
                 ChangeRequest::deleteFeature($table_name, $id);
-                ChangeRequest::historyDelete($table_name, $id);
+                //ChangeRequest::historyDelete($table_name, $id);
             }
         }
         $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
     }
     
+    /*
     public static function historyInsert($table_name, $values_array) {
         $values_array['feat_id'] = $values_array['id'];
         $values_array['valid_from'] = date('Y-m-d H:i:s');
@@ -184,7 +188,7 @@ class ChangeRequest extends Model
         DB::table($historyTablename)->where('feat_id', '=', $id)
                 ->where('valid_to', '>', $currentDate)
                 ->update(['valid_to' => $currentDate]);
-    }
+    }*/
     
     /**
      * Marca la feature como pendiente en todos los casos, y la crea en el caso de
@@ -358,7 +362,7 @@ class ChangeRequest extends Model
         return null;
     }
     
-    public static function feature2geojson($feature) {
+    public static function feature2array($feature) {
         if ($feature) {
             $the_feat = json_decode($feature-> thegeomjson, true);
             $the_feat['properties'] = [];
@@ -367,7 +371,14 @@ class ChangeRequest extends Model
                     $the_feat['properties'][$key] = $value;
                 }
             }
-            return json_encode($the_feat);
+            return $the_feat;
+        }
+        return null;
+    }
+    
+    public static function feature2geojson($feature) {
+        if ($feature!==null) {
+            return json_encode(ChangeRequest::feature2array($feature));
         }
         return null;
     }
@@ -382,6 +393,8 @@ class ChangeRequest extends Model
     public static function insertFeature($table_name, &$values_array, $geom, $status = ChangeRequest::FEATURE_STATUS_VALIDATED) {
         try {
             //DB::enableQueryLog();
+            //unset($values_array['cod_elem']);
+            $values_array['origin'] = ChangeRequest::FEATURE_ORIGIN_ICRWEB;
             $values_array['updated_at'] = date('Y-m-d H:i:s');
             $values_array['created_at'] = date('Y-m-d H:i:s');
             $values_array['status'] = $status;
@@ -404,6 +417,9 @@ class ChangeRequest extends Model
         try {
             // enforce timestamps in the server side
             unset($values_array['created_at']);
+            //unset($values_array['cod_elem']);
+            unset($values_array['origin']);
+            unset($values_array['id']);
             $values_array['updated_at'] = date('Y-m-d H:i:s');
             $values_array['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
             $values_array['thegeom'] = ChangeRequest::prepareGeom($geom);
@@ -462,22 +478,32 @@ class ChangeRequest extends Model
         if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
             $id = $changerequest->feature_id;
             ChangeRequest::deleteFeature($table_name, $id);
-            ChangeRequest::historyDelete($table_name, $id);
+            //ChangeRequest::historyDelete($table_name, $id);
         }
         elseif ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
             ChangeRequest::setFeatureStatus($table_name, $changerequest->feature_id,
                 ChangeRequest::FEATURE_STATUS_VALIDATED);
-            $feature = json_decode($changerequest->feature, true);
+            if ($changerequest->feature == null) {
+                // los changerequests creados en la carga vacía tienen el campo feature vacío
+                $featureObj = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
+                $feature = ChangeRequest::feature2array($featureObj);
+                if ($feature) {
+                    $changerequest->feature = json_encode($feature);
+                }
+            }
+            else {
+                $feature = json_decode($changerequest->feature, true);
+            }
             $values = array_get($feature, 'properties', []);
             $geom = Geometry::fromJson(json_encode($feature));
-            ChangeRequest::historyInsert($table_name, $values);
+            //ChangeRequest::historyInsert($table_name, $values);
         }
         else {
             $feature = json_decode($changerequest->feature, true);
             $values = array_get($feature, 'properties', []);
             $geom = Geometry::fromJson(json_encode($feature));
             ChangeRequest::updateFeature($table_name, $id, $values, $geom);
-            ChangeRequest::historyUpdate($table_name, $values);
+            //ChangeRequest::historyUpdate($table_name, $values);
         }
         
         $changerequest->status = ChangeRequest::STATUS_VALIDATED;
@@ -488,6 +514,11 @@ class ChangeRequest extends Model
         $id = $changerequest->feature_id;
         $table_name = ChangeRequest::getTableName($changerequest->layer);
         if ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
+            if ($changerequest->feature == null) {
+                // los changerequests creados en la carga vacía tienen el campo feature vacío
+                $featureObj = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
+                $changerequest->feature = ChangeRequest::feature2geojson($featureObj);
+            }
             ChangeRequest::deleteFeature($table_name, $id);
         }
         else {

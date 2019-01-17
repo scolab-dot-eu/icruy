@@ -49,6 +49,11 @@ class ChangeRequestApiController extends Controller
         $changerequest->departamento = array_get($feature, "properties.departamento");
         $feature_previous = ChangeRequest::getCurrentFeature($validated['layer'], $feature_id);
         if ($changerequest->operation != ChangeRequest::OPERATION_CREATE) {
+            if ($feature_previous && $feature_previous->status != ChangeRequest::FEATURE_STATUS_VALIDATED) {
+                $errors = ['Error' => "No se puede modificar un elemento que está pendiente de validación"];
+                $error = \Illuminate\Validation\ValidationException::withMessages($errors);
+                throw $error;
+            }
             $changerequest->feature_previous = ChangeRequest::feature2geojson($feature_previous);
         }
         

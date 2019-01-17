@@ -14,6 +14,8 @@ use App\ChangeRequest;
 |
 */
 
+URL::forceRootUrl(getenv('APP_URL'));
+
 Route::get('/', function () {
     //return redirect('viewer_login');
     return redirect('visor');
@@ -46,6 +48,9 @@ Route::prefix('dashboard')
             'show'
         ]]);
         Route::resource('users', 'UserController', ['except' => [
+            'show'
+        ]]);
+        Route::resource('interventions', 'InterventionController', ['except' => [
             'show'
         ]]);
     });

@@ -16,6 +16,7 @@ class CreateEditablelayerdefsTable extends Migration
         Schema::create('editablelayerdefs', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 200)->unique();
+            $table->string('abrev', 2)->unique();
             $table->string('title', 255);
             $table->string('geom_type', 10);
             $table->string('protocol', 255);
