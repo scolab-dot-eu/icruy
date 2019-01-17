@@ -34,13 +34,14 @@ Toc.prototype = {
         html += '        <li><a href="#toc-legend" role="tab"><i class="fa fa-palette"></i></a></li>';
         if (!window.isMobile) {
             html += '        <li><a href="#toc-search" role="tab"><i class="fa fa-search"></i></a></li>';
+            html += '        <li><a href="#toc-result" role="tab"><i class="fa fa-list"></i></a></li>';
         }
-        html += '        <li><a href="#toc-result" role="tab"><i class="fa fa-list"></i></a></li>';
         html += '    </ul>';
-                
-        html += '    <ul role="tablist">';
-        html += '        <li><a href="#toc-profile" role="tab"><i class="fa fa-user"></i></a></li>';
-        html += '    </ul>';
+        if (!window.isMobile) {      
+            html += '    <ul role="tablist">';
+            html += '        <li><a href="#toc-profile" role="tab"><i class="fa fa-user"></i></a></li>';
+            html += '    </ul>';
+        }
         html += '</div>';
                 
         html += '<div class="leaflet-sidebar-content">';
@@ -56,15 +57,14 @@ Toc.prototype = {
             html += '    <div class="leaflet-sidebar-pane" id="toc-search">';
             html += '        <h1 class="leaflet-sidebar-header">Buscar<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';
             html += '    </div>';
+            html += '    <div class="leaflet-sidebar-pane" id="toc-result">';
+            html += '        <h1 class="leaflet-sidebar-header">Resultados<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';
+            html += '        <div style="margin-top: 10px;" id="toc-result-content">No hay resultados que mostrar</div>';
+            html += '    </div>';
+            html += '    <div class="leaflet-sidebar-pane" id="toc-profile">';
+            html += '       <h1 class="leaflet-sidebar-header">Perfil de usuario<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';  
+            html += '    </div>';
         }
-        html += '    <div class="leaflet-sidebar-pane" id="toc-result">';
-        html += '        <h1 class="leaflet-sidebar-header">Resultados<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';
-        html += '        <div style="margin-top: 10px;" id="toc-result-content">No hay resultados que mostrar</div>';
-        html += '    </div>';
-
-        html += '    <div class="leaflet-sidebar-pane" id="toc-profile">';
-        html += '       <h1 class="leaflet-sidebar-header">Perfil de usuario<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>';  
-        html += '    </div>';
         html += '</div>';
         html += '</div>';
 

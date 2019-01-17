@@ -1,5 +1,6 @@
-function View3D(map) {
+function View3D(map, overlays) {
     this.map = map;
+    this.overlays = overlays;
     this.ww = null;
     this.control = null;
     this.initialize(); 
@@ -15,6 +16,7 @@ View3D.prototype = {
         this.control = L.easyButton('fa-globe', function(btn, m){
             $('#map').addClass('hidden');
             $('#canvas-wrap').removeClass('hidden');
+            $('.goto-2d').css('display', 'block');
             _this.ww = new WorldWind.WorldWindow("canvasOne");
             //_this.ww.addLayer(new WorldWind.BMNGOneImageLayer());
             //_this.ww.addLayer(new WorldWind.BMNGLandsatLayer());
@@ -35,12 +37,17 @@ View3D.prototype = {
             // Redraw the WorldWindow.
             _this.ww.redraw();
 
-            _this.loadLayers(["camineria:cr_alcantarillas","camineria:cr_baden","camineria:cr_obstaculo","camineria:cr_paso","camineria:cr_senyal","camineria:cr_puente"]);
+            for (var i in _this.overlays.overlays) {
+                _this.loadLayer(_this.overlays.overlays[i]);
+            }
+
+            //_this.loadLayers(["camineria:cr_alcantarillas","camineria:cr_baden","camineria:cr_obstaculo","camineria:cr_paso","camineria:cr_senyal","camineria:cr_puente"]);
         }, 'Vista 3D');
 
         $('.goto-2d').on('click', function(){
             $('#map').removeClass('hidden');
             $('#canvas-wrap').addClass('hidden');
+            $('.goto-2d').css('display', 'none');
             _this.viewControls = null;
             _this.ww = null;
             _this.control = null;
@@ -55,11 +62,43 @@ View3D.prototype = {
         return this.ww;
     },
 
+    loadLayer: function(layer) {
+        var _this = this;
+
+        if (layer.StyledLayerControl && layer.StyledLayerControl.wmsUrl) {
+            var serviceAddress = layer.StyledLayerControl.wmsUrl + "?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0";
+
+            $.ajax({
+                url: serviceAddress,
+                async: false
+
+            }).done(function(xmlDom) {
+                // Create a WmsCapabilities object from the XML DOM
+                var wms = new WorldWind.WmsCapabilities(xmlDom);
+                // Retrieve a WmsLayerCapabilities object by the desired layer name
+                var wmsLayerCapabilities = wms.getNamedLayer(layer.name.split(':')[1]);
+                // Form a configuration object from the WmsLayerCapability object
+                var wmsConfig = WorldWind.WmsLayer.formLayerConfiguration(wmsLayerCapabilities);
+                // Modify the configuration objects title property to a more user friendly title
+                wmsConfig.title = wmsLayerCapabilities.title;
+                // Create the WMS Layer from the configuration object
+                var wmsLayer = new WorldWind.WmsLayer(wmsConfig);
+
+                // Add the layers to WorldWind and update the layer manager
+                _this.ww.addLayer(wmsLayer);
+
+            }).fail(function(error) {
+                console.log("There was a failure retrieving the capabilities document: " + text + " exception: " + exception);
+            });
+        }
+        
+    },
+
     loadLayers: function(layers) {
         var _this = this;
 
         // Web Map Service information from NASA's Near Earth Observations WMS
-        var serviceAddress = "http://geoportal.opp.com/geoserver/wms?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0";
+        var serviceAddress = window.serviceURL + "/geoserver/wms?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0";
 
         $.get(serviceAddress)
             .done(function (xmlDom) {
@@ -71,7 +110,7 @@ View3D.prototype = {
                     // Form a configuration object from the WmsLayerCapability object
                     var wmsConfig = WorldWind.WmsLayer.formLayerConfiguration(wmsLayerCapabilities);
                     // Modify the configuration objects title property to a more user friendly title
-                    wmsConfig.title = "Average Surface Temp";
+                    wmsConfig.title = wmsLayerCapabilities.title;
                     // Create the WMS Layer from the configuration object
                     var wmsLayer = new WorldWind.WmsLayer(wmsConfig);
 

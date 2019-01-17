@@ -60,7 +60,9 @@ Login.prototype = {
                 async: false
         
             }).
-            done(function(resp) {})
+            done(function(resp) {
+                location.href = window.serviceURL + '/visor';
+            })
             .fail(function(error) {});
         });
     }
