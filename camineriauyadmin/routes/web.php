@@ -71,7 +71,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('viewer_logout', 'Auth\LoginController@logout')->name('logout');
     Route::get('home', function () {
         $user = Auth::user();
-        return view('resumen', ['departments'=> $user->departments, 'userOpen'=>$user->changeRequests()->open()->count(), 'allOpen'=> ChangeRequest::open()->count()]);
+        return view('resumen', ['departments'=> $user->departments()->orderBy('code')->get(), 'userOpen'=>$user->changeRequests()->open()->count(), 'allOpen'=> ChangeRequest::open()->count()]);
     })->name('home');
     Route::get('seleccionar_departamento', function(){
         // Lo redirijo a /home, ya que Laravel se empeña en redirigir a esta dirección
