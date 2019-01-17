@@ -119,5 +119,13 @@ return [
             resource_path('views/vendor/mail'),
         ],
     ],
+    // deshabilitamos la verificación del certificado, ya que no es válido
+    'stream' => [
+        'ssl' => [
+            'allow_self_signed' => true,
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+        ],
+    ],
 
 ];
