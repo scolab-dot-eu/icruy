@@ -13,6 +13,30 @@ use App\ChangeRequest;
 
 class DepartmentConfigApiController extends Controller
 {
+    // TODO: esto debería obtenerse de la configuración
+    const WFS_CAMINERIA_LAYERNAME = [
+        "UYAR" => "caminerias_intendencias:v_camineria_artigas",
+        "UYCA" => "caminerias_intendencias:v_camineria_canelones",
+        "UYCL" => "caminerias_intendencias:v_camineria_cerro_largo",
+        "UYCO" => "caminerias_intendencias:v_camineria_colonia",
+        "UYDU" => "caminerias_intendencias:v_camineria_durazno",
+        "UYFS" => "caminerias_intendencias:v_camineria_flores",
+        "UYFD" => "caminerias_intendencias:v_camineria_florida",
+        "UYLA" => "caminerias_intendencias:v_camineria_lavalleja",
+        "UYMA" => "caminerias_intendencias:v_camineria_maldonado",
+        "UYMO" => "caminerias_intendencias:v_camineria_montevideo",
+        "UYPA" => "caminerias_intendencias:v_camineria_paysandu",
+        "UYRN" => "caminerias_intendencias:v_camineria_rio_negro",
+        "UYRV" => "caminerias_intendencias:v_camineria_rivera",
+        "UYRO" => "caminerias_intendencias:v_camineria_rocha",
+        "UYSA" => "caminerias_intendencias:v_camineria_salto",
+        "UYSJ" => "caminerias_intendencias:v_camineria_san_jose",
+        "UYSO" => "caminerias_intendencias:v_camineria_soriano",
+        "UYTA" => "caminerias_intendencias:v_camineria_tacuarembo",
+        "UYTT" => "caminerias_intendencias:v_camineria_treinta_y_tres"
+        
+    ];
+    
     /**
      * Display a listing of the resource.
      *
@@ -28,6 +52,29 @@ class DepartmentConfigApiController extends Controller
         $baselayers = [];
         $baselayers[] = ['type'=>'empty', 'name'=>'empty', 'title'=>'Capa vacía', 'visible'=>false];
         $overlays = [];
+        // FIXME: añadimos a piñón las capas de caminería
+        $overlays['Capas de apoyo'][] = [
+            'type'=>'wfs',
+            'url'=> 'http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wfs',
+            'wms_url'=> 'http://geoservicios.mtop.gub.uy/geoserver/caminerias_intendencias/wms',
+            'name'=> DepartmentConfigApiController::WFS_CAMINERIA_LAYERNAME[$department_code],
+            'title'=> 'Caminería '.$dep->name,
+            'visible'=> false,
+            'editable'=> false, //true,
+            'showTable'=> false,
+            'showInSearch'=> true,
+            'download'=> true,
+            'hasMetadata'=> false,
+            'metadata'=> '',
+            'geom_type'=> 'line',
+            'geom_style'=> 'line',
+            'style'=> [
+                'color'=> '#848484',
+                'weight'=> 2,
+                'opacity'=> 0.65
+             ]
+        ];
+        Log::error($overlays);
         foreach (SupportLayerDef::all() as $lyr) {
             if ($lyr->isbaselayer) {
                 $baselayers[] = [
