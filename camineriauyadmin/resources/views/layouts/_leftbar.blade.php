@@ -47,9 +47,9 @@
             <div id="collapseTwo" class="collapse{!! (Route::is(['users.*', 'editablelayerdefs.*', 'supportlayerdefs.*', 'roles.*'])) ? ' show' : '' !!}" aria-labelledby="headingTwo" data-parent="#sidebar">
                 <div class="card-body">
                 <ul class="list-group list-group-flush" id="permissionsSubmenu">
-                    <li class="{!! (Route::is('roles.*')) ? ' active' : '' !!}">
+                    <!--  <li class="{!! (Route::is('roles.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('roles.index') !!}">{{ __('Roles') }}</a>
-                    </li>
+                    </li> -->
                     <li class="{!! (Route::is('users.index')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="/dashboard/users">{{ __('Usuarios') }}</a>
                     </li>
