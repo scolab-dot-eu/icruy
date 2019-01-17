@@ -9,6 +9,7 @@ use App\Http\Requests\UserCreateFormRequest;
 use App\Http\Requests\UserUpdateFormRequest;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Department;
 
@@ -69,28 +70,8 @@ class UserController extends Controller
     }
     
     private function setDepartments(Request $request, User $user) {
-        if ($request->has('departments')) {
-            $deps_inputs = $request->input('departments');
-            $all_departments = Department::all();
-            foreach ($all_departments as $current_dep) {
-                if (array_key_exists($current_dep->code, $deps_inputs)) {
-                    error_log('attaching');
-                    error_log(json_encode($current_dep));
-                    $user->departments()->attach($current_dep);
-                    error_log('contains');
-                    //$user->refresh();
-                    error_log(json_encode($user->departments->contains($current_dep)));
-                }
-                else {
-                    error_log('detaching');
-                    error_log(json_encode($current_dep));
-                    $user->departments()->detach($current_dep);
-                }
-            }
-        }
-        else {
-            $user->departments()->detach();
-        }
+        $selected_deps = [];
+        $user->departments()->sync($selected_deps, true);
     }
     
     private function setRoles(Request $request, User $user) {
