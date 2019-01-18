@@ -50,10 +50,12 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->save();
         
         $lyr = new SupportLayerDef();
-        $lyr->name = 'u19600217:c004';
+        //$lyr->name = 'u19600217:c004';
+        $lyr->name = 'departamentos';
         $lyr->title = 'Departamentos';
         $lyr->protocol = 'wms';
-        $lyr->url = 'https://www.dinama.gub.uy/geoserver/u19600217/wms?';
+        $lyr->url = 'http://geoservicios.mtop.gub.uy/geoserver/geoportal_capas_base/wms';
+        //$lyr->url = 'https://www.dinama.gub.uy/geoserver/u19600217/wms?';
         $lyr->isbaselayer = false;
         $lyr->visible = false;
         $lyr->layergroup = 'Capas de apoyo';
@@ -61,12 +63,23 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->conf = '{"metadata": "", "showTable": false, "hasMetadata": false, "showInSearch": false}';
         $lyr->save();
 
+        $lyr = new SupportLayerDef();
+        $lyr->name = 'u19600217:c258';
+        $lyr->title = 'Espejos de agua';
+        $lyr->protocol = 'wms';
+        $lyr->url = 'http://www.dinama.gub.uy/geoserver/u19600217/wms';
+        $lyr->isbaselayer = false;
+        $lyr->visible = false;
+        $lyr->layergroup = 'Capas de apoyo';
+        $lyr->api_key = '';
+        $lyr->conf = '{"metadata": "", "showTable": false, "hasMetadata": false, "showInSearch": false}';
+        $lyr->save();
         
         $lyr = new SupportLayerDef();
         $lyr->name = 'u19600217:c257';
         $lyr->title = 'Cursos de agua';
         $lyr->protocol = 'wms';
-        $lyr->url = 'https://www.dinama.gub.uy/geoserver/u19600217/wms?';
+        $lyr->url = 'http://www.dinama.gub.uy/geoserver/u19600217/wms';
         $lyr->isbaselayer = false;
         $lyr->visible = false;
         $lyr->layergroup = 'Capas de apoyo';
