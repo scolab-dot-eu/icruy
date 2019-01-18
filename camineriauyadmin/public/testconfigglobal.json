@@ -57,7 +57,7 @@
                     "metadata": "https://vanilla.geocat.net/geonetwork/srv/spa/catalog.search;jsessionid=0590273B370B98076472E1023A494182#/metadata/spacarcapaemerppmax25awmstematica20140408"
                 },{
                     "type": "wms",
-                    "url": "http://geoservicios.mtop.gub.uy:80/geoserver/geoportal_capas_base/departamentos/ows",
+                    "url": "http://geoservicios.mtop.gub.uy/geoserver/geoportal_capas_base/wms",
                     "name": "departamentos",
                     "title": "Departamentos",
                     "visible": false,

@@ -39,6 +39,7 @@ class SupportLayerDefController extends Controller
     public function store(SupportLayerDefFormRequest $request)
     {
         $validated = $request->validated();
+        $validated['url'] = explode('?', $validated['url'])[0];
         Helpers::set_boolean_value($validated, 'isbaselayer');
         Helpers::set_boolean_value($validated, 'visible');
         SupportLayerDef::create($validated);
@@ -78,6 +79,7 @@ class SupportLayerDefController extends Controller
     public function update(SupportLayerDefFormRequest $request, SupportLayerDef $supportlayerdef)
     {
         $validated = $request->validated();
+        $validated['url'] = explode('?', $validated['url'])[0];
         Helpers::set_boolean_value($validated, 'isbaselayer');
         Helpers::set_boolean_value($validated, 'visible');
         $supportlayerdef->update($validated);
