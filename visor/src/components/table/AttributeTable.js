@@ -118,7 +118,12 @@ AttributeTable.prototype = {
         var _this = this;
         layer.eachLayer(function (l) {
             if (l.feature.id == fid) {
-                _this.map.setView(l.getLatLng(), 17);
+                if (l.getLatLng) {
+                    _this.map.setView(l.getLatLng(), 17);
+                }
+                else {
+                    _this.map.fitBounds(l.getBounds());
+                }
             }
         });
     }
