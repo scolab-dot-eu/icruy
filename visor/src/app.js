@@ -4,7 +4,6 @@
 
 //window.serviceURL = 'http://geoportal.opp.com';
 window.serviceURL = 'http://icr-test.opp.gub.uy';
-//window.serviceURL = 'https://geoportal.opp.localhost';
 //window.serviceURL = 'http://geoportal.opp.localhost';
 //window.serviceURL = 'http://localhost:8000';
 window.editionMode = false;
