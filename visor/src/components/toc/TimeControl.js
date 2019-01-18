@@ -21,7 +21,7 @@ TimeControl.prototype = {
             player: this.player,
             timeDimension: this.timeDimension,
             position: 'topcenter',
-            autoPlay: false,
+            autoPlay: true,
             playButton: false,
             backwardButton: false,
             forwardButton: false,
@@ -38,7 +38,7 @@ TimeControl.prototype = {
         }
 
         var wmsLayer = L.tileLayer.wms(layer.StyledLayerControl.wmsUrl, {
-            layers: layer.StyledLayerControl.historyLayerName,
+            layers: layer.StyledLayerControl.historyLayerName.split(':')[1],
             format: 'image/png',
             transparent: true
         });

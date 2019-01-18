@@ -114,7 +114,7 @@ html, body {
     }
 }
 
-.ui-dialog { z-index: 1000 !important ; min-width: 50%;}
+.ui-dialog { z-index: 10000 !important ; min-width: 50%;}
 
 .ui-widget-header {
     border: 1px solid #dddddd/*{borderColorHeader}*/;

@@ -649,9 +649,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ffcccc",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -669,9 +669,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ffcccc",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -689,9 +689,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#f6f507",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -709,9 +709,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ffdea9",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -729,9 +729,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ffdea9",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -749,9 +749,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ffcccc",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -769,9 +769,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#f6f507",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -789,9 +789,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#98dd4a",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -809,9 +809,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ffdea9",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -829,9 +829,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#98dd4a",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -849,9 +849,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ebcef2",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -869,9 +869,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#f6f507",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -889,9 +889,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ffdea9",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -909,9 +909,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#f6f507",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -929,9 +929,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#f6f507",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -949,9 +949,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ebcef2",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -969,9 +969,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#98dd4a",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -989,9 +989,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#98dd4a",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 },{
                     "type": "wfs",
@@ -1009,9 +1009,9 @@
                     "geom_type": "line",
                     "geom_style": "line",
                     "style": {
-                        "color": "#848484",
+                        "color": "#ebcef2",
                         "weight": 2,
-                        "opacity": 0.65
+                        "opacity": 1.0
                     }
                 }
                 

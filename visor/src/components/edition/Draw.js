@@ -282,6 +282,9 @@ Draw.prototype = {
                 element.feature.properties.status = 'PENDIENTE:CREACIÓN';
                 element.feature.id = _this.editableLayer.name.split(':')[1] + '.' + _this.getRndInteger(9999, 99999);
                 element.feature.properties.id = resp.feature.properties.id;
+                var style = element.options;
+                style.fillOpacity = 0.1;          
+                element.setStyle(style);
             }
             _this.map.closePopup();
             $('#toc-result-content').empty();

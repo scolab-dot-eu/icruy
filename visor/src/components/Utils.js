@@ -51,7 +51,11 @@ Utils.prototype = {
                 } else if (fields[i].type == 'intdecimal') {
                     html += '<div class="form-group">';
                     html +=     '<label for="' + key + '">' + fields[i].label + '</label>';
-                    html +=     '<input style="font-size: 12px;" type="number" class="form-control" name="' + key + '" id="' + key + '" value="' + value + '">';
+                    if (fields[i].name == 'id') {
+                        html += '<input readOnly style="font-size: 12px;" type="number" class="form-control" name="' + key + '" id="' + key + '" value="' + value + '">';
+                    } else {
+                        html += '<input style="font-size: 12px;" type="number" class="form-control" name="' + key + '" id="' + key + '" value="' + value + '">';
+                    }
                     html += '</div>';
 
                 } else if (fields[i].type == 'decimal' || fields[i].type == 'double') {
