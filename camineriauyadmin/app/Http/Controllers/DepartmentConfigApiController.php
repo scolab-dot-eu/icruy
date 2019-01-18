@@ -61,7 +61,7 @@ class DepartmentConfigApiController extends Controller
             'title'=> 'Caminería '.$dep->name,
             'visible'=> false,
             'editable'=> false, //true,
-            'showTable'=> false,
+            'showTable'=> true,
             'showInSearch'=> true,
             'download'=> true,
             'hasMetadata'=> false,
