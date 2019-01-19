@@ -11,6 +11,7 @@
                 <td>{{ __('Email') }}</td>
                 <td>{{ __('Teléfono') }}</td>
                 <td>{{ __('Email verificado') }}</td>
+                <td></td>
             </tr>
         </thead>
         <tbody>
