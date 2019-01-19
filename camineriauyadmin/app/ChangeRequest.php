@@ -282,10 +282,27 @@ class ChangeRequest extends Model
                             $value = null;
                         }
                     }
-                    /*
                      elseif ($field_def['type']=='decimal') {
-                     //FIXME
+                         $typeparams = array_get($field_def, 'typeparams', '');
+                         $typeparamsList = explode(",", $typeparams);
+                         if (count($typeparamsList)==2) {
+                             $scale = intval($typeparamsList[0]);
+                             $precision = intval($typeparamsList[1]);
+                             $maxintlength = ($scale - $precision);
+                         }
+                         elseif (count($typeparamsList)==1) {
+                             $maxintlength = intval($typeparams);
+                         }
+                         else {
+                             $maxintlength = -1;
+                         }
+                         $intPart = intval($value);
+                         if ($maxintlength>-1 && strlen((string)$intPart)>$maxintlength) {
+                             $errors['feature.properties.'.$field] = 'Excede longitud máxima de campo: '.$maxintlength;
+                         }
+                         // FIXME: comprobar también parte decimal
                      }
+                     /*
                      elseif ($field_def['type']=='boolean') {
                      //FIXME
                      }*/
