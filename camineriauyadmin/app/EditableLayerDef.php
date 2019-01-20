@@ -43,7 +43,7 @@ class EditableLayerDef extends Model
         return "crh".substr($tablename, 2);
     }
     
-    public static function createTable($name, $abrev, $fields_str, $geom_type) {
+    public static function createTable($name, $fields_str, $geom_type) {
         EditableLayerDef::doCreateTable($name, $fields_str, $geom_type);
         EditableLayerDef::doCreateTable(EditableLayerDef::getHistoricTableName($name), $fields_str, $geom_type, true);
     }
