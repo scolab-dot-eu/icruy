@@ -20,7 +20,8 @@ class CreateUsersTable extends Migration
             $table->string('phone')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->boolean('enabled')->default(True); // FIXME: currently not honoured for login
+            $table->timestamp('password_updated')->nullable();
+            $table->boolean('enabled')->default(True);
             $table->rememberToken();
             $table->timestamps();
         });

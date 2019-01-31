@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UserCreateFormRequest extends FormRequest
@@ -26,7 +27,14 @@ class UserCreateFormRequest extends FormRequest
         return [
             'name'    => 'required|unique:departments',
             'email'    => 'required|email',
-            'password'    => 'required|min:8',
+            'password'    => ['required', 'min:8', function ($attribute, $value, $fail)
+            {
+                if (!User::checkPasswordClasses($value)) {
+                    $fail('La contraseña debe contener al menos 3 características: minúsculas, mayúsculas, números, caracteres especiales o extendidos');
+                }
+            }
+            ],
+            'password_confirm'    => 'nullable|same:password',
             'phone'    => 'nullable',
             
         ];

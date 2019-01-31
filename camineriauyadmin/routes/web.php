@@ -45,6 +45,8 @@ Route::prefix('dashboard')
         Route::resource('users', 'UserController', ['except' => [
             'show'
         ]]);
+        Route::post('users/{id}/enable', 'UserController@enable')->name('users.enable');
+        Route::post('users/{id}/disable', 'UserController@disable')->name('users.disable');
         Route::resource('interventions', 'InterventionController', ['except' => [
             'show'
         ]]);
@@ -66,6 +68,13 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('viewer_logout', 'Auth\LoginController@logout')->name('logout');
     Route::get('home', function () {
         $user = Auth::user();
+        /*
+        if ($user->isAdmin()) {
+            $departments = Department::orderBy('code')->get();
+        }
+        else {
+            $departments = $user->departments()->orderBy('code')->get();
+        }*/
         return view('resumen', ['departments'=> $user->departments()->orderBy('code')->get(), 'userOpen'=>$user->changeRequests()->open()->count(), 'allOpen'=> ChangeRequest::open()->count()]);
     })->name('home');
     Route::get('seleccionar_departamento', function(){

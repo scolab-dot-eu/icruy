@@ -129,4 +129,13 @@ class User extends Authenticatable
         }
         return false;
     }
+    
+    public static function checkPasswordClasses($pass) {
+        $lower_case = preg_match("/[a-z]/", $pass);
+        $upper_case = preg_match("/[A-Z]/", $pass);
+        $digit = preg_match("/[\d]/", $pass);
+        $special = preg_match("/[^a-zA-Z0-9]+/", $pass);
+        $count = $lower_case + $upper_case + $digit + $special;
+        return ($count>=3);
+    }
 }

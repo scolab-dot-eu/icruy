@@ -4,7 +4,7 @@
 
     <div class="row" style="margin-top: 25px;">
 
-        <div class="col-md-8 col-sm-12">
+        <div class="col">
 
             <h3>
                 {{ __('Actualizar usuario') }}

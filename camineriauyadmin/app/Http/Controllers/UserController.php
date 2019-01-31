@@ -198,4 +198,19 @@ class UserController extends Controller
         $user->save();
         event(new PasswordReset($user));
     }
+    
+    public function enable(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $user->enabled = True;
+        $user->save();
+        return redirect()->route('users.index');
+    }
+    public function disable(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $user->enabled = False;
+        $user->save();
+        return redirect()->route('users.index');
+    }
 }

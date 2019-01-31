@@ -1,25 +1,35 @@
         <div class="container">
           <div class="row">
-            <div class="col">
+            <div class="col-sm-12 col-lg-4">
                 <div class="form-group">
                     {!! Form::label('email', __('Email')) !!}
-                    {!! Form::email('email', null, ['class' => 'form-control', 'autocomplete' => 'off']) !!}
+                    {!! Form::email('email', null, ['class' => 'form-control', 'autocomplete' => 'nuevo-usuario-icr']) !!}
                 </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
                 <div class="form-group">
                     {!! Form::label('password', __('Contraseña')) !!}
-                    <!--  workarounds for password autocomplete -->
-                    {!! Form::email('not-an-email', null, ['class' => 'form-control hidden d-none', 'autocomplete' => 'new-password']) !!}
-                    <input name="not-a-password" type="password" value="" style="display: none">
-                    <!--  end workarounds for password autocomplete -->
-                    {!! Form::password('password', null, ['class' => 'form-control', 'autocomplete' => 'new-password']) !!}
+                    {!! Form::password('password', ['class' => 'form-control', 'autocomplete' => 'nueva-clave-icr']) !!}
                 </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="form-group">
+                    {!! Form::label('password_confirm', __('Confirmar contraseña')) !!}
+                    {!! Form::password('password_confirm', ['class' => 'form-control', 'autocomplete' => 'nueva-clave-icr']) !!}
+                </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
                 <div class="form-group">
                     {!! Form::label('name', __('Nombre')) !!}
-                    {!! Form::text('name', null, ['class' => 'form-control']) !!}
+                    {!! Form::text('name', null, ['class' => 'form-control', 'autocomplete' => 'off']) !!}
                 </div>
+            </div>
+            <div class="col-sm-6">
                 <div class="form-group">
                     {!! Form::label('phone', __('Teléfono')) !!}
-                    {!! Form::text('phone', null, ['class' => 'form-control']) !!}
+                    {!! Form::text('phone', null, ['class' => 'form-control', 'autocomplete' => 'off']) !!}
                 </div>
             </div>
           </div>
