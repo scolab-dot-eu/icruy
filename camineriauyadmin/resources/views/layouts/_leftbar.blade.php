@@ -23,13 +23,13 @@
                     <li class="{!! (Route::is('changerequests.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('changerequests.index') !!}">{{ __('Peticiones de cambios') }}</a>
                     </li>
-                    <li class="{!! (Route::is('interventions.*')) ? ' active' : '' !!}">
-                        <a class="list-group-item" href="{!! route('interventions.index') !!}">{{ __('Intervenciones') }}</a>
-                    </li>
                     <!-- 
                     <li class="{!! (Route::is('mtopchangerequests.index')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="">{{ __('Peticiones de cambios MTOP') }}</a>
                     </li>-->
+                    <li class="{!! (Route::is('interventions.*')) ? ' active' : '' !!}">
+                        <a class="list-group-item" href="{!! route('interventions.index') !!}">{{ __('Intervenciones') }}</a>
+                    </li>
                 </ul>
                 </div>
             </div>
@@ -50,13 +50,13 @@
                     <!--  <li class="{!! (Route::is('roles.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('roles.index') !!}">{{ __('Roles') }}</a>
                     </li> -->
-                    <li class="{!! (Route::is('users.index')) ? ' active' : '' !!}">
+                    <li class="{!! (Route::is('users.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="/dashboard/users">{{ __('Usuarios') }}</a>
                     </li>
-                    <li class="{!! (Route::is('editablelayerdefs.index')) ? ' active' : '' !!}">
+                    <li class="{!! (Route::is('editablelayerdefs.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="/dashboard/editablelayerdefs">{{ __('Capas del inventario') }}</a>
                     </li>
-                    <li class="{!! (Route::is('supportlayerdefs.index')) ? ' active' : '' !!}">
+                    <li class="{!! (Route::is('supportlayerdefs.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="/dashboard/supportlayerdefs">{{ __('Capas base o de apoyo') }}</a>
                     </li>
                 </ul>
