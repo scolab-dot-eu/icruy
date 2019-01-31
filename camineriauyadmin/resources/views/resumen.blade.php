@@ -10,13 +10,14 @@
             Existen <a href="{!! route('changerequests.index') !!}"><span style="font-weight: bold;">{{ $allOpen }}</span> peticiones</a> pendientes de validar. 
         </div>
       </div>
-      @endif
+      @else
       <div class="row">
         <div class="col">
             Tienes <a href="{!! route('changerequests.index') !!}"><span style="font-weight: bold;">{{ $userOpen }}</span> peticiones</a> abiertas.
         </div>
       </div>
     </div>
+      @endif
     <h4 class="titulo-resumen dashboard-text">{{ __('Departamentos') }}</h4>
     <ul class="list-group">
         @foreach($departments as $dep)
