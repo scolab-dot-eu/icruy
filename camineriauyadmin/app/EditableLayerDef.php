@@ -16,7 +16,7 @@ class EditableLayerDef extends Model
     protected $table = 'editablelayerdefs';
     
     protected $fillable = [
-        'name', 'abrev', 'title', 'geom_type', 'protocol',
+        'name', 'title', 'geom_type', 'protocol',
         'url', 'fields', 'geom_style', 'style',
         'metadata', 'conf'
     ];
@@ -219,6 +219,21 @@ class EditableLayerDef extends Model
         });
         
         if (!$historic) {
+            DB::unprepared("
+                INSERT INTO `camineria`.`geometry_columns`
+                    (`F_TABLE_NAME`,
+                    `F_GEOMETRY_COLUMN`,
+                    `COORD_DIMENSION`,
+                    `SRID`,
+                    `TYPE`)
+                VALUES
+                    ('".$name."',
+                    'thegeom',
+                    2,
+                    0,
+                    'POINT')
+            ");
+            
             $historicName = EditableLayerDef::getHistoricTableName($name);
             DB::unprepared("
                 CREATE TRIGGER ".$name."_before_insert
