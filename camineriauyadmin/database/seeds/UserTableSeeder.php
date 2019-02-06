@@ -22,7 +22,7 @@ class UserTableSeeder extends Seeder
         $user = new User();
         $user->name = 'Administrador de prueba';
         $user->email = 'admin.cruy@yopmail.com';
-        $user->password = bcrypt('4testpurposes123');
+        $user->password = bcrypt('4Testpurposes123');
         $user->save();
         $user->roles()->attach($role_admin);
         $user->roles()->attach($role_manager);
@@ -34,7 +34,7 @@ class UserTableSeeder extends Seeder
         $user = new User();
         $user->name = 'Gestor de prueba';
         $user->email = 'ges1.cruy@yopmail.com';
-        $user->password = Hash::make('4testpurposes123');
+        $user->password = Hash::make('4Testpurposes123');
         $user->save();
         $user->roles()->attach($role_manager);
         
@@ -46,7 +46,7 @@ class UserTableSeeder extends Seeder
         $user = new User();
         $user->name = 'Gestor de prueba';
         $user->email = 'mges1.cruy@yopmail.com';
-        $user->password = Hash::make('4testpurposes123');
+        $user->password = Hash::make('4Testpurposes123');
         $user->save();
         
         $user->roles()->attach($role_mtopmanager);
