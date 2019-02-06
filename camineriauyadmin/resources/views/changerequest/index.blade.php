@@ -68,7 +68,7 @@
                 @else
                 <td></td>
                 @endif
-                <td>{{ $value->department }}</td>
+                <td>{{ $value->departamento }}</td>
                 <td>{{ $value->created_at_formatted }}</td>
                 <td>
                     <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/changerequests/' . $value->id . '/edit') }}">{{ __('Consultar') }}</a>
