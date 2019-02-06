@@ -22,8 +22,10 @@ class CreateSupportlayerdefsTable extends Migration
             $table->string('layergroup', 200);
             $table->text('url')->nullable();
             $table->text('api_key')->nullable();
-            $table->text('metadata')->nullable();
             $table->string('protocol');
+            $table->boolean('showTable')->default(True);
+            $table->boolean('showInSearch')->default(True);
+            $table->text('metadata', 200)->nullable();
             $table->json('conf')->nullable();
             $table->timestamps();
         });

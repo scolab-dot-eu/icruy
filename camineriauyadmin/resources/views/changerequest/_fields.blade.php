@@ -22,8 +22,12 @@
           <div class="row">
             <div class="col-sm-7">
                 <div class="form-group">
-                    {!! Form::label('author[email]', __('Autor')) !!}
-                    {!! Form::text('author[email]', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                    <label for="author_desc">Autor</label>
+                    @if ($changerequest->author)
+                        <input readonly class="form-control" name="author_desc" type="text" value="{{ $changerequest->author->name }} ({{ $changerequest->author->email }})" id="author_desc">
+                    @else
+                        <input readonly class="form-control" name="author_desc" type="text" value="" id="author_desc">
+                    @endif
                 </div>
             </div>
             <div class="col-sm-5">
@@ -36,8 +40,12 @@
           <div class="row">
             <div class="col-sm-7">
                 <div class="form-group">
-                    {!! Form::label('validator[email]', __('Revisada por')) !!}
-                    {!! Form::text('validator[email]', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                    <label for="validator_desc">Revisada por</label>
+                    @if ($changerequest->validator)
+                        <input readonly class="form-control" name="validator_desc" type="text" value="{{ $changerequest->validator->name }} ({{ $changerequest->validator->email }})" id="validator_desc">
+                    @else
+                        <input readonly class="form-control" name="validator_desc" type="text" value="" id="validator_desc">
+                    @endif
                 </div>
             </div>
             <div class="col-sm-5">

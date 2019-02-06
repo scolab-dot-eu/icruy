@@ -51,6 +51,7 @@
                 <td>{{ __('Operación') }}</td>
                 <td>{{ __('Estado') }}</td>
                 <td>{{ __('Autor') }}</td>
+                <td>{{ __('Departamento') }}</td>
                 <td>{{ __('Fecha solicitud') }}</td>
                 <td></td>
             </tr>
@@ -62,7 +63,12 @@
                 <td>{{ $value->layer }}</td>
                 <td>{{ $value->operationLabel }}</td>
                 <td>{{ $value->statusLabel }}</td>
-                <td>{{ $value->author->email }}</td>
+                @if ($value->author)
+                <td>{{ $value->author->name }} ({{ $value->author->email }})</td>
+                @else
+                <td></td>
+                @endif
+                <td>{{ $value->department }}</td>
                 <td>{{ $value->created_at_formatted }}</td>
                 <td>
                     <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/changerequests/' . $value->id . '/edit') }}">{{ __('Consultar') }}</a>
