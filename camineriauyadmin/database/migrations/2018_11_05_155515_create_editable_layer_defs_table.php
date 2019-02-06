@@ -16,21 +16,17 @@ class CreateEditablelayerdefsTable extends Migration
         Schema::create('editablelayerdefs', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 200)->unique();
-            $table->string('abrev', 2)->unique();
             $table->string('title', 255);
             $table->string('geom_type', 10);
-            $table->string('protocol', 255);
-            $table->text('url', 200);
             $table->json('fields');
             $table->string('geom_style')->nullable();
             $table->json('style')->nullable();
-            /*
-            $table->boolean('visible');
-            $table->boolean('download');
-            $table->boolean('showTable');
-            $table->boolean('showInSearch');*/
+            $table->boolean('visible')->default(False);
+            $table->boolean('download')->default(True);
+            $table->boolean('showTable')->default(True);
+            $table->boolean('showInSearch')->default(True);
             $table->text('metadata', 200)->nullable();
-            $table->json('conf')->nullable();
+            $table->json('conf')->nullable()->default(null);
             $table->boolean('enabled')->default(True);
             $table->timestamps();
         });

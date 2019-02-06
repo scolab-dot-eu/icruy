@@ -9,7 +9,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7;
+use App\Exceptions\LayerCreationException;
+use App\Exceptions\SetStyleException;
+use App\Exceptions\StyleCreationException;
+use App\Exceptions\StyleUpdateException;
+use App\Exceptions\TableCreationException;
 
 class EditableLayerDef extends Model
 {
@@ -18,7 +25,7 @@ class EditableLayerDef extends Model
     protected $fillable = [
         'name', 'title', 'geom_type', 'protocol',
         'url', 'fields', 'geom_style', 'style',
-        'metadata', 'conf'
+        'metadata', 'conf', 'visible', 'download', 'showTable', 'showInSearch'
     ];
     
     public static function checkTableName($tablename) {
@@ -45,7 +52,12 @@ class EditableLayerDef extends Model
     
     public static function createTable($name, $fields_str, $geom_type) {
         EditableLayerDef::doCreateTable($name, $fields_str, $geom_type);
-        EditableLayerDef::doCreateTable(EditableLayerDef::getHistoricTableName($name), $fields_str, $geom_type, true);
+        try {
+            EditableLayerDef::doCreateTable(EditableLayerDef::getHistoricTableName($name), $fields_str, $geom_type, true);
+        }
+        catch(TableCreationException $e) {
+            Schema::dropIfExists($name);
+        }
     }
     
     public static function dropTable($name) {
@@ -321,7 +333,7 @@ class EditableLayerDef extends Model
             Log::error('Error creating table'.$name);
             Log::error(json_encode($errors));
             Schema::dropIfExists($name);
-            $error = \Illuminate\Validation\ValidationException::withMessages($errors);
+            $error = TableCreationException::withMessages($errors);
             throw $error;
         }
     }
@@ -373,16 +385,23 @@ class EditableLayerDef extends Model
                 ]
             ];
         }
-        
-        $response = $client->request('POST', $url, [
-            'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
-            'json' => $jsonBody
-        ]);
-        
-        if ($response->getStatusCode() != 201) {
-            Log::error('Error publishing layer'.$name);
-            // FIXME: which error should be raised
-            $error = \Illuminate\Validation\ValidationException::withMessages('Error publishing layer'.$name);
+        try {
+            $response = $client->request('POST', $url, [
+                'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+                'json' => $jsonBody
+            ]);
+            if ($response->getStatusCode() != 201) {
+                Log::error('Error publishing layer'.$name);
+                $error = LayerCreationException::withMessages(['Error'=>['No se pudo publicar la capa: '.$name]]);
+                throw $error;
+            }
+        } catch (RequestException $e) {
+            Log::error($e->getMessage());
+            Log::error(Psr7\str($e->getRequest()));
+            if ($e->hasResponse()) {
+                Log::error(Psr7\str($e->getResponse()));
+            }
+            $error = LayerCreationException::withMessages(['Error'=>['No se pudo publicar la capa: '.$name]]);
             throw $error;
         }
     }
@@ -409,23 +428,34 @@ class EditableLayerDef extends Model
         if ($response->getStatusCode() != 200) {
             Log::error('Error getting layer configuration: '.$layerName);
             // FIXME: which error should be raised
-            $error = \Illuminate\Validation\ValidationException::withMessages('Error getting layer configuration: '.$layerName);
+            $error = \Illuminate\Validation\ValidationException::withMessages(['Error'=>['No se pudo obtener la configuración de capa: '.$layerName]]);
             throw $error;
         }
         $layerConf = json_decode($response->getBody(), true);
         $qualifiedStyleName = $workspace.':'.$styleName;
         $styleUrl = $baseUrl .  "/rest/workspaces/" . $workspace . "/styles/" . $styleName . '.json';
         $layerConf['layer']['defaultStyle'] = ['name' => $qualifiedStyleName, 'workspace'=> $workspace, 'href' => $styleUrl];
-        error_log($layerConf);
-        $response = $client->request('PUT', $url, [
-            'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
-            'json' => $layerConf
-        ]);
-        
-        if ($response->getStatusCode() != 201) {
-            Log::error('Error setting layer style: '.$layerName);
-            // FIXME: which error should be raised
-            $error = \Illuminate\Validation\ValidationException::withMessages('Error setting layer style: '.$$layerName);
+        error_log(json_encode($layerConf));
+        try {
+            $response = $client->request('PUT', $url, [
+                'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+                'json' => $layerConf
+            ]);
+            if ($response->getStatusCode() != 200) {
+                Log::error('Error setting layer style: '.$layerName. ' - URL: '.$url);
+                Log::error(Psr7\str($response));
+                Log::error($response->getReasonPhrase());
+                Log::error($response->getBody());
+                $error = SetStyleException::withMessages(['Error'=>['No se pudo establecer el estilo de capa: '.$layerName]]);
+                throw $error;
+            }
+        } catch (RequestException $e) {
+            Log::error($e->getMessage());
+            Log::error(Psr7\str($e->getRequest()));
+            if ($e->hasResponse()) {
+                Log::error(Psr7\str($e->getResponse()));
+            }
+            $error = SetStyleException::withMessages(['Error'=>['No se pudo establecer el estilo de capa: '.$layerName]]);
             throw $error;
         }
     }
@@ -494,17 +524,60 @@ EOD;
         $baseUrl = env('GEOSERVER_URL');
         $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
         $url = $baseUrl . "/rest/workspaces/" . $workspace . "/styles";
-        error_log($url);
-        $response = $client->request('POST', $url, [
-            'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
-            'body' => $style,
-            'headers' => ['Content-Type' => 'application/vnd.ogc.sld+xml']
-        ]);
-        
-        if ($response->getStatusCode() != 201) {
-            Log::error('Error publishing layer'.$name);
-            // FIXME: which error should be raised
-            $error = \Illuminate\Validation\ValidationException::withMessages('Error publishing layer'.$name);
+        try {
+            $response = $client->request('POST', $url, [
+                'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+                'body' => $style,
+                'headers' => ['Content-Type' => 'application/vnd.ogc.sld+xml; charset=utf-8']
+            ]);
+            if ($response->getStatusCode() != 201) {
+                Log::error('Error publishing layer: '.$name.' - URL: '.$url);
+                Log::error(Psr7\str($response));                
+                Log::error($response->getStatusCode());
+                Log::error($response->getReasonPhrase());
+                Log::error($response->getBody());
+                $error = StyleCreationException::withMessages(['Error'=>['No se pudo publicar la capa: '.$name]]);
+                throw $error;
+            }
+        } catch (RequestException $e) {
+            Log::error($e->getMessage());
+            Log::error(Psr7\str($e->getRequest()));
+            if ($e->hasResponse()) {
+                Log::error(Psr7\str($e->getResponse()));
+            }
+            $error = StyleCreationException::withMessages(['Error'=>['No se pudo publicar la capa: '.$name]]);
+            throw $error;
+        }
+    }
+
+    public static function updateStyle($name, $title, $color) {
+        $style = EditableLayerDef::getCircleStyle($name, $title, $color);
+        $client = new Client();
+        $baseUrl = env('GEOSERVER_URL');
+        $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
+        $url = $baseUrl . "/rest/workspaces/" . $workspace . "/styles/" . $name;
+        try {
+            $response = $client->request('PUT', $url, [
+                'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
+                'body' => $style,
+                'headers' => ['Content-Type' => 'application/vnd.ogc.sld+xml; charset=utf-8']
+            ]);
+            if ($response->getStatusCode() != 200) {
+                Log::error('Error publishing layer: '.$name.' - URL: '.$url);
+                Log::error(Psr7\str($response));
+                Log::error($response->getStatusCode());
+                Log::error($response->getReasonPhrase());
+                Log::error($response->getBody());
+                $error = StyleUpdateException::withMessages(['Error'=>['No se pudo actualizar la capa: '.$name]]);
+                throw $error;
+            }
+        } catch (RequestException $e) {
+            Log::error($e->getMessage());
+            Log::error(Psr7\str($e->getRequest()));
+            if ($e->hasResponse()) {
+                Log::error(Psr7\str($e->getResponse()));
+            }
+            $error = StyleUpdateException::withMessages(['Error'=>['No se pudo actualizar la capa: '.$name]]);
             throw $error;
         }
     }

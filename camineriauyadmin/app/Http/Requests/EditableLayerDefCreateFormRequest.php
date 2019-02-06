@@ -48,22 +48,15 @@ class EditableLayerDefCreateFormRequest extends FormRequest
         }
         return [
             'name'    => 'regex:/^[a-zA-Z_][a-zA-Z0-9_]*$/u|unique:editablelayerdefs,name,'.$id,
-            'abrev'    => 'regex:/^[a-zA-Z_][a-zA-Z_]$/u|unique:editablelayerdefs,abrev,'.$id,
             'title'  => 'required',
             'geom_type' => 'required',
-            'protocol' => 'required',
-            'url' => 'required',
-            'fields'  => 'required',
-            'geom_style' => 'sometimes|nullable',
-            'style' => 'sometimes|nullable',
-            /*'style' => ['json', function ($attribute, $value, $fail) {
-                $jsonobj = json_decode($value);
-                if (!isset($jsonobj->fields)) {
-                    $fail('El atributo '.$attribute.' es inválido. La definición de campos es incorrecta');
-                }
-            }],*/
+            'color' => 'required|regex:/^#[a-fA-F0-9]{6}$/',
+            'fields'  => 'required|json',
             'metadata' => 'sometimes|nullable',
-            'conf'    => 'sometimes|nullable|json'
+            'visible' => 'sometimes|nullable',
+            'download' => 'sometimes|nullable',
+            'showTable' => 'sometimes|nullable',
+            'showInSearch' => 'sometimes|nullable'
         ];
     }
 }

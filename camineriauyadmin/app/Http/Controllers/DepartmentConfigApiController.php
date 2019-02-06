@@ -79,7 +79,6 @@ class DepartmentConfigApiController extends Controller
             if ($lyr->isbaselayer) {
                 $baselayers[] = [
                     'type'=>$lyr->protocol,
-                    //'url'=>$lyr->url,
                     'url'=>array_get($lyr, 'url', ''),
                     'name'=>$lyr->name,
                     'title'=>$lyr->title,
@@ -99,7 +98,6 @@ class DepartmentConfigApiController extends Controller
                 $conf['name'] = $lyr->name;
                 $conf['title'] = $lyr->title;
                 $conf['visible'] = $lyr->visible;
-                //$conf['api_key'] = $lyr, 'api_key', null);
                 $conf['api_key'] = array_get($lyr, 'api_key', '');
                 $conf['editable'] = false;
                 if (empty($lyr->metadata)) {
@@ -125,20 +123,26 @@ class DepartmentConfigApiController extends Controller
         $inventory_layers = [];
         $default_workspace = env('DEFAULT_GS_WORKSPACE','camineria');
         $wms_url = env('WMS_URL','');
+        $wfs_url = env('WFS_URL','');
+        $protocol = 'wfs';
         
         foreach (EditableLayerDef::where('enabled', 1)->get() as $lyr) {
             $conf = json_decode($lyr->conf, true);
             $conf['name'] = $default_workspace.":".$lyr->name;
-            $conf['abrev'] = $lyr->abrev;
             $conf['title'] = $lyr->title;
             $inventory_layers[] = $lyr->name;
-            $conf['type'] = $lyr->protocol;
-            $conf['url'] = $lyr->url;
+            $conf['type'] = $protocol;
+            $conf['url'] = $wfs_url;
             $conf['wms_url'] = $wms_url;
             $conf['history_layer_name'] = $default_workspace.":".EditableLayerDef::getHistoricTableName($lyr->name);
             $conf['fields'] = json_decode($lyr->fields);
             $conf['style'] = json_decode($lyr->style);
             $conf['geom_style'] = $lyr->geom_style;
+            $conf['editable'] = true;
+            $conf['visible'] = $lyr->visible;
+            $conf['showInSearch'] = $lyr->showInSearch;
+            $conf['showTable'] = $lyr->showTable;
+            $conf['download'] = $lyr->download;
             
             if (empty($lyr->metadata)) {
                 $conf['hasMetadata'] = false;

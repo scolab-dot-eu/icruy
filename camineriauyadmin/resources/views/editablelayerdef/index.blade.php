@@ -23,8 +23,6 @@
                     @else
                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#deleteModal" data-enabled="false" data-id="{{$value->id}}" data-name="{{$value->name}}">{{__('Habilitar') }}</button>
                     @endif
-                    
-
                 </td>
             </tr>
         @endforeach
