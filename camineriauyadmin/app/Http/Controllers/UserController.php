@@ -22,7 +22,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $data = User::all();
+        $data = User::orderBy('enabled', 'DESC')->orderBy('created_at', 'ASC')->get();
         return view('user.index', ['users' => $data]);
         
     }
@@ -185,7 +185,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $user->delete();
+        // $user->delete(); don't allow user deletion
         return redirect()->route('users.index');
     }
     
