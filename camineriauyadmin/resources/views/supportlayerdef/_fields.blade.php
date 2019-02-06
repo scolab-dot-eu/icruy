@@ -19,7 +19,7 @@
                 {!! Form::text('api_key', null, ['class' => 'form-control']) !!}
             </div>
             <div class="form-check">
-                {!! Form::checkbox('isbaselayer', $supportlayerdef->isbaselayer, null, ['id' => 'isbaselayer', 'class' => 'form-check-input']) !!}
+                {!! Form::checkbox('isbaselayer', '1', null, ['id' => 'isbaselayer', 'class' => 'form-check-input']) !!}
                 {!! Form::label('isbaselayer', __('Es capa base')) !!}
             </div>
             <div class="form-check">

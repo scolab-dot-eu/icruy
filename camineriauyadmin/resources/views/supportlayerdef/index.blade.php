@@ -19,7 +19,7 @@
                 <td>{{ $value->id }}</td>
                 <td>{{ $value->name }}</td>
                 <td>{{ $value->title }}</td>
-                <td>{{ $value->isbaselayer }}</td>
+                <td>@if ($value->isbaselayer) {{ __('Sí') }} @else {{ __('No') }} @endif</td>
                 <td>
                     <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/supportlayerdefs/' . $value->id . '/edit') }}">{{__('Editar') }}</a>
                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="{{$value->id}}" data-name="{{$value->name}}">{{__('Borrar') }}</button>
