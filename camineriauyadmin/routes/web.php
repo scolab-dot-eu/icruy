@@ -94,6 +94,7 @@ Route::group(['middleware' => ['auth']], function() {
     ]]); */
 });
 
+Route::get('/api/config/globalold', 'DepartmentConfigApiController@getGlobalConfigStatic')->name('globalconfigstatic');
 Route::get('/api/config/global', 'DepartmentConfigApiController@getGlobalConfig')->name('globalconfig');
 Route::post('/api/logout', 'Auth\LoginController@logout')->name('apilogout');
 // Password Reset Routes...

@@ -21,6 +21,8 @@ class CreateDepartmentsTable extends Migration
             $table->double('maxx', 9, 5);
             $table->double('miny', 9, 5);
             $table->double('maxy', 9, 5);
+            $table->string('layer_name', 254);
+            $table->string('color', 254);
             $table->timestamps();
         });
     }
