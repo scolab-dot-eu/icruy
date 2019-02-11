@@ -87,7 +87,7 @@ Route::group(['middleware' => ['auth']], function() {
         $user = Auth::user();
         return view('selectdepartment', ['departments'=>$user->departments]);
     })->name('selectdepartment');
-    Route::get('/api/config/department/{code}', 'DepartmentConfigApiController@getDepartmentConfig')->name('departmentconfig');
+    Route::get('/api/config/department/{code}', 'ViewerConfigApiController@getViewerConfig')->name('departmentviewerconfig');
     Route::post('/api/changerequest', 'ChangeRequestApiController@store')->name('api.changerequest');
     /* Route::resource('/api/changerequest', 'ChangeRequestApiController', ['except' => [
         'create', 'edit', 'show', 'update'
@@ -95,7 +95,8 @@ Route::group(['middleware' => ['auth']], function() {
 });
 
 Route::get('/api/config/globalold', 'ViewerConfigApiController@getGlobalConfigStatic')->name('globalconfigstatic');
-Route::get('/api/config/global', 'ViewerConfigApiController@getGlobalConfig')->name('globalconfig');
+Route::get('/api/config/globalold2', 'ViewerConfigApiController@getGlobalConfig')->name('globalconfigstatic');
+Route::get('/api/config/global', 'ViewerConfigApiController@getViewerConfig')->name('globalviewerconfig');
 Route::post('/api/logout', 'Auth\LoginController@logout')->name('apilogout');
 // Password Reset Routes...
 Route::get('password/reset', 'Auth\ForgotPasswordController@showLinkRequestForm')->name('password.request');
