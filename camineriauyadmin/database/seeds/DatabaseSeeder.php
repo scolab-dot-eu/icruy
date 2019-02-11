@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UserTableSeeder::class);
         
         $this->call(SupportLayerDefTableSeeder::class);
+        $this->call(SpatialRefSysSeeder::class);
         $this->call(EditableLayerDefTableSeeder::class);
     }
 }

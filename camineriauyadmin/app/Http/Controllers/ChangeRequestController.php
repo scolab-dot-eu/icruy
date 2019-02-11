@@ -103,12 +103,12 @@ class ChangeRequestController extends Controller
         else {
             if ($changerequest->feature == null && 
                 $changerequest->operation == ChangeRequest::OPERATION_CREATE) {
+                    // datos cargados directamente de la base de datos
                     $feature = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
-                    $proposedFeature = ChangeRequest::feature2array($feature);
+                    $changerequest->feature = json_encode(ChangeRequest::feature2array($feature));
+                    $changerequest->save();
             }
-            else {
-                $proposedFeature = json_decode($changerequest->feature);
-            }
+            $proposedFeature = json_decode($changerequest->feature);
         }
         
 //        Log::error($changerequest->feature_previous);

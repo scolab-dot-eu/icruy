@@ -118,7 +118,7 @@ class EditableLayerDef extends Model
                 $table->integer('feat_id');
             }
             else {
-                $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
+                $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE)->nullable();
                 //$table->string('status', 23)->default('VALIDADO');
                 $table->string('origin', 9)->nullable();
             }
@@ -177,7 +177,12 @@ class EditableLayerDef extends Model
                 }
                 elseif ($field->type == 'stringdomain') {
                     if ($field->domain !== null) {
-                        $field_def = $table->string($field->name);
+                        $domainValues = [];
+                        foreach ($field->domain as $domain) {
+                            $domainValues[] = $domain->code;
+                        }
+                        Log::info('domain values: '.json_encode($domainValues));
+                        $field_def = $table->enum($field->name, $domainValues);
                     }
                     else {
                         $errors[$field->name] = 'No se ha definido el dominio';
@@ -228,6 +233,7 @@ class EditableLayerDef extends Model
                 $table->index(['departamento', 'status', 'codigo_camino']);
             }
             $table->spatialIndex('thegeom');
+            $table->foreign('departamento')->references('code')->on('departments');
         });
         
         if (!$historic) {
@@ -252,11 +258,12 @@ class EditableLayerDef extends Model
                 BEFORE INSERT
                    ON ".$name." FOR EACH ROW
                 BEGIN
-                   IF NEW.origin <> '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
-                       SET NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."';
-                       IF NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                   IF NEW.status IS NULL OR (NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' AND 
+                       NEW.status <> '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."') THEN
                            SET NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."';
-                       END IF;
+                   END IF;
+                   IF NEW.origin IS NULL OR NEW.origin <> '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
+                       SET NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."';
                        SET NEW.created_at = CURDATE();
                        SET NEW.updated_at = CURDATE();
                    END IF;
@@ -267,12 +274,12 @@ class EditableLayerDef extends Model
                 CREATE TRIGGER ".$name."_create_changerequest
                 AFTER INSERT
                     ON ".$name." FOR EACH ROW BEGIN
-                    IF NEW.origin = 'batchload' THEN
+                    IF NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."' THEN
                         IF NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
                             INSERT INTO changerequests
                                 (requested_by_id, layer, feature_id, departamento, status, operation)
                             VALUES
-                                ('admin', '".$name."', NEW.id, NEW.departamento, 0, '".ChangeRequest::OPERATION_CREATE."');
+                                (0, '".$name."', NEW.id, NEW.departamento, 0, '".ChangeRequest::OPERATION_CREATE."');
                         END IF;
                     END IF;
                 END
@@ -286,7 +293,7 @@ class EditableLayerDef extends Model
                         -- Insert the new record into history table
                         INSERT INTO ".$historicName."
                             ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
-                            ."`".implode('`, NEW.`', $specificFields)."` ) 
+                            ."`".implode('`, `', $specificFields)."` ) 
                         VALUES
                             ( NEW.thegeom, NEW.id, NOW(), '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
                             ."NEW.`".implode('`, NEW.`', $specificFields)."` );
@@ -299,20 +306,18 @@ class EditableLayerDef extends Model
                 BEFORE UPDATE
                     ON ".$name." FOR EACH ROW BEGIN
                     DECLARE theCurrentTime DATETIME;
-                    IF OLD.origin = '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
-                        IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
-                            SELECT NOW() INTO theCurrentTime;
-                            -- Insert the new record into history table
-                            UPDATE ".$historicName."
-                                SET valid_to = theCurrentTime
-                            WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
-                            INSERT INTO ".$historicName."
-                                ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
-                                    ."`".implode('`, NEW.`', $specificFields)."` )
-                            VALUES
-                                ( NEW.thegeom, NEW.id, theCurrentTime, '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
-                                    ."NEW.`".implode('`, NEW.`', $specificFields)."` );
-                        END IF;
+                    IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                        SELECT NOW() INTO theCurrentTime;
+                        -- Insert the new record into history table
+                        UPDATE ".$historicName."
+                            SET valid_to = theCurrentTime
+                        WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
+                        INSERT INTO ".$historicName."
+                            ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
+                                ."`".implode('`, `', $specificFields)."` )
+                        VALUES
+                            ( NEW.thegeom, NEW.id, theCurrentTime, '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
+                                ."NEW.`".implode('`, NEW.`', $specificFields)."` );
                     END IF;
                 END
             ");

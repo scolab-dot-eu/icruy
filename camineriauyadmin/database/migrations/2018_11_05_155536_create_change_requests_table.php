@@ -28,6 +28,7 @@ class CreateChangerequestsTable extends Migration
             $table->index(['status', 'layer', 'feature_id']);
             $table->index(['requested_by_id', 'status', 'layer']);
             $table->index('validated_by_id');
+            $table->foreign('departamento')->references('code')->on('departments');
         });
     }
 
