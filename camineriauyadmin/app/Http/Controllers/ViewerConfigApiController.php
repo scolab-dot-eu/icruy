@@ -110,7 +110,7 @@ class ViewerConfigApiController extends Controller
             $conf = json_decode($lyr->conf, true);
             $conf['name'] = $default_workspace.":".$lyr->name;
             $conf['title'] = $lyr->title;
-            $inventory_layers[] = $lyr->name;
+            $inventory_layers[] = $default_workspace.":".$lyr->name;
             $conf['type'] = $protocol;
             $conf['url'] = $wfs_url;
             $conf['wms_url'] = $wms_url;
@@ -290,15 +290,17 @@ class ViewerConfigApiController extends Controller
                 continue;
             }
             $conf['title'] = $lyr->title;
-            $inventory_layers[] = $lyr->name;
+            
             $conf['type'] = $protocol;
             if ($lyr->name == 'cr_caminos') {
+                $inventory_layers[] = $dep->layer_name;
                 $conf['name'] = $dep->layer_name;
                 $conf['internal_name'] = $lyr->name;
                 $conf['url'] = $camineria_wfs_url;
                 $conf['wms_url'] = $camineria_wms_url;
             }
             else {
+                $inventory_layers[] = $default_workspace.":".$lyr->name;
                 $conf['name'] = $default_workspace.":".$lyr->name;
                 $conf['url'] = $wfs_url;
                 $conf['wms_url'] = $wms_url;
@@ -332,9 +334,10 @@ class ViewerConfigApiController extends Controller
             $editableLayers[] = $conf;
         }
         $overlaysGroups[] = ['title'=>'Inventario caminería Rural', 'expanded'=>true, 'layers'=>$editableLayers];
+        /*
         if ($department_code==null) {
             $overlaysGroups[] = ['title'=>'Caminería MTOP', 'expanded'=>true, 'layers'=>$layersCamineria];
-        }
+        }*/
         $overlaysConf = ['groups'=> $overlaysGroups];
         if ($department_code!=null) {
             $result = [
@@ -464,7 +467,7 @@ class ViewerConfigApiController extends Controller
             $conf = json_decode($lyr->conf, true);
             $conf['name'] = $default_workspace.":".$lyr->name;
             $conf['title'] = $lyr->title;
-            $inventory_layers[] = $lyr->name;
+            $inventory_layers[] = $default_workspace.":".$lyr->name;
             $conf['type'] = $protocol;
             $conf['url'] = $wfs_url;
             $conf['wms_url'] = $wms_url;
