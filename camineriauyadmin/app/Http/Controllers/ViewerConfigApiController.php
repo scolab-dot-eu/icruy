@@ -184,6 +184,7 @@ class ViewerConfigApiController extends Controller
                 return response()->json(['status'=> 'error',
                     'error'=>'El código de departamento no es válido'], 400);
             }
+            /*
             $overlays['Capas de apoyo'][] = [
                 'type'=>'wfs',
                 'url'=> $camineria_wfs_url,
@@ -204,7 +205,7 @@ class ViewerConfigApiController extends Controller
                     'weight'=> 2,
                     'opacity'=> 1
                 ]
-            ];
+            ];*/
         }
         else {
             $layersCamineria = [];
@@ -312,12 +313,15 @@ class ViewerConfigApiController extends Controller
                 $conf['style'] = json_decode($lyr->style);
                 $conf['geom_style'] = $lyr->geom_style;
             }
+            $conf['editable'] = true;
+            /*
             if ($department_code!=null) {
                 $conf['editable'] = true;
             }
             else {
                 $conf['editable'] = false;
             }
+            */
             $conf['visible'] = $lyr->visible;
             $conf['showInSearch'] = $lyr->showInSearch;
             $conf['showTable'] = $lyr->showTable;
@@ -334,10 +338,10 @@ class ViewerConfigApiController extends Controller
             $editableLayers[] = $conf;
         }
         $overlaysGroups[] = ['title'=>'Inventario caminería Rural', 'expanded'=>true, 'layers'=>$editableLayers];
-        /*
+        
         if ($department_code==null) {
             $overlaysGroups[] = ['title'=>'Caminería MTOP', 'expanded'=>true, 'layers'=>$layersCamineria];
-        }*/
+        }
         $overlaysConf = ['groups'=> $overlaysGroups];
         if ($department_code!=null) {
             $result = [
