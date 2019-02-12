@@ -30,11 +30,9 @@ class CreateCaminosTable extends Migration
             $table->string('observaciones');
             $table->string('origin');
             $table->timestamps();
-            /*
-            $table->index(['status', 'layer', 'feature_id']);
-            $table->index(['requested_by_id', 'status', 'layer']);
-            $table->index('validated_by_id');*/
-            
+            $table->foreign('departamento')->references('code')->on('departments');
+            $table->index(['status', 'codigo_camino']);
+            $table->index(['departamento', 'status', 'codigo_camino']);
         });
         
         $historicName = EditableLayerDef::getHistoricTableName($name);
@@ -45,11 +43,12 @@ class CreateCaminosTable extends Migration
             BEFORE INSERT
                ON ".$name." FOR EACH ROW
             BEGIN
-               IF NEW.origin <> '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
-                   SET NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."';
-                   IF NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+               IF NEW.status IS NULL OR (NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' AND 
+                   NEW.status <> '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."') THEN
                        SET NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."';
-                   END IF;
+               END IF;
+               IF NEW.origin IS NULL OR NEW.origin <> '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
+                   SET NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."';
                    SET NEW.created_at = CURDATE();
                    SET NEW.updated_at = CURDATE();
                END IF;
@@ -60,12 +59,12 @@ class CreateCaminosTable extends Migration
             CREATE TRIGGER ".$name."_create_changerequest
             AFTER INSERT
                 ON ".$name." FOR EACH ROW BEGIN
-                IF NEW.origin = 'batchload' THEN
+                IF NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."' THEN
                     IF NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
                         INSERT INTO changerequests
                             (requested_by_id, layer, feature_id, departamento, status, operation)
                         VALUES
-                            ('admin', '".$name."', NEW.id, NEW.departamento, 0, '".ChangeRequest::OPERATION_CREATE."');
+                            (0, '".$name."', NEW.id, NEW.departamento, 0, '".ChangeRequest::OPERATION_CREATE."');
                     END IF;
                 END IF;
             END
@@ -79,7 +78,7 @@ class CreateCaminosTable extends Migration
                     -- Insert the new record into history table
                     INSERT INTO ".$historicName."
                         ( feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
-            ."`".implode('`, NEW.`', $specificFields)."` )
+            ."`".implode('`, `', $specificFields)."` )
                     VALUES
                         ( NEW.id, NOW(), '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
             ."NEW.`".implode('`, NEW.`', $specificFields)."` );
@@ -91,20 +90,18 @@ class CreateCaminosTable extends Migration
             BEFORE UPDATE
                 ON ".$name." FOR EACH ROW BEGIN
                 DECLARE theCurrentTime DATETIME;
-                IF OLD.origin = '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
-                    IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
-                        SELECT NOW() INTO theCurrentTime;
-                        -- Insert the new record into history table
-                        UPDATE ".$historicName."
-                            SET valid_to = theCurrentTime
-                        WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
-                        INSERT INTO ".$historicName."
-                            ( feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
-                ."`".implode('`, NEW.`', $specificFields)."` )
-                        VALUES
-                            ( NEW.id, theCurrentTime, '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
-                ."NEW.`".implode('`, NEW.`', $specificFields)."` );
-                    END IF;
+                IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                    SELECT NOW() INTO theCurrentTime;
+                    -- Insert the new record into history table
+                    UPDATE ".$historicName."
+                        SET valid_to = theCurrentTime
+                    WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
+                    INSERT INTO ".$historicName."
+                        ( feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
+                          ."`".implode('`, `', $specificFields)."` )
+                    VALUES
+                        ( NEW.id, theCurrentTime, '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
+                          ."NEW.`".implode('`, NEW.`', $specificFields)."` );
                 END IF;
             END
         ");
@@ -128,6 +125,6 @@ class CreateCaminosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('caminos');
+        Schema::dropIfExists('cr_caminos');
     }
 }

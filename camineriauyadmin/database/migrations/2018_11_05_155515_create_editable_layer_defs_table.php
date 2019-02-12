@@ -17,7 +17,7 @@ class CreateEditablelayerdefsTable extends Migration
             $table->increments('id');
             $table->string('name', 200)->unique();
             $table->string('title', 255);
-            $table->string('geom_type', 10);
+            $table->string('geom_type', 255);
             $table->json('fields');
             $table->string('geom_style')->nullable();
             $table->json('style')->nullable();
