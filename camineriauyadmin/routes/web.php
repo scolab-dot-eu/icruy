@@ -104,4 +104,8 @@ Route::post('password/email', 'Auth\ForgotPasswordController@sendResetLinkEmail'
 Route::get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm')->name('password.reset');
 Route::post('password/reset', 'Auth\ResetPasswordController@reset')->name('password.update');
 
-Route::get('/api/layers/cr_caminos', 'CrCaminoController@index')->name('caminos.index');
+Route::prefix('/api/layers')->group(function () {
+    Route::resource('cr_caminos', 'CaminoLayerApiController', ['only' => [
+        'index', 'show'
+    ]]);
+});

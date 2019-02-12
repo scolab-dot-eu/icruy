@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Camino;
+use App\ChangeRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
-class CrCaminoController extends Controller
+class CaminoLayerApiController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,12 +18,29 @@ class CrCaminoController extends Controller
     {
         $department_code = $request->query('dep', null);
         if ($department_code) {
-            $data = Camino::where('departamento', $department_code)->get();
+            $data = Camino::where('departamento', $department_code);
+            if (!$this->checkDepartment($department_code)) {
+                $data = $data->where('status',
+                    '!=', ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
+            }
         }
         else {
-            $data = Camino::all();
+            $data = Camino::where('status',
+                '!=', ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
         }
-        return response()->json($data);
+        return response()->json($data->get());
+    }
+    
+    protected function checkDepartment($department_code) {
+        if (!$this->user()->isAdmin()) {
+            if (!$this->user()->isManager()) {
+                return false;
+            }
+            if ($this->user()->departments()->where('code', $department_code)->count()==0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -51,9 +70,16 @@ class CrCaminoController extends Controller
      * @param  \App\Camino  $camino
      * @return \Illuminate\Http\Response
      */
-    public function show(Camino $camino)
+    public function show($camino_id)
     {
-        //
+        
+        $camino = Camino::findOrFail($camino_id); // Workaround. Why type-hinting fails?
+        if ($camino->status == ChangeRequest::FEATURE_STATUS_PENDING_CREATE) {
+            if (!$this->checkDepartment($camino->departamento)) {
+                return response()->json(null); // TODO: should we fail?
+            }
+        }
+        return response()->json($camino);
     }
 
     /**
