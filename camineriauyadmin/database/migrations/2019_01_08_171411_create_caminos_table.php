@@ -21,21 +21,43 @@ class CreateCaminosTable extends Migration
             $table->string('codigo_camino', 8)->unique();
             $table->string('departamento', 4);
             $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
-            $table->decimal('ancho_calzada', 2, 1);
-            $table->string('rodadura');
-            $table->boolean('banquina');
-            $table->boolean('cordon');
-            $table->string('cuneta');
-            $table->string('senaliz_horiz');
-            $table->string('observaciones');
-            $table->string('origin');
-            $table->timestamps();
+            $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
+            $table->string('rodadura')->nullable(true)->default(null);
+            $table->boolean('banquina')->nullable(true)->default(null);
+            $table->boolean('cordon')->nullable(true)->default(null);
+            $table->string('cuneta')->nullable(true)->default(null);
+            $table->string('senaliz_horiz')->nullable(true)->default(null);
+            $table->string('observaciones')->nullable(true)->default(null);
+            $table->string('origin')->nullable();
+            $table->date('updated_at')->nullable();
+            $table->date('created_at')->nullable();
             $table->foreign('departamento')->references('code')->on('departments');
             $table->index(['status', 'codigo_camino']);
             $table->index(['departamento', 'status', 'codigo_camino']);
         });
-        
+
         $historicName = EditableLayerDef::getHistoricTableName($name);
+        Schema::create($historicName, function (Blueprint $table) {
+                $table->increments('id');
+                $table->string('codigo_camino', 8)->unique();
+                $table->string('departamento', 4);
+                $table->integer('feat_id');
+                $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
+                $table->string('rodadura')->nullable(true)->default(null);
+                $table->boolean('banquina')->nullable(true)->default(null);
+                $table->boolean('cordon')->nullable(true)->default(null);
+                $table->string('cuneta')->nullable(true)->default(null);
+                $table->string('senaliz_horiz')->nullable(true)->default(null);
+                $table->string('observaciones')->nullable(true)->default(null);
+                $table->date('updated_at')->nullable();
+                $table->date('created_at')->nullable();
+                $table->dateTime('valid_from');
+                $table->dateTime('valid_to');
+                $table->index(['valid_to', 'valid_from', 'codigo_camino']);
+                $table->index(['valid_to', 'valid_from', 'departamento', 'codigo_camino'], 'cr_caminos_valid_dep_cod_cam_idx');
+            });
+        
+        
         $specificFields = ['ancho_calzada', 'rodadura', 'banquina',
                 'cordon', 'cuneta', 'senaliz_horiz', 'observaciones'];
         DB::unprepared("
@@ -126,5 +148,6 @@ class CreateCaminosTable extends Migration
     public function down()
     {
         Schema::dropIfExists('cr_caminos');
+        Schema::dropIfExists('crh_caminos');
     }
 }
