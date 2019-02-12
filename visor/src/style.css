@@ -52,7 +52,7 @@ html, body {
 
 .ac-container input.menu:checked ~ article.ac-large {
     margin-left: 10px;   
-    max-height: 200px;
+    /*max-height: 200px;*/
     overflow: auto;
 }
 
@@ -114,7 +114,7 @@ html, body {
     }
 }
 
-.ui-dialog { z-index: 10000 !important ; min-width: 50%;}
+.ui-dialog { z-index: 10000 !important ; /*min-width: 50%;*/}
 
 .ui-widget-header {
     border: 1px solid #dddddd/*{borderColorHeader}*/;
@@ -228,3 +228,10 @@ table.dataTable td {
 #canvas-wrap { position:relative; height: 100%; width: 100%; padding: 0; margin: 0;} /* Make this a positioned parent */
 #logo-3d { position:absolute; top:20px; left:30px; }
 #controls-3d { position:absolute; top:100px; right:20px; }
+
+.leaflet-control-layers-scrollbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-right: 5px;
+    height: auto !important;
+}

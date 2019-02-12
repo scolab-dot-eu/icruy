@@ -147,8 +147,7 @@ Utils.prototype = {
 
         }
 
-        return html;
-        
+        return html;   
     }
 }
    

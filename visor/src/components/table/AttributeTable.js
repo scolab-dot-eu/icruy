@@ -1,8 +1,13 @@
+window.JSZip = require('js_zip');
+
 require('datatables_css');
 require('datatables_js');
-
+require('datatables_buttons_css');
+require('datatables_buttons_js');
+require('datatables_buttons_html5_js');
 function AttributeTable(map) {
     this.map = map;
+    this.departamento = null;
     this.initialize();
 }
    
@@ -13,6 +18,11 @@ AttributeTable.prototype = {
         html += '</div>';
         
         $('body').append(html);
+
+        var searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has('departamento')) {
+            this.departamento = searchParams.get('departamento');
+        }
     },
 
     createTable: function(layer, layer_id) {
@@ -22,12 +32,24 @@ AttributeTable.prototype = {
         var data = [];
         layer.eachLayer(function (l) {
             properties = l.feature.properties;
-            var row = [];
-            row.push(l.feature.id);
-            for (key in properties) {
-                row.push(properties[key]);
-            }                  
-            data.push(row);  
+            if (_this.departamento != null) {
+                if (properties['departamento'] == _this.departamento) {
+                    var row = [];
+                    row.push(l.feature.id);
+                    for (key in properties) {
+                        row.push(properties[key]);
+                    }                  
+                    data.push(row);
+                }
+            } else {
+                var row = [];
+                row.push(l.feature.id);
+                for (key in properties) {
+                    row.push(properties[key]);
+                }                  
+                data.push(row);
+            }
+              
         });
 
         var html = '';
@@ -88,7 +110,7 @@ AttributeTable.prototype = {
             //scrollY: '50vh',
             //scrollCollapse: true,
             buttons: [
-                'csv', 'print'
+                'csv', 'excelHtml5', 'print'
             ],
             dom: 'Bfrtp<"top"l><"bottom"i>',
             "bSort" : false,
@@ -108,7 +130,7 @@ AttributeTable.prototype = {
         });
 
         $('#att-table-dialog').dialog({
-            minWidth: '50%'
+            width: 800
         });
         $( "#att-table-dialog" ).dialog( "open" );
 
@@ -120,9 +142,11 @@ AttributeTable.prototype = {
             if (l.feature.id == fid) {
                 if (l.getLatLng) {
                     _this.map.setView(l.getLatLng(), 17);
+                    l.openPopup();
                 }
                 else {
                     _this.map.fitBounds(l.getBounds());
+                    l.openPopup();
                 }
             }
         });

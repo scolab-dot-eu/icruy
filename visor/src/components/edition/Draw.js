@@ -162,9 +162,12 @@ Draw.prototype = {
         var _this = this;
         var html = '';
         html += '<div>';
+        html += '<div style="text-align: center; width: 100%; padding: 15px;">';
+        html += '<span style="font-size: 18px; font-weight: bold; color: #888888;">' + eLayer.title + '</span>';
+        html += '</div>';
         html += '<table>';
         for (var key in layer.feature.properties) {
-            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification') {
+            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin') {
                 html += '<tr>';
                 html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
                 html +=     '<td style="padding: 2px;">' + layer.feature.properties[key] + '</td>';

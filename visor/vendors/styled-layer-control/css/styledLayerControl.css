@@ -57,7 +57,7 @@ div[id^="leaflet-control-accordion-layers"] > label {
     box-sizing: content-box;
     cursor:pointer;
     width: auto;
-    margin: 0;
+	margin: 0;
 }
 div[id^="leaflet-control-accordion-layers"] > label:hover {
 	background: #fff;
@@ -192,6 +192,14 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 }
 
 .bt_download{
+    position: relative;
+	float: right;
+    border: none;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.bt_ogc_services{
     position: relative;
 	float: right;
     border: none;

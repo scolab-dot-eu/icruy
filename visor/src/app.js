@@ -20,6 +20,7 @@ require('leaflet_graphic_scale_css');
 require('leaflet_search_css');
 require('leaflet_measure_css');
 require('leaflet_timedimension_css');
+require('leaflet_locate_css');
 
 require('fontawesome');
 var L = require('leaflet');
@@ -29,17 +30,20 @@ require('bootstrap_js');
 require('webpack-jquery-ui');
 require('webpack-jquery-ui/css');
 require('leaflet-easybutton');
-require('leaflet-search');
+require('fuse.js');
+require('leaflet_search_js');
 require('leaflet_logo_js');
 require('leaflet_topcenter_js');
 require('leaflet_timedimension_js');
 require('leaflet-graphicscale');
+require('leaflet_locate_js');
 
 
 var MiniMap = require('leaflet-minimap');
 var Toc = require('./components/toc/Toc.js');
 var ToolBar = require('./components/toolbar/ToolBar.js');
 var Utils = require('./components/Utils.js');
+var PrintUtils = require('./components/PrintUtils.js');
 require("style_css");
 require('leaflet-ajax');
 require('leaflet-draw');
@@ -48,6 +52,7 @@ require('leaflet_measure_css');
 require('leaflet_measure_js');
 require('leaflet_coordinates_css');
 require('leaflet_coordinates_js');
+require('leaflet-geometryutil');
 
 var config = null;
 var departamento = null;
@@ -100,8 +105,8 @@ function initialize() {
             async: false
 
         }).done(function(resp) {
-            config = JSON.parse(resp);
-            //config = resp;
+            //config = JSON.parse(resp);
+            config = resp;
             map = L.map('map', { 
                 zoomControl:false, 
                 preferCanvas: true
@@ -117,10 +122,11 @@ function initialize() {
     }
 
     var utils = new Utils(config);
+    var printUtils = new PrintUtils();
     var tocBaseLayers = loadBaseLayers(map);
     var overlaysObject = loadOverlays(map);
-    var controls = loadControls(map, tocBaseLayers, overlaysObject, utils);
-    registerMapEvents(map, controls, utils);
+    var controls = loadControls(map, tocBaseLayers, overlaysObject, utils, printUtils);
+    registerMapEvents(map, controls, utils, printUtils);
 }
 
 
@@ -173,6 +179,19 @@ function loadBaseLayers(map) {
  * Cargamos el resto de capas
  */
 function loadOverlays(map) {
+    var caminos = null;
+    if (window.editionMode) {
+        $.ajax({
+            url: window.serviceURL + '/api/layers/cr_caminos?dep=' + departamento,
+            type: 'GET',
+            async: false
+    
+        }).done(function(resp) {
+            caminos = resp;
+        }).fail(function(error) {
+            console.log( "Error al obtener caminos" );
+        });
+    }   
 
     var tocOverlays = [];
     var groupedOverlays = [];
@@ -216,10 +235,19 @@ function loadOverlays(map) {
                 if (departamento != null) {
                     for (var k=0; k<config.inventory_layers.length; k++) {
                         if (config.inventory_layers[k] == config.overlays.groups[i].layers[j].name) {
-                            customParams['cql_filter'] = "departamento='" + departamento + "'";
+                            if (config.inventory_layers[k].indexOf('caminerias_intendencias') === -1) {
+                                customParams['cql_filter'] = "departamento='" + departamento + "'";
+                            }
+                        }
+                    }
+                } else {
+                    for (var k=0; k<config.inventory_layers.length; k++) {
+                        if (config.inventory_layers[k] == config.overlays.groups[i].layers[j].name) {
+                            customParams['cql_filter'] = "status='VALIDADO'";
                         }
                     }
                 }
+
                 
                 var parameters = L.Util.extend(defaultParameters, customParams);
 
@@ -238,9 +266,12 @@ function loadOverlays(map) {
 
                         
                         html += '<div>';
+                        html += '<div style="text-align: center; width: 100%; padding: 15px;">';
+                        html += '<span style="font-size: 18px; font-weight: bold; color: #888888;">' + eLayer.title + '</span>';
+                        html += '</div>';
                         html += '<table>';
                         for (var key in f.properties) {
-                            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification') {
+                            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin') {
                                 html += '<tr>';
                                 html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
                                 html +=     '<td style="padding: 2px;">' + f.properties[key] + '</td>';
@@ -253,12 +284,14 @@ function loadOverlays(map) {
                         if (!window.isMobile) {
                             html += '<ul class="custom-actions">';
                             if (window.editionMode) {
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit"><i class="fa fa-edit m-r-5"></i> Editar</a></li>';
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete"><i class="fa fa-trash m-r-5"></i> Eliminar</a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit" title="Editar"><i class="fa fa-edit m-r-5"></i></a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete" title="Eliminar"><i class="fa fa-trash m-r-5"></i></a></li>';
                                 
                             } else {
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
                             }
                             html += '</ul>';
                         }
@@ -270,39 +303,7 @@ function loadOverlays(map) {
                 }
 
                 if (config.overlays.groups[i].layers[j].style) {
-                    if (config.overlays.groups[i].layers[j].geom_style == 'marker') {
-                        if (config.overlays.groups[i].layers[j].name.split(':').length > 1) {
-                            styles[config.overlays.groups[i].layers[j].name.split(':')[1]] = config.overlays.groups[i].layers[j].style;
-                        } else {
-                            styles[config.overlays.groups[i].layers[j].name] = config.overlays.groups[i].layers[j].style;
-                        }
-
-                        layer = L.geoJson.ajax(
-                            config.overlays.groups[i].layers[j].url + L.Util.getParamString(parameters),
-                            {
-                                onEachFeature: popUp,
-                                pointToLayer: function (feature, latlng) {
-                                    var icon = new L.Icon(styles[feature.id.split('.')[0]]);
-                                    if (feature.properties.status == 'PENDIENTE:BORRADO' || feature.properties.status == 'PENDIENTE:CREACIÓN' || feature.properties.status == 'PENDIENTE:ACTUALIZACIÓN') {
-                                        icon.options.iconUrl = require('./../assets/images/' + 'pending-' + icon.options.iconUrl);
-
-                                    } else if(feature.properties.status == 'VALIDADO') {
-                                        icon.options.iconUrl = require('./../assets/images/' + 'validated-' + icon.options.iconUrl);
-                                        
-                                    }
-
-                                    //icon.options.iconUrl = require('./../assets/images/' + 'pending-' + icon.options.iconUrl);
-                                    
-                                    return L.marker(latlng, {
-                                        icon: icon
-                                    });
-                                }
-
-                            },
-                        );
-                        layer.geom_style = 'marker';
-
-                    } else if (config.overlays.groups[i].layers[j].geom_style == 'point') {
+                    if (config.overlays.groups[i].layers[j].geom_style == 'point') {
                         if (config.overlays.groups[i].layers[j].name.split(':').length > 1) {
                             styles[config.overlays.groups[i].layers[j].name.split(':')[1]] = config.overlays.groups[i].layers[j].style;
                         } else {
@@ -339,17 +340,7 @@ function loadOverlays(map) {
                         );
                         layer.geom_style = 'line';
 
-                    } else if  (config.overlays.groups[i].layers[j].geom_style == 'polygon') {
-                        var polygonStyle = config.overlays.groups[i].layers[j].style;
-                        layer = L.geoJson.ajax(
-                            config.overlays.groups[i].layers[j].url + L.Util.getParamString(parameters),
-                            {
-                                onEachFeature:popUp,
-                                style: polygonStyle
-                            },
-                        );
-                        layer.geom_style = 'polygon';
-                    }                    
+                    }                 
 
                 } else {
                     layer = L.geoJson.ajax(
@@ -419,7 +410,7 @@ function loadOverlays(map) {
 /**
  * Añadimos los controles y componentes
  */
-function loadControls(map, tocBaseLayers, overlays, utils) {
+function loadControls(map, tocBaseLayers, overlays, utils, pUtils) {
 
     var logoPosition = 'topleft';
     if (window.isMobile) {
@@ -437,9 +428,20 @@ function loadControls(map, tocBaseLayers, overlays, utils) {
         $('.leaflet-logo-control').css('margin-left', '50px !important');
     }
     
-    L.control.zoom({ position:'topright'}).addTo(map);
+    L.control.zoom({ position:'topright', zoomInTitle: 'Zoom más', zoomOutTitle: 'Zoom menos'}).addTo(map);
 
-    L.control.navbar().addTo(map);
+    var lc = L.control.locate({
+        position: 'topright',
+        strings: {
+            title: "Mostrar localización"
+        }
+    }).addTo(map);
+
+    L.control.navbar({
+        forwardTitle: 'Ir a vista siguiente',
+        backTitle: 'Volver a vista anterior',
+        homeTitle: 'Volver a vista inicial'
+    }).addTo(map);
     
     if (!window.isMobile) {
         var minimap_layer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -470,7 +472,7 @@ function loadControls(map, tocBaseLayers, overlays, utils) {
     } 
     var toc = new Toc(config, map, tocBaseLayers, overlays, utils);
 
-    new ToolBar(map, overlays);
+    new ToolBar(map, overlays, pUtils);
 
     return {
         toc: toc
@@ -478,7 +480,7 @@ function loadControls(map, tocBaseLayers, overlays, utils) {
 
 }
 
-function registerMapEvents(map, controls, utils) {
+function registerMapEvents(map, controls, utils, printUtils) {
     map.on('layeradd', function() {
         controls.toc.getLegend().reloadLegend();
     });
@@ -497,6 +499,20 @@ function registerMapEvents(map, controls, utils) {
                     editableLayer.eachLayer(function(layer) {
                         if (layer.feature.id == id) {
                             loadInfo(controls.toc, layer);
+                        }
+                    });
+                }
+            }
+        });
+
+        $('.popup-toolbar-button-print').click(function(e){
+            for (i in editableLayers) {
+                if (editableLayers[i].name == this.dataset.layername) {
+                    var id = this.dataset.fid;
+                    var editableLayer = editableLayers[i].layer;
+                    editableLayer.eachLayer(function(layer) {
+                        if (layer.feature.id == id) {
+                            printElement(map, layer, printUtils);
                         }
                     });
                 }
@@ -716,5 +732,61 @@ function loadFeatureForm(map, toc, layer, clonedLayer, editableLayer, utils) {
     });
     
     toc.getSideBar().open('toc-result');
+}
+
+function printElement(m, element, pUtils) {
+
+    if (element.getLatLng) {
+        m.setView(element.getLatLng(), 17);
+    }
+    else {
+        m.fitBounds(element.getBounds());
+    }
+
+    var PIXEL_SIZE = 3.779528;   	
+    var MAP_WIDTH_MM = 180;
+    var MAP_HEIGHT_MM = 300;
+
+    pUtils.showMask();
+
+    var doc = new jsPDF('portrait', 'mm', 'a4');
+
+    doc.addImage(pUtils.getLogoOpp(), 'PNG', 15, 15, 30, 10);
+    doc.addImage(pUtils.getLogoPresidencia(), 'PNG', 170, 8, 30, 20);
+
+    leafletImage(m, function(err, canvas) {
+        var dataUrl = pUtils.canvasToImage(canvas, '#ffffff');
+
+        var pdfMapWidthInPx = parseInt(MAP_WIDTH_MM * PIXEL_SIZE);
+		var pdfMapHeightInPx = parseInt(MAP_HEIGHT_MM * PIXEL_SIZE);
+        var newSize = pUtils.calculateAspectRatioFit(m.getSize().x, m.getSize().y, pdfMapWidthInPx, pdfMapHeightInPx);		
+		var mmNewWidth = newSize.width / PIXEL_SIZE;
+		var mmNewHeight= newSize.height / PIXEL_SIZE;
+        doc.addImage(dataUrl, 'PNG', 15, 40, 180, 90);
+
+        var x = 15;
+        var y = 140;
+        for ( key in element.feature.properties) {
+            if (element.feature.properties[key] != null) {
+                doc.setFontSize(10);
+                doc.setTextColor(255, 164, 32);
+                doc.text(15, y, key.toString().toUpperCase());
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                doc.text(100, y, element.feature.properties[key].toString());
+                y = y+7;
+            }   
+        }
+
+        doc.setFontSize(10);
+        doc.setTextColor(12, 12, 12);
+        doc.text(60, 280, 'Torre Ejecutiva Sur, piso 7 | Liniers 1324, Montevideo - Uruguay');
+        doc.text(80, 285, 'Tel. (+598 2) 150  | www.opp.gub.uy');
+
+        var uri = doc.output('dataurlstring');
+        pUtils.openDataUriWindow(uri);
+        pUtils.hideMask();
+    });
+
 }
 

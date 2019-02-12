@@ -17,6 +17,18 @@ L.Control.MousePosition = L.Control.extend({
       this._container.innerHTML=this.options.emptyString;
       return this._container;
     },
+
+    appendEpsgSelector: function() {
+      var ui = '';
+      ui += '<select id="epsg-selector" class="epsg-selector">';
+      ui +=   '<option selected value="wgs84_latlon">WGS84 Latitud/Longitud</option>';
+      ui +=   '<option value="wgs84_degrees">One</option>';
+      ui +=   '<option value="2">Two</option>';
+      ui +=   '<option value="3">Three</option>';
+      ui += '</select>';
+
+      $('.')
+    },
   
     onRemove: function (map) {
       map.off('mousemove', this._onMouseMove)

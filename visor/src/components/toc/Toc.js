@@ -30,16 +30,16 @@ Toc.prototype = {
         html += '<div id="sidebar" class="leaflet-sidebar collapsed">';
         html += '<div class="leaflet-sidebar-tabs">';
         html += '    <ul role="tablist">';
-        html += '        <li><a href="#toc-layers" role="tab"><i class="fa fa-layer-group"></i></a></li>';
-        html += '        <li><a href="#toc-legend" role="tab"><i class="fa fa-palette"></i></a></li>';
+        html += '        <li><a href="#toc-layers" title="Árbol de capas" role="tab"><i class="fa fa-layer-group"></i></a></li>';
+        html += '        <li><a href="#toc-legend" title="Leyenda" role="tab"><i class="fa fa-list-ul"></i></a></li>';
         if (!window.isMobile) {
-            html += '        <li><a href="#toc-search" role="tab"><i class="fa fa-search"></i></a></li>';
-            html += '        <li><a href="#toc-result" role="tab"><i class="fa fa-list"></i></a></li>';
+            //html += '        <li><a href="#toc-search" title="Búsqueda" role="tab"><i class="fa fa-search"></i></a></li>';
+            html += '        <li><a href="#toc-result" title="Resultados" role="tab"><i class="fa fa-calendar-check"></i></a></li>';
         }
         html += '    </ul>';
         if (!window.isMobile) {      
             html += '    <ul role="tablist">';
-            html += '        <li><a href="#toc-profile" role="tab"><i class="fa fa-user"></i></a></li>';
+            html += '        <li><a href="#toc-profile" title="Perfil de usuario" role="tab"><i class="fa fa-user"></i></a></li>';
             html += '    </ul>';
         }
         html += '</div>';
@@ -99,7 +99,7 @@ Toc.prototype = {
     },
 
     loadSearch: function() {
-        new Search(this.map, this.groupedOverlays);
+        //new Search(this.map, this.groupedOverlays);
     },
 
     loadLogin: function() {

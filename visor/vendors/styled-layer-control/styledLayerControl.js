@@ -453,7 +453,7 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_metadata.dataset.layerLID = obj.layer._leaflet_id;
                     bt_metadata.id = 'bt_metadata_' + obj.layer._leaflet_id;
                     var bt_metadata_icon = document.createElement("i");
-                    bt_metadata_icon.className = "fa fa-link";
+                    bt_metadata_icon.className = "fa fa-external-link-alt";
                     bt_metadata.appendChild(bt_metadata_icon);
                     label.appendChild(bt_metadata);
                 }
@@ -484,6 +484,19 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_download.appendChild(bt_download_icon);
                     label.appendChild(bt_download);
                 }
+
+                
+                var bt_ogc_services = document.createElement("button");
+                bt_ogc_services.type = "button";
+                bt_ogc_services.className = "bt_ogc_services";
+                bt_ogc_services.title = "Link a geoservicios";
+                bt_ogc_services.dataset.layerLID = obj.layer._leaflet_id;
+                bt_ogc_services.id = 'bt_show_table_' + obj.layer._leaflet_id;
+                var bt_ogc_services_icon = document.createElement("i");
+                bt_ogc_services_icon.className = "fa fa-link";
+                bt_ogc_services.appendChild(bt_ogc_services_icon);
+                L.DomEvent.on(bt_ogc_services, 'click', this._onShowOGCServices, this);
+                label.appendChild(bt_ogc_services);
             }
 
             // configure the visible attribute to layer
@@ -608,6 +621,44 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
 
 
         return label;
+    },
+
+    _onShowOGCServices: function(obj) {
+        var node = document.getElementById('ac_layer_input_' + obj.currentTarget.dataset.layerLID);
+
+        n_obj = this._layers[node.layerId];
+
+        var html = '';
+        html += '<div id="show-ogc-services-dialog">';
+        html += '</div>';
+        $('body').append(html);
+
+        var ui = '';
+        ui +=     '<span style="margin-bottom: 10px; font-size:12px; color: #e0a800;">Servicios OGC</span>';
+        ui +=     '<div class="form-row">';
+        ui +=         '<a style="margin-left: 10px;" target="_blank" href="' + n_obj.layer.definedUrl + '">' + n_obj.layer.definedUrl + '</a>';
+        ui +=     '</div>';
+        if (n_obj.layer.StyledLayerControl.wmsUrl) {
+            ui +=     '<div class="form-row">';
+            ui +=         '<a style="margin-left: 10px;" target="_blank" href="' + n_obj.layer.StyledLayerControl.wmsUrl + '">' + n_obj.layer.StyledLayerControl.wmsUrl + '</a>';
+            ui +=     '</div>';
+        }
+        $('#show-ogc-services-dialog').empty();
+        $('#show-ogc-services-dialog').append(ui);
+
+        $('#show-ogc-services-dialog').dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            buttons: {
+                'Cerrar': function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+
+        return false;
     },
 
     _onStartDrawClick: function(obj) {

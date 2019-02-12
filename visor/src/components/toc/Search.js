@@ -49,7 +49,7 @@ Search.prototype = {
 
         var _this = this;
         $( "#select-layer" ).change(function() {
-            $('#select-field')
+            /*$('#select-field')
                 .empty()
                 .append('<option selected disabled value="empty">Seleccionar campo ...</option>');
 
@@ -67,15 +67,16 @@ Search.prototype = {
                     value: prop,
                     text : prop
                 }));
-            });
+            });*/
+            _this.addControl(this.value/*, this.value*/);
         });
         $( "#select-field" ).change(function() {
             var layer_id = $( "select#select-layer option:checked" ).val();
-            _this.addControl(layer_id, this.value);
+            _this.addControl(layer_id/*, this.value*/);
         });
     },
 
-    addControl: function(layer_id, field) {
+    addControl: function(layer_id/*, field*/) {
         if (this.searchControl != null) {
             this.removeControl();
         }
@@ -85,14 +86,37 @@ Search.prototype = {
                 searchLayer = this._layers[key].layer;
             }
         }
-        this.searchControl = new L.Control.Search({
+
+        this.searchControl = L.control.fuseSearch();
+        this.searchControl.addTo(this.map);
+
+        // Call the getContainer routine.
+        var htmlObject = this.searchControl.getContainer();
+        // Get the desired parent node.
+        var a = document.getElementById('search-div');
+       
+        // Finally append that node to the new parent, recursively searching out and re-parenting nodes.
+        function setParent(el, newParent)
+        {
+           newParent.appendChild(el);
+        }
+        setParent(htmlObject, a);
+
+        this.searchControl.indexFeatures(searchLayer.toGeoJson(), ['departamento']);
+
+        /*this.searchControl = new L.Control.Search({
             container: 'search-div',
             collapsed: false,
             layer: searchLayer,
             propertyName: field,
             marker: false,
-            zoom: 15
-        }).addTo(this.map);
+            zoom: 15,
+            autoType: false,
+            filterData: function(text, records) {
+                console.log(records);
+            }
+        }).addTo(this.map);*/
+
     },
 
     removeControl: function() {
