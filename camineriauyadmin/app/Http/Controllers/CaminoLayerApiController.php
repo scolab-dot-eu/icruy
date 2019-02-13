@@ -19,7 +19,7 @@ class CaminoLayerApiController extends Controller
         $department_code = $request->query('dep', null);
         if ($department_code) {
             $data = Camino::where('departamento', $department_code);
-            if (!$this->checkDepartment($department_code)) {
+            if (!$this->checkDepartment($request->user(), $department_code)) {
                 $data = $data->where('status',
                     '!=', ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
             }
@@ -31,16 +31,25 @@ class CaminoLayerApiController extends Controller
         return response()->json($data->get());
     }
     
-    protected function checkDepartment($department_code) {
-        if (!$this->user()->isAdmin()) {
-            if (!$this->user()->isManager()) {
-                return false;
+    /**
+     * Checks whether the user can manage a department. Administrators are always
+     * allowed to manage a department
+     * 
+     * @param $user
+     * @param $department_code
+     * @return boolean True if the user can manage the department, false otherwise
+     */
+    protected function checkDepartment($user, $department_code) {
+        if ($user) {
+            if ($user->isAdmin()) {
+                return true;
             }
-            if ($this->user()->departments()->where('code', $department_code)->count()==0) {
-                return false;
+            if ($user->isManager() &&
+                    $user->departments()->where('code', $department_code)->count()>0) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -70,12 +79,12 @@ class CaminoLayerApiController extends Controller
      * @param  \App\Camino  $camino
      * @return \Illuminate\Http\Response
      */
-    public function show($camino_id)
+    public function show(Request $request, $camino_id)
     {
         
         $camino = Camino::findOrFail($camino_id); // Workaround. Why type-hinting fails?
         if ($camino->status == ChangeRequest::FEATURE_STATUS_PENDING_CREATE) {
-            if (!$this->checkDepartment($camino->departamento)) {
+            if (!$this->checkDepartment($request->user(), $camino->departamento)) {
                 return response()->json(null); // TODO: should we fail?
             }
         }
