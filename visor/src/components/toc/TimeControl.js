@@ -21,12 +21,18 @@ TimeControl.prototype = {
             player: this.player,
             timeDimension: this.timeDimension,
             position: 'topcenter',
-            autoPlay: true,
+            autoPlay: false,
             playButton: false,
             backwardButton: false,
             forwardButton: false,
             speedSlider: false,
-            timeSliderDragUpdate: true
+            timeSliderDragUpdate: true,
+            // sólo Funciona en Chrome y Firefox
+            // podriamos convertir a mano la fecha usando:
+            // var format = new Intl.NumberFormat('es-UY', {minimumIntegerDigits: 2});
+            // (format.format(d.getUTCDate()) + "/" + format.format(d.getUTCMonth()+1) + "/" + d.getUTCFullYear()) + " " + (format.format(d.getUTCHours()-3)) + ":" + format.format(d.getUTCMinutes()) + ":" + format.format(d.getUTCSeconds()) + " UYT"
+            // Ver: https://github.com/socib/Leaflet.TimeDimension/pull/134/commits/f35e8b50932e581d912dfd562cd152e32992c21b
+            timeZones: ["America/Montevideo"]
         };
     },
     startTime: function(layer) {
