@@ -119,44 +119,57 @@ class ChangeRequest extends Model
     public function getCreatedAtFormattedAttribute(){
         return Carbon::parse($this->created_at)->format('d/m/Y');
     }
+    /**
+     * 
+     * @return string
+     */
     public function getUpdatedAtFormattedAttribute(){
         return Carbon::parse($this->updated_at)->format('d/m/Y');
     }
     
-    public static function applyValidatedChangeRequest($layer_name, $operation, &$feature, $geom) {
+    
+    /** 
+     * @param string $layer_name
+     * @param string $operation
+     * @param string $status
+     * @param array $feature
+     * @param Geometry $geom
+     * @return integer If a new feature was created, return the id of the new feature. Return null otherwise
+     */
+    public static function applyChangeRequest($layer_name, $operation, $feature, $geom=null) {
         $values = array_get($feature, 'properties', []);
+        $status = $values['status'];
         $table_name = ChangeRequest::getTableName($layer_name);
         if ($operation==ChangeRequest::OPERATION_CREATE) {
-            $feature['properties']['id'] = ChangeRequest::insertFeature($table_name, $values, $geom);
-            //ChangeRequest::historyInsert($table_name, $values);
+            return ChangeRequest::insertFeature($table_name, $values, $geom);
+            /* if ($status == ChangeRequest::FEATURE_STATUS_VALIDATED) {
+                ChangeRequest::historyInsert($table_name, $values);
+            }*/
         }
         else {
             $id = array_get($feature, 'properties.id', null);
-            /*
-             * No es necesaria la comprobación si no es posible crear una changerequest sobre una feature
-             * que está en estado pending, puesto que ya se comprobó en el prepareFeature
-             * 
-             * 
-             * $department = array_get($feature, 'properties.departamento', null);
-            if (!ChangeRequest::checkFeatureExists($table_name, $id, $department)) {
-                $error = \Illuminate\Validation\ValidationException::withMessages([
-                    'feature' => [__('Registro no encontrado para la capa, el departamento y el id proporcionados')],
-                ]);
-                throw $error;
+            if ($status == ChangeRequest::FEATURE_STATUS_VALIDATED) {
+                if  ($operation==ChangeRequest::OPERATION_UPDATE) {
+                    ChangeRequest::updateFeature($table_name, $id, $values, $geom);
+                    //ChangeRequest::historyUpdate($table_name, $values);
+                }
+                elseif  ($operation==ChangeRequest::OPERATION_DELETE) {
+                    ChangeRequest::deleteFeature($table_name, $id);
+                    //ChangeRequest::historyDelete($table_name, $id);
+                }
             }
-            */
-            if  ($operation==ChangeRequest::OPERATION_UPDATE) {
-                ChangeRequest::updateFeature($table_name, $id, $values, $geom);
-                //ChangeRequest::historyUpdate($table_name, $values);
-            }
-            elseif  ($operation==ChangeRequest::OPERATION_DELETE) {
-                ChangeRequest::deleteFeature($table_name, $id);
-                //ChangeRequest::historyDelete($table_name, $id);
+            else {
+                if ($operation==ChangeRequest::OPERATION_UPDATE) {
+                    ChangeRequest::commitFeatureStatus($table_name, $id, ChangeRequest::FEATURE_STATUS_PENDING_UPDATE);
+                }
+                elseif ($operation==ChangeRequest::OPERATION_DELETE) {
+                    ChangeRequest::commitFeatureStatus($table_name, $id, ChangeRequest::FEATURE_STATUS_PENDING_DELETE);
+                }
             }
         }
-        $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
+        return null;
     }
-    
+
     /*
     public static function historyInsert($table_name, $values_array) {
         $values_array['feat_id'] = $values_array['id'];
@@ -190,49 +203,32 @@ class ChangeRequest extends Model
                 ->update(['valid_to' => $currentDate]);
     }*/
     
-    /**
-     * Marca la feature como pendiente en todos los casos, y la crea en el caso de
-     * una operación CREATE.
-     * 
-     * @param unknown $layer_name
-     * @param unknown $operation
-     * @param unknown $feature
-     * @param unknown $geom
-     */
-    public static function applyPendingChangeRequest($layer_name, $operation, &$feature, $geom) {
-        $values = array_get($feature, 'properties', []);
-        $table_name = ChangeRequest::getTableName($layer_name);
-        
-        if ($operation==ChangeRequest::OPERATION_CREATE) {
-            $feature['properties']['id'] = ChangeRequest::insertFeature($table_name, $values, $geom, ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
-            $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_PENDING_CREATE;
-        }
-        else {
-            $id = array_get($feature, 'properties.id', null);
-            /*
-             * No es necesaria la comprobación si no es posible crear una changerequest sobre una feature
-             * que está en estado pending, puesto que ya se comprobó en el prepareFeature
-             *
-             * 
-            $department = array_get($feature, 'properties.departamento', null);
-            if (!ChangeRequest::checkFeatureExists($table_name, $id, $department)) {
-                $error = \Illuminate\Validation\ValidationException::withMessages([
-                    'feature' => [__('Registro no encontrado para la capa, el departamento y el id proporcionados')],
-                ]);
-                throw $error;
-            }*/
-            if ($operation==ChangeRequest::OPERATION_UPDATE) {
-                $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_PENDING_UPDATE;
-                ChangeRequest::setFeatureStatus($table_name, $id, ChangeRequest::FEATURE_STATUS_PENDING_UPDATE);
-            }
-            elseif ($operation==ChangeRequest::OPERATION_DELETE) {
-                $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_PENDING_DELETE;
-                ChangeRequest::setFeatureStatus($table_name, $id, ChangeRequest::FEATURE_STATUS_PENDING_DELETE);
-            }
-        }
-    }
     
-    public static function prepareFeature($layer_name, &$feature, $operation) {
+    public static function equalValues($values1, $values2) {
+        $ignoredFields = [
+            'status'=>true,
+            'updated_at'=>true,
+            'created_at'=>true,
+            'thegeom'=>true,
+            'thegeomjson'=>true
+        ];
+        foreach ($values1 as $field => $value) {
+            if (!array_get($ignoredFields, $field) &&
+                array_get($values2, $field)!=$value) {
+                    return false;
+                }
+                $ignoredFields[$field] = true;
+        }
+        foreach ($values2 as $field => $value) {
+            if (!array_get($ignoredFields, $field) &&
+                (array_get($values2, $field)!=$value)) {
+                    return false;
+                }
+        }
+        return true;
+    }
+
+    public static function prepareFeature($layer_name, $feature, $operation) {
         $values = [];
         $errors = [];
         $layer_def = EditableLayerDef::where('name', $layer_name)->first();
@@ -257,9 +253,9 @@ class ChangeRequest extends Model
                             return (array_get($domainPair, 'code')===$value);
                         }, null
                         );
-                            if ($domainPair==null) {
-                                $errors['feature.properties.'.$field] = 'El valor no pertenece al dominio definido';
-                            }
+                        if ($value!=null && $domainPair==null) {
+                            $errors['feature.properties.'.$field] = 'El valor no pertenece al dominio definido';
+                        }
                     }
                     elseif ($field_def['type']=='intdecimal') {
                         $typeparams = array_get($field_def, 'typeparams', '0');
@@ -310,28 +306,59 @@ class ChangeRequest extends Model
                 }
         }
         $id = array_get($feature, 'properties.id', null);
+        $department = array_get($feature, 'properties.departamento', null);
+        $codigo_camino = array_get($feature, 'properties.codigo_camino', null);
         if ($operation==ChangeRequest::OPERATION_CREATE) {
             if ($id != null) {
                 $errors['feature.properties.id'] = 'La operación CREAR no puede incluir un campo id';
             }
-            $values['updated_at'] = date('Y-m-d H:i:s');
-            $values['created_at'] = date('Y-m-d H:i:s');
         }
         else {
-            $department = array_get($feature, 'properties.departamento', null);
             $table_name = ChangeRequest::getTableName($layer_name);
             if (!ChangeRequest::checkFeatureExists($table_name, $id, $department)) {
                 $errors['feature.properties.id'] = __('Registro no encontrado para la capa, el departamento y el id proporcionados');
             }
-            if ($operation==ChangeRequest::OPERATION_UPDATE) {
-                $values['updated_at'] = date('Y-m-d H:i:s');
-            }
+        }
+        if (!ChangeRequest::comprobarCodigoCamino($codigo_camino, $department)) {
+            $errors['feature.properties.codigo_camino'] = __('El código de camino no es válido');
         }
         if (count($errors)>0) {
             $error = \Illuminate\Validation\ValidationException::withMessages($errors);
             throw $error;
         }
-        $feature['properties'] = $values;
+        return $values;
+    }
+    
+    protected static function setFeatureStatus($feature, $operation, $changeRequestStatus) {
+        if ($changeRequestStatus==ChangeRequest::STATUS_VALIDATED) {
+            $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
+        }
+        elseif ($operation==ChangeRequest::OPERATION_CREATE) {
+            $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_PENDING_CREATE;
+        }
+        elseif ($operation==ChangeRequest::OPERATION_UPDATE) {
+            $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_PENDING_UPDATE;
+        }
+        elseif ($operation==ChangeRequest::OPERATION_UPDATE) {
+            $feature['properties']['status'] = ChangeRequest::FEATURE_STATUS_PENDING_DELETE;
+        }
+        return $feature;
+    }
+    
+    public static function prepareInternalFields($feature, $operation, $changeRequestStatus, $previousFeature=null) {
+        $feature = ChangeRequest::setFeatureStatus($feature, $operation, $changeRequestStatus);
+        $feature['properties']['origin'] = ChangeRequest::FEATURE_ORIGIN_ICRWEB;
+        if ($operation==ChangeRequest::OPERATION_CREATE) {
+            $feature['properties']['created_at'] = date('Y-m-d');
+            $feature['properties']['updated_at'] = date('Y-m-d');
+            unset($feature['properties']['id']);
+        }
+        elseif ($operation==ChangeRequest::OPERATION_UPDATE) {
+            unset($feature['properties']['created_at']);
+            $feature['properties']['created_at'] = $previousFeature->created_at;
+            $feature['properties']['updated_at'] = date('Y-m-d');
+        }
+        return $feature;
     }
     
     public static function prepareGeom($geom) {
@@ -407,15 +434,12 @@ class ChangeRequest extends Model
         return false;
     }
     
-    public static function insertFeature($table_name, &$values_array, $geom, $status = ChangeRequest::FEATURE_STATUS_VALIDATED) {
+    public static function insertFeature($table_name, &$values_array, $geom=null) {
         try {
             //DB::enableQueryLog();
-            //unset($values_array['cod_elem']);
-            $values_array['origin'] = ChangeRequest::FEATURE_ORIGIN_ICRWEB;
-            $values_array['updated_at'] = date('Y-m-d H:i:s');
-            $values_array['created_at'] = date('Y-m-d H:i:s');
-            $values_array['status'] = $status;
-            $values_array['thegeom'] = ChangeRequest::prepareGeom($geom);
+            if ($geom !== null) {
+                $values_array['thegeom'] = ChangeRequest::prepareGeom($geom);
+            }
             $values_array['id'] = DB::table($table_name)->insertGetId($values_array);
             return $values_array['id'];
         } catch (\Illuminate\Database\QueryException $e) {
@@ -430,16 +454,11 @@ class ChangeRequest extends Model
         }
     }
     
-    protected static function updateFeature($table_name, $id, &$values_array, $geom) {
+    protected static function updateFeature($table_name, $id, &$values_array, $geom=null) {
         try {
-            // enforce timestamps in the server side
-            unset($values_array['created_at']);
-            //unset($values_array['cod_elem']);
-            unset($values_array['origin']);
-            unset($values_array['id']);
-            $values_array['updated_at'] = date('Y-m-d H:i:s');
-            $values_array['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
-            $values_array['thegeom'] = ChangeRequest::prepareGeom($geom);
+            if ($geom !== null) {
+                $values_array['thegeom'] = ChangeRequest::prepareGeom($geom);
+            }
             DB::table($table_name)
             ->where('id', '=', $id)
             ->update($values_array);
@@ -453,7 +472,7 @@ class ChangeRequest extends Model
     }
     
     
-    public static function setFeatureStatus($table_name, $id, $status) {
+    public static function commitFeatureStatus($table_name, $id, $status) {
         try {
             $values_array = [];
             $values_array['status'] = $status;
@@ -484,82 +503,129 @@ class ChangeRequest extends Model
         }
     }
     
+    
+    protected function getNextFeatureStatus($table_name, $feature_id, $featureStatus, $changeRequestStatus) {
+        if ($changeRequestStatus==ChangeRequest::STATUS_VALIDATED) {
+            if ($table_name==Camino::LAYER_NAME &&
+                    MtopChangeRequest::open()->where('feature_id', $feature_id)->count()>0) {
+                return $featureStatus;
+            }
+            else {
+                return ChangeRequest::FEATURE_STATUS_VALIDATED;
+            }
+        }
+        else {
+            return $featureStatus;
+        }
+    }
+    
     /**
      * Aplica de forma definitiva los cambios de una petición de cambios.
      *  
      * @param ChangeRequest $changerequest
-     * @param unknown $user
+     * @param $user
      */
     protected function setValidated(ChangeRequest $changerequest, $user) {
-        $table_name = ChangeRequest::getTableName($changerequest->layer);
-        if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
-            $id = $changerequest->feature_id;
-            ChangeRequest::deleteFeature($table_name, $id);
-            //ChangeRequest::historyDelete($table_name, $id);
-        }
-        elseif ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
-            ChangeRequest::setFeatureStatus($table_name, $changerequest->feature_id,
-                ChangeRequest::FEATURE_STATUS_VALIDATED);
-            if ($changerequest->feature == null) {
-                // los changerequests creados en la carga vacía tienen el campo feature vacío
-                $featureObj = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
-                $feature = ChangeRequest::feature2array($featureObj);
-                if ($feature) {
-                    $changerequest->feature = json_encode($feature);
+        DB::transaction(function () use ($changerequest, $user) {
+            $table_name = ChangeRequest::getTableName($changerequest->layer);
+            if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
+                $id = $changerequest->feature_id;
+                ChangeRequest::deleteFeature($table_name, $id);
+                //ChangeRequest::historyDelete($table_name, $id);
+            }
+            elseif ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
+                ChangeRequest::commitFeatureStatus($table_name, $changerequest->feature_id,
+                    ChangeRequest::FEATURE_STATUS_VALIDATED);
+                if ($changerequest->feature == null) {
+                    // los changerequests creados en la carga vacía tienen el campo feature vacío
+                    $featureObj = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
+                    $feature = ChangeRequest::feature2array($featureObj);
+                    if ($feature) {
+                        $changerequest->feature = json_encode($feature);
+                    }
                 }
+                else {
+                    $feature = json_decode($changerequest->feature, true);
+                }
+                $values = array_get($feature, 'properties', []);
+                $geom = Geometry::fromJson(json_encode($feature));
+                //ChangeRequest::historyInsert($table_name, $values);
             }
             else {
                 $feature = json_decode($changerequest->feature, true);
+                $values = array_get($feature, 'properties', []);
+                $values['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
+                $geom = Geometry::fromJson(json_encode($feature));
+                ChangeRequest::updateFeature($table_name, $id, $values, $geom);
+                //ChangeRequest::historyUpdate($table_name, $values);
             }
-            $values = array_get($feature, 'properties', []);
-            $geom = Geometry::fromJson(json_encode($feature));
-            //ChangeRequest::historyInsert($table_name, $values);
-        }
-        else {
-            $feature = json_decode($changerequest->feature, true);
-            $values = array_get($feature, 'properties', []);
-            $geom = Geometry::fromJson(json_encode($feature));
-            ChangeRequest::updateFeature($table_name, $id, $values, $geom);
-            //ChangeRequest::historyUpdate($table_name, $values);
-        }
-        
-        $changerequest->status = ChangeRequest::STATUS_VALIDATED;
-        $changerequest->validator()->associate($user);
-        $changerequest->save();
+            
+            $changerequest->status = ChangeRequest::STATUS_VALIDATED;
+            $changerequest->validator()->associate($user);
+            $changerequest->save();
+        });
     }
+    
     protected function setRejected(ChangeRequest $changerequest, $user) {
-        $id = $changerequest->feature_id;
-        $table_name = ChangeRequest::getTableName($changerequest->layer);
-        if ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
-            if ($changerequest->feature == null) {
-                // los changerequests creados en la carga vacía tienen el campo feature vacío
-                $featureObj = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
-                $changerequest->feature = ChangeRequest::feature2geojson($featureObj);
+        DB::transaction(function () use ($changerequest, $user) {
+            $id = $changerequest->feature_id;
+            $table_name = ChangeRequest::getTableName($changerequest->layer);
+            if ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
+                if ($changerequest->feature == null) {
+                    // los changerequests creados en la carga vacía tienen el campo feature vacío
+                    $featureObj = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
+                    $changerequest->feature = ChangeRequest::feature2geojson($featureObj);
+                }
+                ChangeRequest::deleteFeature($table_name, $id);
             }
-            ChangeRequest::deleteFeature($table_name, $id);
-        }
-        else {
-            ChangeRequest::setFeatureStatus($table_name, $changerequest->feature_id,
-                ChangeRequest::FEATURE_STATUS_VALIDATED);
-        }
-        
-        $changerequest->status = ChangeRequest::STATUS_REJECTED;
-        $changerequest->validator()->associate($user);
-        $changerequest->save();
+            else {
+                ChangeRequest::commitFeatureStatus($table_name, $changerequest->feature_id,
+                    ChangeRequest::FEATURE_STATUS_VALIDATED);
+            }
+            
+            $changerequest->status = ChangeRequest::STATUS_REJECTED;
+            $changerequest->validator()->associate($user);
+            $changerequest->save();
+        });
     }
     
     protected function setCancelled(ChangeRequest $changerequest, $user) {
-        $id = $changerequest->feature_id;
-        $table_name = ChangeRequest::getTableName($changerequest->layer);
-        if ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
-            ChangeRequest::deleteFeature($table_name, $id);
+        DB::transaction(function () use ($changerequest, $user) {
+            $id = $changerequest->feature_id;
+            $table_name = ChangeRequest::getTableName($changerequest->layer);
+            if ($changerequest->operation == ChangeRequest::OPERATION_CREATE) {
+                ChangeRequest::deleteFeature($table_name, $id);
+            }
+            else {
+                ChangeRequest::commitFeatureStatus($table_name, $changerequest->feature_id,
+                    ChangeRequest::FEATURE_STATUS_VALIDATED);
+            }
+            
+            $changerequest->status = ChangeRequest::STATUS_CANCELLED;
+            $changerequest->save();
+        });
+    }
+    
+    public static function comprobarCodigoCamino($codigo_camino, $codigo_dep) {
+        if ($codigo_camino!=null && strlen($codigo_camino)==8) {
+            if (substr($codigo_camino, 0, 4)==$codigo_dep) {
+                if (is_numeric(substr($codigo_camino, 4, 4))) {
+                    return true;
+                }
+                elseif (is_numeric(substr($codigo_camino, 6, 2)) &&
+                    preg_match('/^[A-Z_][A-Z]$/', substr($codigo_camino, 4, 2))) {
+                    // camino compartido por dos estados
+                        return true;
+                }
+            }
+            elseif ((substr($codigo_camino, 0, 2) == 'UY') &&
+                (substr($codigo_camino, 4, 2) == substr($codigo_dep, 2, 2))
+                && preg_match('/^[A-Z_][A-Z]$/', substr($codigo_camino, 2, 2))
+                && is_numeric(substr($codigo_camino, 6, 2))) {
+                // camino compartido por dos estados
+                return true;
+            }
         }
-        else {
-            ChangeRequest::setFeatureStatus($table_name, $changerequest->feature_id,
-                ChangeRequest::FEATURE_STATUS_VALIDATED);
-        }
-        
-        $changerequest->status = ChangeRequest::STATUS_CANCELLED;
-        $changerequest->save();
+        return false;
     }
 }

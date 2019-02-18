@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\ChangeRequest;
 use App\Http\Requests\ChangeRequestApiFormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Grimzy\LaravelMysqlSpatial\Types\Point;
 use Grimzy\LaravelMysqlSpatial\Types\Geometry;
 
 class ChangeRequestApiController extends Controller
@@ -41,7 +39,12 @@ class ChangeRequestApiController extends Controller
     {
         $validated = $request->validated();
         $changerequest = new ChangeRequest;
-        $changerequest->status = ChangeRequest::STATUS_PENDING;
+        if ($request->user()->isAdmin()) {
+            $changerequest->status = ChangeRequest::STATUS_VALIDATED;
+        }
+        else {
+            $changerequest->status = ChangeRequest::STATUS_PENDING;
+        }
         $changerequest->layer = $validated['layer'];
         $changerequest->operation = $validated['operation'];
         $feature = $validated['feature'];
@@ -60,23 +63,15 @@ class ChangeRequestApiController extends Controller
         // parse as a Geometry object to ensure we have a valid geom
         $geom = Geometry::fromJson(json_encode($feature));
         // validate all the fields before storing the ChR
-        ChangeRequest::prepareFeature($validated['layer'], $feature, $validated['operation']);
-        
-        if ($feature_previous != null) {
-            $feature['properties']['created_at'] = $feature_previous->created_at;
+        $feature['properties'] = ChangeRequest::prepareFeature($validated['layer'], $feature, $validated['operation']);
+        $feature = ChangeRequest::prepareInternalFields($feature, $validated['operation'], $changerequest->status, $feature_previous);
+        $newId = ChangeRequest::applyChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
+        if ($newId) {
+            $feature['properties']['id'] = $newId;
         }
         if ($request->user()->isAdmin()) {
-            Log::error("user is admin!");
-            ChangeRequest::applyValidatedChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
-            $changerequest->status = ChangeRequest::STATUS_VALIDATED;
+            //Log::error("user is admin!");
             $changerequest->validator()->associate($request->user());
-            //ChangeRequest::setValidated($changerequest, $request->user());
-            
-        }
-        else {
-            Log::error("user is not admin!");
-            $changerequest->status = ChangeRequest::STATUS_PENDING;
-            ChangeRequest::applyPendingChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
         }
         $changerequest->feature_id = array_get($feature, "properties.id");
         $changerequest->feature = json_encode($feature);

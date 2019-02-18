@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\MtopChangeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class ChangeRequestController extends Controller
+class MtopChangeRequestController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,40 +18,40 @@ class ChangeRequestController extends Controller
     {
         $status = $request->query('status');
         if (empty($status) || $status=='open') {
-            $data = ChangeRequest::open();
+            $data = MtopChangeRequest::open();
         }
         elseif ($status=='pending') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
+            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
         }
         elseif ($status=='all') {
-            $data = ChangeRequest::with(['author', 'validator']);
+            $data = MtopChangeRequest::with(['author', 'validator']);
         }
         elseif ($status=='closed') {
-            $data = ChangeRequest::closed();
+            $data = MtopChangeRequest::closed();
         }
         elseif ($status=='admininfo') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_ADMININFO);
+            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_ADMININFO);
         }
         elseif ($status=='userinfo') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_USERINFO);
+            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_USERINFO);
         }
         elseif ($status=='validated') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_VALIDATED);
+            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_VALIDATED);
         }
         elseif ($status=='rejected') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_REJECTED);
+            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_REJECTED);
         }
         elseif ($status=='cancelled') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_CANCELLED);
+            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_CANCELLED);
         }
         else {
-            $data = ChangeRequest::open();
+            $data = MtopChangeRequest::open();
         }
         if (!$request->user()->isAdmin()) {
             $data = $data->where('requested_by_id', $request->user()->id);
         }
         $data->with(['author', 'validator'])->orderBy('updated_at', 'desc');
-        return view('changerequest.index', ['changerequests' => $data->get()]);
+        return view('mtopchangerequest.index', ['changerequests' => $data->get()]);
     }
 
     /**
@@ -80,7 +81,7 @@ class ChangeRequestController extends Controller
      * @param  \App\ChangeRequest  $changeRequest
      * @return \Illuminate\Http\Response
      */
-    public function show(ChangeRequest $changerequest)
+    public function show(MtopChangeRequest $changerequest)
     {
         //
     }
@@ -91,53 +92,17 @@ class ChangeRequestController extends Controller
      * @param  \App\ChangeRequest  $changeRequest
      * @return \Illuminate\Http\Response
      */
-    public function edit(ChangeRequest $changerequest)
+    public function edit(MtopChangeRequest $changerequest)
     {
-        $previousFeature = json_decode($changerequest->feature_previous);
+        //$previousFeature = json_decode($changerequest->feature_previous);
+        $previousFeature = null;
         if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
             $proposedFeature = null;
         }
         else {
-            if ($changerequest->feature == null && 
-                $changerequest->operation == ChangeRequest::OPERATION_CREATE) {
-                    // datos cargados directamente de la base de datos
-                    $feature = ChangeRequest::getCurrentFeature($changerequest->layer, $changerequest->feature_id);
-                    $changerequest->feature = json_encode(ChangeRequest::feature2array($feature));
-                    $changerequest->save();
-            }
             $proposedFeature = json_decode($changerequest->feature);
         }
-        
-//        Log::error($changerequest->feature_previous);
-//        Log::error($changerequest->feature);
-        
-        /*
-        $layer = $changerequest->layer;
-//         Log::error('id: ');
-//         Log::error($changerequest->feature_id);
-        $feat_id = ChangeRequest::getFeatureId($changerequest->feature_id);
-//         Log::error($feat_id);
-        
-//         Log::error('id bis: ');
-//         Log::error($proposedFeature->properties->id);
-        
-//         $feat_id = array_get($proposedFeature, "properties.id");
-//         Log::error($feat_id);
-//         $feat_id = ChangeRequest::getFeatureId($feat_id);
-//         Log::error($feat_id);
-        $previousFeatureArray = [];
-        
-        $the_geom = '';
-        if ($feat_id > 0) {
-            $currentFeature = ChangeRequest::getCurrentFeature($layer, $feat_id);
-            $the_geom = $currentFeature-> thegeomjson;
-            foreach ($currentFeature as $key => $value) {
-                if ($key != 'thegeom' && $key != 'thegeomjson') {
-                    $previousFeatureArray[$key] = $value;
-                }
-            }
-        }
-        */
+
         return view('changerequest.edit', ['changerequest'=>$changerequest,
             'previousFeature'=>$previousFeature,
             'proposedFeature'=>$proposedFeature
@@ -154,7 +119,7 @@ class ChangeRequestController extends Controller
     public function update(Request $request, $id)
     {
         // for the moment, don't allow any change in the ChR except the status
-        $origChangerequest = ChangeRequest::findOrFail($id);
+        $origChangerequest = MtopChangeRequest::findOrFail($id);
         /*
         $feature = json_decode($origChangerequest->feature, true);
         $geom = Geometry::fromJson($origChangerequest->feature);*/
@@ -168,8 +133,8 @@ class ChangeRequestController extends Controller
                 ]);
                 throw $error;
             }
-            ChangeRequest::setCancelled($origChangerequest, $request->user());
-            return redirect()->route('changerequests.index');
+            MtopChangeRequest::setCancelled($origChangerequest, $request->user());
+            return redirect()->route('mtopchangerequests.index');
         }
         if (!$request->user()->isAdmin()) {
             $message = 'Un usuario no-administrador intentó modificar una petición: '.$request->user()->email;
@@ -181,20 +146,13 @@ class ChangeRequestController extends Controller
         }
         
         if (!empty($request->action_validate)) {
-            
-            /*
-            ChangeRequest::applyValidatedChangeRequest(
-                $origChangerequest->layer,
-                $origChangerequest->operation,
-                $feature, $geom);*/
-            // FIXME: we need a more meaningful name
-            ChangeRequest::setValidated($origChangerequest, $request->user());
+            MtopChangeRequest::setValidated($origChangerequest, $request->user());
         }
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
-            ChangeRequest::setRejected($origChangerequest, $request->user());
+            MtopChangeRequest::setRejected($origChangerequest, $request->user());
         }
-        return redirect()->route('changerequests.index');
+        return redirect()->route('mtopchangerequests.index');
     }
 
     /**
@@ -203,7 +161,7 @@ class ChangeRequestController extends Controller
      * @param  \App\ChangeRequest  $changeRequest
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ChangeRequest $changeRequest)
+    public function destroy(MtopChangeRequest $changeRequest)
     {
         //
     }
