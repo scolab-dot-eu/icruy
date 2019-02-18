@@ -80,8 +80,8 @@ Toc.prototype = {
         }).addTo(this.map);
 
         this.sidebar.on('opening', function() {
-            $('.leaflet-control-mouseposition').css('margin-left', '320px');
-            $('.leaflet-bar-timecontrol').css('margin-left', '320px');
+            $('.leaflet-control-mouseposition').css('margin-left', '380px');
+            $('.leaflet-bar-timecontrol').css('margin-left', '380px');
         });
 
         this.sidebar.on('closing', function() {

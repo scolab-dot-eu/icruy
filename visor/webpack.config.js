@@ -11,7 +11,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'app.bundle.js'
   },
-  //devtool: 'inline-source-map',
+  devtool: 'inline-source-map',
   plugins: [
     new CleanWebpackPlugin(['dist']),
     new HtmlWebpackPlugin({template: './src/index.html'}),
@@ -45,8 +45,6 @@ module.exports = {
         leaflet_styledlc_js: __dirname + "/vendors/styled-layer-control/styledLayerControl.js",
         leaflet_topcenter_css: __dirname + "/vendors/leaflet-control-topcenter.css",
         leaflet_topcenter_js: __dirname + "/vendors/leaflet-control-topcenter.js",
-        leaflet_search_css: __dirname + "/vendors/leaflet-fusesearch/src/leaflet.fusesearch.css",
-        leaflet_search_js: __dirname + "/vendors/leaflet-fusesearch/src/leaflet.fusesearch.js",
         leaflet_measure_css: __dirname + "/vendors/leaflet-measure/leaflet-measure.css",
         leaflet_measure_js: __dirname + "/vendors/leaflet-measure/leaflet-measure.es.js",
         leaflet_coordinates_css: __dirname + "/vendors/leaflet-mouseposition/L.Control.MousePosition.css",
@@ -57,6 +55,7 @@ module.exports = {
         datatables_css: __dirname + "/vendors/DataTables/datatables.min.css",
         datatables_buttons_js: __dirname + "/vendors/DataTables/Buttons-1.5.4/js/dataTables.buttons.min.js",
         js_zip: __dirname + "/vendors/DataTables/JSZip-2.5.0/jszip.min.js",
+        proj4_js: __dirname + "/node_modules/proj4leaflet/lib/proj4-compressed.js",
         datatables_buttons_html5_js: __dirname + "/vendors/DataTables/Buttons-1.5.4/js/buttons.html5.min.js",
         datatables_buttons_css: __dirname + "/vendors/DataTables/Buttons-1.5.4/css/buttons.dataTables.min.css",
         leaflet_graphic_scale_css: __dirname + "/node_modules/leaflet-graphicscale/dist/Leaflet.GraphicScale.min.css",

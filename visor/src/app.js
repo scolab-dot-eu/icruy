@@ -17,21 +17,20 @@ require('leaflet_easybutton_css');
 require('leaflet_navbar_css');
 require('leaflet_topcenter_css');
 require('leaflet_graphic_scale_css');
-require('leaflet_search_css');
 require('leaflet_measure_css');
 require('leaflet_timedimension_css');
 require('leaflet_locate_css');
 
 require('fontawesome');
 var L = require('leaflet');
+window.proj4 = require('proj4_js');
+require('proj4leaflet');
 
 require('leaflet-bing-layer');
 require('bootstrap_js');
 require('webpack-jquery-ui');
 require('webpack-jquery-ui/css');
 require('leaflet-easybutton');
-require('fuse.js');
-require('leaflet_search_js');
 require('leaflet_logo_js');
 require('leaflet_topcenter_js');
 require('leaflet_timedimension_js');
@@ -70,7 +69,6 @@ if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 initialize();
 
 function initialize() {
-
     var mask = document.getElementById("loading-signal");
     document.body.removeChild(mask);
 
@@ -254,6 +252,31 @@ function loadOverlays(map) {
                 function popUp(f,l){
                     var editable = false;
                     var eLayer = null;
+
+                    if (f.id.indexOf('v_camineria') !== -1) {
+                        var codigoMTOP = f.properties.codigo;
+                        f.properties = {};
+                        f.properties['ancho_calzada'] = '';
+                        f.properties['banquina'] = '';
+                        f.properties['codigo_camino'] = codigoMTOP;
+                        f.properties['cordon'] = '';
+                        f.properties['cuneta'] = '';
+                        f.properties['departamento'] = '';
+                        f.properties['id'] = '';
+                        f.properties['observaciones'] = '';
+                        f.properties['origin'] = '';
+                        f.properties['rodadura'] = '';
+                        f.properties['senaliz_horiz'] = '';
+                        f.properties['status'] = '';
+                        f.properties['created_at'] = '';
+                        f.properties['updated_at'] = '';
+                        for (var i in caminos) {
+                            if (caminos[i].codigo_camino == codigoMTOP) {
+                                $.extend(f.properties, caminos[i]);
+                            }
+                        }
+                    }
+
                     if (f.properties){
                         var html = '';
                         var fLayerName = f.id.split('.')[0];
@@ -351,6 +374,7 @@ function loadOverlays(map) {
                     );
                 }
                 
+                layer.geom_type = config.overlays.groups[i].layers[j].geom_type;
                 layer.type = 'wfs';
                 layer.isGeojsonLayer = true;
                 layer.style = config.overlays.groups[i].layers[j].style;
@@ -461,23 +485,33 @@ function loadControls(map, tocBaseLayers, overlays, utils, pUtils) {
     
         L.control.mousePosition({
             position: 'bottomcenter',
-            separator: ' / ', //To separate longitude\latitude values
-            emptystring: 'Mover el ratón', //Initial text to display. Defaults to 'Unavailable'
-            numDigits: 4, //Number of digits. Defaults to 5
-            lngFirst: false, //Weather to put the longitude first or not. Defaults to false
-            //lngFormatter: Custom function to format the longitude value. Defaults to undefined
-            //latFormatter: Custom function to format the latitude value. Defaults to undefined
-            prefix: 'Latitud/Longitud: '//A string to be prepended to the coordinates. Defaults to the empty string ‘’.
+            separator: ' / ',
+            emptystring: 'Mover el ratón',
+            numDigits: 4,
+            lngFirst: false,
+            prefix: 'Latitud/Longitud: '
         }).addTo(map);
+        appendEpsgSelector();
     } 
     var toc = new Toc(config, map, tocBaseLayers, overlays, utils);
 
-    new ToolBar(map, overlays, pUtils);
+    new ToolBar(map, overlays, pUtils, toc);
 
     return {
         toc: toc
     }
 
+}
+
+function appendEpsgSelector() {
+    var ui = '';
+    ui += '<select id="epsg-selector" class="epsg-selector">';
+    ui +=   '<option selected value="wgs84_latlon">WGS84 (dd.dddd)</option>';
+    ui +=   '<option value="wgs84_degrees">WGS84 (gms)</option>';
+    ui +=   '<option value="utm">UTM</option>';
+    ui += '</select>';
+
+    $('#epsg').append(ui);
 }
 
 function registerMapEvents(map, controls, utils, printUtils) {
@@ -520,26 +554,31 @@ function registerMapEvents(map, controls, utils, printUtils) {
         });
 
         $('.popup-toolbar-button-edit').click(function(e){
-            for (i in editableLayers) {
-                if (editableLayers[i].name == this.dataset.layername) {
-                    var id = this.dataset.fid;
-                    var editableLayer = editableLayers[i].layer;
-                    editableLayer.eachLayer(function(layer) {
-                        if (layer.feature.id == id) {
-                            var clonedLayer = layer;
-                            if (layer.feature.geometry.type == 'Point') {
-                                map.setView(layer.getLatLng(), 15);
-                            } else {
-                                var bounds = layer.getBounds();
-                                map.fitBounds(bounds);
+            if (!inEdition) {
+                for (i in editableLayers) {
+                    if (editableLayers[i].name == this.dataset.layername) {
+                        var id = this.dataset.fid;
+                        var editableLayer = editableLayers[i].layer;
+                        editableLayer.eachLayer(function(layer) {
+                            if (layer.feature.id == id) {
+                                var clonedLayer = layer;
+                                if (layer.feature.geometry.type == 'Point') {
+                                    map.setView(layer.getLatLng(), 15);
+                                } else {
+                                    var bounds = layer.getBounds();
+                                    map.fitBounds(bounds);
+                                }
+                                layer.editing.enable();
+                                inEdition = true;
+                                loadFeatureForm(map, controls.toc, layer, clonedLayer, editableLayer, utils);
                             }
-                            layer.editing.enable();
-                            inEdition = true;
-                            loadFeatureForm(map, controls.toc, layer, clonedLayer, editableLayer, utils);
-                        }
-                    });
+                        });
+                    }
                 }
+            } else {
+                alert('Existe otro elemento en edición');
             }
+            
             
         });
 
@@ -584,8 +623,13 @@ function deleteElement(editableLayer, element) {
         'feature': element.toGeoJSON()
     };
 
+    var url = window.serviceURL + '/api/changerequest';
+    if (editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
+        url = window.serviceURL + '/api/mtopchangerequest';
+    }
+
     $.ajax({
-        url: window.serviceURL + '/api/changerequest',
+        url: url,
         type: 'POST',
         async: false,
         data: JSON.stringify(data),
@@ -597,11 +641,6 @@ function deleteElement(editableLayer, element) {
 
         } else {
             element.feature.properties.status = 'PENDIENTE:BORRADO';
-            /*var pendingIcon = new L.Icon({
-                iconUrl: element._icon.src.replace('validated', 'pending'),
-                iconSize: [element._icon.width, element._icon.height]
-            });
-            element.setIcon(pendingIcon);*/
             var style = element.options;
             style.fillOpacity = 0.1;          
             element.setStyle(style);
@@ -618,9 +657,14 @@ function updateElement(map, toc, element, editableLayer) {
         'layer': editableLayer.name,
         'feature': element.toGeoJSON()
     };
+
+    var url = window.serviceURL + '/api/changerequest';
+    if (editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
+        url = window.serviceURL + '/api/mtopchangerequest';
+    }
     
     $.ajax({
-        url: window.serviceURL + '/api/changerequest',
+        url: url,
         type: 'POST',
         async: false,
         data: JSON.stringify(data),
@@ -633,21 +677,8 @@ function updateElement(map, toc, element, editableLayer) {
             style.fillOpacity = 1;          
             element.setStyle(style);
 
-            /*if (element._icon.src.indexOf('pending') >= 0) {
-                var pendingIcon = new L.Icon({
-                    iconUrl: element._icon.src.replace('pending', 'validated'),
-                    iconSize: [element._icon.width, element._icon.height]
-                });
-                element.setIcon(pendingIcon);               
-            }*/
-
         } else {
             element.feature.properties.status = resp.feature.properties.status;
-            /*var pendingIcon = new L.Icon({
-                iconUrl: element._icon.src.replace('validated', 'pending'),
-                iconSize: [element._icon.width, element._icon.height]
-            });
-            element.setIcon(pendingIcon);*/
             var style = element.options;
             style.fillOpacity = 0.1;          
             element.setStyle(style);

@@ -19,6 +19,9 @@ Utils.prototype = {
 
         for (i in fields) {
             if (fields[i].name == key) {
+                if (value == 'null') {
+                    value = '';
+                }
                 if (fields[i].type == 'string') {
                     if (fields[i].name == 'departamento' || fields[i].name == 'status') {
                         html += '<div class="form-group">';

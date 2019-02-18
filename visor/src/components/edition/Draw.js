@@ -42,7 +42,7 @@ Draw.prototype = {
             }
         );
 
-        var geomType = layer.geom_style;
+        var geomType = layer.geom_type;
  
         if (geomType == 'point') {
             options['draw'].marker = false;
@@ -53,7 +53,7 @@ Draw.prototype = {
             options['draw'].circlemarker = true;
             options['draw'].rectangle = false;
 
-        } else if (geomType == 'line') {
+        } else if (geomType == 'line' || geomType == 'external:linestring' ) {
             options['draw'].marker = false;
             options['draw'].polygon = false;
             options['draw'].circle = false;
