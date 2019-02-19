@@ -14,6 +14,8 @@ View3D.prototype = {
         $('#logo-3d').append('<img src="' + window.serviceURL + '/visor/assets/images/logo_opp2.png">');
 
         this.control = L.easyButton('fa-globe', function(btn, m){
+            var mask = '<div id="animationload" class="animationload"><div class="osahanloading"></div></div>';
+            $('body').append(mask);
             $('#map').addClass('hidden');
             $('#canvas-wrap').removeClass('hidden');
             $('.goto-2d').css('display', 'block');
@@ -40,6 +42,8 @@ View3D.prototype = {
             for (var i in _this.overlays.overlays) {
                 _this.loadLayer(_this.overlays.overlays[i]);
             }
+
+            $('#animationload').remove();
 
             //_this.loadLayers(["camineria:cr_alcantarillas","camineria:cr_baden","camineria:cr_obstaculo","camineria:cr_paso","camineria:cr_senyal","camineria:cr_puente"]);
         }, 'Vista 3D');

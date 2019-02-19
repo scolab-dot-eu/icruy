@@ -155,7 +155,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 .bt_stop_draw{
@@ -163,7 +164,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 .bt_start_time{
@@ -171,7 +173,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 .bt_stop_time{
@@ -179,7 +182,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 
@@ -188,7 +192,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 .bt_download{
@@ -196,7 +201,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 .bt_ogc_services{
@@ -204,7 +210,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 .bt_metadata{
@@ -212,7 +219,8 @@ div[id^="leaflet-control-accordion-layers"] > label:hover {
 	float: right;
     border: none;
     cursor: pointer;
-    vertical-align: middle;
+	vertical-align: middle;
+	color: #aaaaaa !important;
 }
 
 .leaflet-control-layers-expanded {
