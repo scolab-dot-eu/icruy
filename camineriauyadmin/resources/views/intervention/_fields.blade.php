@@ -1,15 +1,21 @@
         <div class="container">
           <div class="row">
-            <div class="col-md-6 col-12">
+            <div class="col-md-4 col-12">
                 <div class="form-group">
                     {!! Form::label('departamento', __('Departamento')) !!}
                     {!! Form::select('departamento', $user_departments, null, ['class' => 'form-control es-input', 'required' => true]) !!}
                 </div>
             </div>
-            <div class="col-md-6 col-12">
+            <div class="col-md-4 col-12">
                 <div class="form-group">
                     {!! Form::label('id', __('Identificador')) !!}
                     {!! Form::text('id', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="col-md-4 col-12">
+                <div class="form-group">
+                    {!! Form::label('status', __('Estado')) !!}
+                    {!! Form::text('status', null, ['readonly' => '', 'class' => 'form-control']) !!}
                 </div>
             </div>
           </div>
@@ -38,6 +44,20 @@
                 <div class="form-group">
                     {!! Form::label('id_elem', __('Código elemento')) !!}
                     {!! Form::number('id_elem', null, ['class' => 'form-control']) !!}
+                </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 col-12">
+                <div class="form-group">
+                    {!! Form::label('monto', __('Monto')) !!}
+                    {!! Form::number('monto', null, ['class' => 'form-control', 'step' => '0.01', 'max' => '9999999999.99']) !!}
+                </div>
+            </div>
+            <div class="col-md-6 col-12">
+                <div class="form-group">
+                    {!! Form::label('longitud', __('Longitud')) !!}
+                    {!! Form::number('longitud', null, ['class' => 'form-control', 'step' => '0.01', 'max' => '9.99']) !!}
                 </div>
             </div>
           </div>
@@ -94,19 +114,13 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-md-4 col-12">
-                <div class="form-group">
-                    {!! Form::label('longitud', __('Longitud')) !!}
-                    {!! Form::number('longitud', null, ['class' => 'form-control', 'step' => '0.01', 'max' => '9.99']) !!}
-                </div>
-            </div>
-            <div class="col-md-4 col-12">
+            <div class="col-md-6 col-12">
                 <div class="form-group">
                     {!! Form::label('financiacion', __('Financiación')) !!}
                     {!! Form::select('financiacion', ['IND'=>'INTENDENCIA DEPARTAMENTAL', 'OPP'=>'OPP', 'PRI'=> 'PRIVADA', 'OTR' => 'OTROS'], null, ['class' => 'form-control es-input', 'required'=>true]) !!}
                 </div>
             </div>
-            <div class="col-md-4 col-12">
+            <div class="col-md-6 col-12">
                 <div class="form-group">
                     {!! Form::label('forma_ejecucion', __('Forma ejecución')) !!}
                     {!! Form::select('forma_ejecucion', ['ADM'=>'ADMINISTRACIÓN', 'CON'=>'CONTRATO', 'MIX'=> 'MIXTA'], null, ['class' => 'form-control es-input', 'required'=>true]) !!}

@@ -12,7 +12,7 @@
                 <td>{{ __('Departamento') }}</td>
                 <td>{{ __('Camino') }}</td>
                 <td>{{ __('Tarea') }}</td>
-                <td>{{ __('Longitud') }}</td>
+                <td>{{ __('Monto') }}</td>
                 <td></td>
             </tr>
         </thead>
@@ -25,7 +25,7 @@
                 <td>{{ $value->departamento }}</td>
                 <td>{{ $value->codigo_camino }}</td>
                 <td>{{ $value->tarea }}</td>
-                <td>{{ $value->longitud }}</td>
+                <td>{{ $value->monto }}</td>
                 <td>
                     <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/interventions/' . $value->id . '/edit') }}">Editar</a>
                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="{{$value->id}}" data-name="{{ $value->anyo }} - {{$value->codigo_camino}}">Borrar</button>
