@@ -67,13 +67,14 @@ class MtopChangeRequestApiController extends Controller
         throw $error;
     }
 
-    protected function createChangeRequest($mtopOperation, $feature, $user) {
-        $feature_id = array_get($feature, "properties.codigo_camino");
+    protected function createChangeRequest($mtopOperation, $feature, $user, $mtopchangerequest_id=null) {
+        $codigo_camino = array_get($feature, "properties.codigo_camino");
+        
         $layer = Camino::LAYER_NAME;
         Log::debug("cmi01");
         Log::debug($layer);
-        Log::debug($feature_id);
-        $feature_previous = MtopChangeRequest::getCurrentFeature($layer, $feature_id);
+        Log::debug($codigo_camino);
+        $feature_previous = MtopChangeRequest::getCurrentFeature($layer, $codigo_camino);
         Log::debug(json_encode(MtopChangeRequest::feature2array($feature_previous)));
         // la operación para el camino MTOP no es la misma que la operación en la tabla de caminos
         if ($feature_previous == null) {
@@ -85,22 +86,24 @@ class MtopChangeRequestApiController extends Controller
                 return;
             }
         }
-        elseif ($feature_previous->status != ChangeRequest::FEATURE_STATUS_VALIDATED) {
-            $this->throwChangeRequestExists();
-        }
         else {
-            $feature['properties']['created_at'] = $feature_previous->created_at;
-            if ($mtopOperation==ChangeRequest::OPERATION_UPDATE || ($mtopOperation==ChangeRequest::OPERATION_DELETE)) {
-                $operation = $mtopOperation;
-            }
-            else {
-                $operation = ChangeRequest::OPERATION_UPDATE;
-            }
-        }
-        if ($feature_previous!=null &&
-            ChangeRequest::equalValues($feature['properties'], $feature_previous)) {
+            if (ChangeRequest::equalValues($feature['properties'], $feature_previous)) {
                 // don't need to create the ChR if values are equal
                 return;
+            }
+            if ($feature_previous->status != ChangeRequest::FEATURE_STATUS_VALIDATED) {
+            
+                $this->throwChangeRequestExists();
+            }
+            else {
+                $feature['properties']['created_at'] = $feature_previous->created_at;
+                if ($mtopOperation==ChangeRequest::OPERATION_UPDATE || ($mtopOperation==ChangeRequest::OPERATION_DELETE)) {
+                    $operation = $mtopOperation;
+                }
+                else {
+                    $operation = ChangeRequest::OPERATION_UPDATE;
+                }
+            }
         }
         
         $changerequest = new ChangeRequest();
@@ -113,9 +116,10 @@ class MtopChangeRequestApiController extends Controller
         $changerequest->layer = $layer;
         $changerequest->operation = $operation;
         $changerequest->departamento = array_get($feature, "properties.departamento");
+        $changerequest->feature_id = $codigo_camino;
         
         if ($operation != ChangeRequest::OPERATION_CREATE) {
-            if (ChangeRequest::open()->where('layer', $layer)->where('feat_id', $feature_id)->count()>0) {
+            if (ChangeRequest::open()->where('layer', $layer)->where('feat_id', $codigo_camino)->count()>0) {
                 /* if ($changerequest && $changerequest->requested_by!=$user) {}*/
                 
                 // ya existe un ChR sobre este camino
@@ -124,24 +128,27 @@ class MtopChangeRequestApiController extends Controller
             $changerequest->feature_previous = MtopChangeRequest::feature2json($feature_previous);
         }
         
-        // validate all the fields before storing the ChR
-        $feature['properties'] = ChangeRequest::prepareFeature($layer, $feature, $operation);
-        // feature status will always be PENDING (even for administrator) because MTOP request also has to be validated
-        $feature = ChangeRequest::prepareInternalFields($feature, $operation, ChangeRequest::STATUS_PENDING, $feature_previous);
-        
-        $newId = ChangeRequest::applyChangeRequest($layer, $operation, $feature);
-        if ($newId) {
-            $feature['properties']['id'] = $newId;
-        }
         if ($user->isAdmin()) {
             $changerequest->validator()->associate($user);
         }
-        $changerequest->feature_id = array_get($feature, "properties.id");
+
         // don't store the MTOP geom
         $the_feat = [];
         $the_feat['properties'] = $feature['properties'];
         $changerequest->feature = json_encode($the_feat);
         $user->changeRequests()->save($changerequest);
+        // validate all the fields before storing the ChR
+        $feature['properties'] = ChangeRequest::prepareFeature($layer, $feature, $operation);
+        // feature status will always be PENDING (even for administrator) because MTOP request also has to be validated
+        $feature = ChangeRequest::prepareInternalFields($feature, $operation, ChangeRequest::STATUS_PENDING, $feature_previous);
+        /*
+        $feature['statusmtop'] = ChangeRequest::STATUS_PENDING;
+        */
+        $newId = ChangeRequest::applyChangeRequest($layer, $operation, $feature);
+        if ($newId) {
+            $feature['properties']['id'] = $newId;
+        }
+        
         return $changerequest;
     }
 
