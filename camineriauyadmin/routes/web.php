@@ -27,6 +27,9 @@ Route::prefix('dashboard')
         Route::resource('changerequests', 'ChangeRequestController', ['except' => [
             'show', 'create', 'store', 'destroy'
         ]]);
+        Route::resource('mtopchangerequests', 'MtopChangeRequestController', ['except' => [
+            'show', 'create', 'store', 'destroy'
+        ]]);
 
     Route::group(['middleware' => ['isadmin']], function() {
         
@@ -89,9 +92,7 @@ Route::group(['middleware' => ['auth']], function() {
     })->name('selectdepartment');
     Route::get('/api/config/department/{code}', 'ViewerConfigApiController@getViewerConfig')->name('departmentviewerconfig');
     Route::post('/api/changerequest', 'ChangeRequestApiController@store')->name('api.changerequest');
-    /* Route::resource('/api/changerequest', 'ChangeRequestApiController', ['except' => [
-        'create', 'edit', 'show', 'update'
-    ]]); */
+    Route::post('/api/mtopchangerequest', 'MtopChangeRequestApiController@store')->name('api.mtopchangerequest');
 });
 
 Route::get('/api/config/global', 'ViewerConfigApiController@getViewerConfig')->name('globalviewerconfig');

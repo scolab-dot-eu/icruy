@@ -29,9 +29,14 @@ class CreateCaminosTable extends Migration
             $table->string('senaliz_horiz')->nullable(true)->default(null);
             $table->string('observaciones')->nullable(true)->default(null);
             $table->string('origin')->nullable();
+            $table->integer('changerequest')->unsigned()->nullable()->default(null);
+            $table->integer('mtopchangerequest')->unsigned()->nullable()->default(null);
+            $table->integer('validated_by_id')->unsigned()->nullable();
             $table->date('updated_at')->nullable();
             $table->date('created_at')->nullable();
             $table->foreign('departamento')->references('code')->on('departments');
+            $table->index(['departamento', 'changerequest', 'mtopchangerequest', 'codigo_camino'], 'cr_caminos_dep_stat_cod_cam_idx');
+            $table->index(['changerequest', 'mtopchangerequest', 'codigo_camino'], 'cr_caminos_stat_cod_cam_idx');
             $table->index(['status', 'codigo_camino']);
             $table->index(['departamento', 'status', 'codigo_camino']);
         });
@@ -54,7 +59,7 @@ class CreateCaminosTable extends Migration
                 $table->dateTime('valid_from');
                 $table->dateTime('valid_to');
                 $table->index(['valid_to', 'valid_from', 'codigo_camino']);
-                $table->index(['valid_to', 'valid_from', 'departamento', 'codigo_camino'], 'cr_caminos_valid_dep_cod_cam_idx');
+                $table->index(['valid_to', 'valid_from', 'departamento', 'codigo_camino'], 'chr_caminos_valid_dep_cod_cam_idx');
             });
         
         

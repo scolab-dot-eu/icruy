@@ -16,16 +16,20 @@ class CreateMtopchangerequestsTable extends Migration
         Schema::create('mtopchangerequests', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('requested_by_id')->unsigned();
-            $table->integer('processed_by_id')->unsigned()->nullable();
-            $table->string('layer', 200);
+            $table->integer('validated_by_id')->unsigned()->nullable();
+            $table->string('codigo_camino', 8)->nullable()->default(null);
+            $table->integer('feature_id')->unsigned()->nullable()->default(null);
+            $table->string('departamento', 4);
             $table->string('status');
             $table->string('operation');
-            $table->json('feature');
+            $table->json('feature_previous')->nullable();
+            $table->json('feature')->nullable();
+            $table->json('feature_validated')->nullable();
             $table->timestamps();
-            
-            $table->index('requested_by_id');
-            $table->index('processed_by_id');
-            $table->index('status');
+            $table->index(['status', 'feature_id']);
+            $table->index(['requested_by_id', 'status']);
+            $table->index('validated_by_id');
+            $table->foreign('departamento')->references('code')->on('departments');
         });
     }
 
