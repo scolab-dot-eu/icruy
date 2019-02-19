@@ -21,6 +21,7 @@ class CreateCaminosTable extends Migration
             $table->string('codigo_camino', 8)->unique();
             $table->string('departamento', 4);
             $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
+            $table->string('statusmtop', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
             $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
             $table->string('rodadura')->nullable(true)->default(null);
             $table->boolean('banquina')->nullable(true)->default(null);
@@ -29,16 +30,12 @@ class CreateCaminosTable extends Migration
             $table->string('senaliz_horiz')->nullable(true)->default(null);
             $table->string('observaciones')->nullable(true)->default(null);
             $table->string('origin')->nullable();
-            $table->integer('changerequest')->unsigned()->nullable()->default(null);
-            $table->integer('mtopchangerequest')->unsigned()->nullable()->default(null);
             $table->integer('validated_by_id')->unsigned()->nullable();
             $table->date('updated_at')->nullable();
             $table->date('created_at')->nullable();
             $table->foreign('departamento')->references('code')->on('departments');
-            $table->index(['departamento', 'changerequest', 'mtopchangerequest', 'codigo_camino'], 'cr_caminos_dep_stat_cod_cam_idx');
-            $table->index(['changerequest', 'mtopchangerequest', 'codigo_camino'], 'cr_caminos_stat_cod_cam_idx');
-            $table->index(['status', 'codigo_camino']);
-            $table->index(['departamento', 'status', 'codigo_camino']);
+            $table->index(['status', 'codigo_camino', 'statusmtop']);
+            $table->index(['departamento', 'status', 'codigo_camino', 'statusmtop']);
         });
 
         $historicName = EditableLayerDef::getHistoricTableName($name);
