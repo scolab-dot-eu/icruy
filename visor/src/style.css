@@ -21,11 +21,11 @@ html, body {
 }
 
 .leaflet-sidebar-tabs>ul>li.active {
-    background-color: #030303;
+    background-color: #aaaaaa;
 }
 
 .leaflet-sidebar-header {
-    background-color: #030303;
+    background-color: #aaaaaa;
 }
 
 .leaflet-logo-control {
@@ -118,7 +118,7 @@ html, body {
 
 .ui-widget-header {
     border: 1px solid #dddddd/*{borderColorHeader}*/;
-    background: #030303/*{bgColorHeader}*/ /*{bgImgUrlHeader}*/ /*{bgHeaderXPos}*/ /*{bgHeaderYPos}*/ /*{bgHeaderRepeat}*/;
+    background: #aaaaaa/*{bgColorHeader}*/ /*{bgImgUrlHeader}*/ /*{bgHeaderXPos}*/ /*{bgHeaderYPos}*/ /*{bgHeaderRepeat}*/;
     color: #333333/*{fcHeader}*/;
     font-weight: bold;
 }

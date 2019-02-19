@@ -51,6 +51,7 @@ TimeControl.prototype = {
 
         // Create and add a TimeDimension Layer to the map
         this.tdWmsLayer = L.timeDimension.layer.wms(wmsLayer);
+        this.tdWmsLayer.setZIndex(1000 + layer._leaflet_id);
         this.tdWmsLayer.addTo(this.map);
     },
 

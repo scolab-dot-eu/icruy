@@ -162,6 +162,7 @@ function loadBaseLayers(map) {
             } else if (config.baselayers.groups[i].layers[j].type == 'empty') {
                 layer = L.tileLayer('');
             }
+            layer.isBaseLayer = true;
             if (config.baselayers.groups[i].layers[j].visible) {
                 layer.addTo(map);
             }

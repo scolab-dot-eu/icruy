@@ -17,14 +17,14 @@ function ToolBar(map, overlays, printUtils, toc) {
    
 ToolBar.prototype = {
     initialize: function() {
-        var print = new Print(this.map, this.printUtils);
+        //var print = new Print(this.map, this.printUtils);
         var printMF = new PrintMF(this.map, this.toc, window.serviceURL);
         var exportPNG = new ExportPNG(this.map);
         var exportJPG = new ExportJPG(this.map);
         var view3D = new View3D(this.map, this.overlays);
         var findCoordinate = new FindCoordinate(this.map);
 
-        this.controls.push(print.getControl());
+        //this.controls.push(print.getControl());
         this.controls.push(printMF.getControl());
         if (!window.isMobile) {
             this.controls.push(exportPNG.getControl());
