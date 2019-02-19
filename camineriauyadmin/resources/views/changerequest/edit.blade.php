@@ -30,6 +30,7 @@
 @endsection
 
 @section('custom_scripts')
+    @if (isset($previousFeature->geometry) || isset($proposedFeature->geometry))
     <script type="text/javascript">
     function createMap(div_id, feature, zoom, center=null) {
         var zoom = 12;
@@ -66,7 +67,7 @@
 
     var proposedFeatStr = '{!! $changerequest->feature !!}';
     var previousFeatStr = '{!! $changerequest->feature_previous !!}';
-    
+
     var operation = '{!! $changerequest->operation !!}';
     var zoom = 12;
     if (operation == 'create') {
@@ -83,4 +84,5 @@
         var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
     }
     </script>
+    @endif
 @endsection

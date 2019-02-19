@@ -72,6 +72,7 @@
                 Elemento propuesto:
             </div>
           </div>
+          @if (isset($previousFeature->geometry) || isset($proposedFeature->geometry))
           <div class="row">
             <div class="col">
                 <div class="dashboard-map" id="map-previous-feat">
@@ -82,6 +83,7 @@
                 </div>
             </div>
           </div>
+          @endif
           <div class="row">
             <div class="col">
                 @if ($previousFeature!==null)

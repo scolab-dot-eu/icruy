@@ -116,7 +116,7 @@ class MtopChangeRequestApiController extends Controller
         $changerequest->layer = $layer;
         $changerequest->operation = $operation;
         $changerequest->departamento = array_get($feature, "properties.departamento");
-        $changerequest->feature_id = $codigo_camino;
+        $changerequest->codigo_camino = $codigo_camino;
         
         if ($operation != ChangeRequest::OPERATION_CREATE) {
             if (ChangeRequest::open()->where('layer', $layer)->where('feat_id', $codigo_camino)->count()>0) {
