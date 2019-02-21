@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ViewerConfigApiController;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
@@ -18,12 +19,12 @@ class MtopChangeRequest extends Model
     
     public function author()
     {
-        return $this->belongsTo('App\User', 'requested_by');
+        return $this->belongsTo('App\User', 'requested_by_id');
     }
     
-    public function processor()
+    public function validator()
     {
-        return $this->belongsTo('App\User', 'validated_by');
+        return $this->belongsTo('App\User', 'validated_by_id');
     }
     
     public function comments()
@@ -31,12 +32,45 @@ class MtopChangeRequest extends Model
         return $this->hasMany('App\MtopChangeRequestComment');
     }
     
+    
+    public function scopeOpen($query)
+    {
+        return $query->where('status', '<', ChangeRequest::STATUS_VALIDATED);
+    }
+    
+    public function scopeClosed($query)
+    {
+        return $query->where('status', '>=', ChangeRequest::STATUS_VALIDATED);
+    }
+    
+    public function getIsOpenAttribute(){
+        return ($this->status < ChangeRequest::STATUS_VALIDATED);
+    }
+    
+    public function getIsClosedAttribute(){
+        return ($this->status >= ChangeRequest::STATUS_VALIDATED);
+    }
+    
+    
     public function getStatusLabelAttribute(){
         return ChangeRequest::$STATUS_LABELS[$this->status];
     }
     
     public function getOperationLabelAttribute(){
+        Log::debug('cmi label0:'.json_encode($this));
+        Log::debug('cmi label:'.$this->operation);
         return ChangeRequest::$OPERATION_LABELS[$this->operation];
+    }
+    
+    public function getCreatedAtFormattedAttribute(){
+        return Carbon::parse($this->created_at)->format('d/m/Y');
+    }
+    /**
+     *
+     * @return string
+     */
+    public function getUpdatedAtFormattedAttribute(){
+        return Carbon::parse($this->updated_at)->format('d/m/Y');
     }
     
     public static function getCurrentFeature($layer_name, $id) {
@@ -119,12 +153,15 @@ class MtopChangeRequest extends Model
      */
     protected function setValidated(MtopChangeRequest $changerequest, $user) {
         $feature_validated = MtopChangeRequest::getCurrentMtopFeature($changerequest->departamento, $changerequest->codigo_camino, $changerequest->feature_id);
+        /*$old_properties = [];
+        $feature_validated['properties'] = [];*/
         Log::info("feature_previous:");
         Log::info(json_encode($feature_validated));
+        //dd($feature_validated);
         if ($feature_validated!==null) {
-            $changerequest->$feature_validated = json_encode($feature_validated);
+            $changerequest->feature_validated = json_encode($feature_validated);
         }
-        $changerequest->feature_validated = json_encode(MtopChangeRequest::getCurrentFeature($changerequest->departamento, $changerequest->codigo_camino, $changerequest->feature_id));
+        //$changerequest->feature_validated = json_encode(MtopChangeRequest::getCurrentFeature($changerequest->departamento, $changerequest->codigo_camino, $changerequest->feature_id));
         $changerequest->status = ChangeRequest::STATUS_VALIDATED;
         $changerequest->validator()->associate($user);
         $changerequest->save();

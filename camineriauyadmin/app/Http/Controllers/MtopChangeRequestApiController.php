@@ -56,6 +56,11 @@ class MtopChangeRequestApiController extends Controller
         if ($feature_previous!==null) {
             $mtopchangerequest->feature_previous = json_encode($feature_previous);
         }
+        $old_props = $feature['properties'];
+        $feature['properties'] = [
+            'codigo'=>array_get($old_props, "codigo_camino"),
+            'gid'=>array_get($old_props, "gid", ''),
+        ];
         $mtopchangerequest->feature = json_encode($feature);
         $user->mtopChangeRequests()->save($mtopchangerequest);
         return $mtopchangerequest;

@@ -10,14 +10,25 @@
             Existen <a href="{!! route('changerequests.index') !!}"><span style="font-weight: bold;">{{ $allOpen }}</span> peticiones</a> pendientes de validar. 
         </div>
       </div>
+      @elseif (Auth::user()->isMtopManager())
+      <div class="row">
+        <div class="col">
+            Existen <a href="{!! route('mtopchangerequests.index') !!}"><span style="font-weight: bold;">{{ $mtopAllOpen }}</span> peticiones MTOP</a> pendientes de validar. 
+        </div>
+      </div>
       @else
       <div class="row">
         <div class="col">
             Tienes <a href="{!! route('changerequests.index') !!}"><span style="font-weight: bold;">{{ $userOpen }}</span> peticiones</a> abiertas.
         </div>
       </div>
-    </div>
+      <div class="row">
+        <div class="col">
+            Tienes <a href="{!! route('mtopchangerequests.index') !!}"><span style="font-weight: bold;">{{ $userMtopOpen }}</span> peticiones MTOP</a> abiertas.
+        </div>
+      </div>
       @endif
+    </div>
     <h4 class="titulo-resumen dashboard-text">{{ __('Departamentos') }}</h4>
     <ul class="list-group">
         @foreach($departments as $dep)

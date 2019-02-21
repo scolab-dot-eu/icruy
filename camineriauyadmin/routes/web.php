@@ -2,6 +2,7 @@
 
 use App\Department;
 use App\ChangeRequest;
+use App\MtopChangeRequest;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,9 @@ Route::prefix('dashboard')
         Route::resource('mtopchangerequests', 'MtopChangeRequestController', ['except' => [
             'show', 'create', 'store', 'destroy'
         ]]);
+        Route::get('mtopchangerequests/{id}/feature-{codigo_camino}.geojson', 'MtopChangeRequestController@feature')
+            ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+'])
+            ->name('mtopchangerequests.feature');
 
     Route::group(['middleware' => ['isadmin']], function() {
         
@@ -78,7 +82,7 @@ Route::group(['middleware' => ['auth']], function() {
         else {
             $departments = $user->departments()->orderBy('code')->get();
         }*/
-        return view('resumen', ['departments'=> $user->departments()->orderBy('code')->get(), 'userOpen'=>$user->changeRequests()->open()->count(), 'allOpen'=> ChangeRequest::open()->count()]);
+        return view('resumen', ['departments'=> $user->departments()->orderBy('code')->get(), 'userOpen'=>$user->changeRequests()->open()->count(), 'userMtopOpen'=>$user->mtopChangeRequests()->open()->count(), 'allOpen'=> ChangeRequest::open()->count(),  'mtopAllOpen'=> MtopChangeRequest::open()->count()]);
     })->name('home');
     Route::get('seleccionar_departamento', function(){
         // Lo redirijo a /home, ya que Laravel se empeña en redirigir a esta dirección
