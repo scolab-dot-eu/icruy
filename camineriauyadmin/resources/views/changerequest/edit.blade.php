@@ -11,9 +11,9 @@
             </h3>
             {{ Form::model( $changerequest, ['route' => ['changerequests.update', $changerequest->id], 'method' => 'put', 'role' => 'form'] ) }}
                 @include('changerequest._fields')
-                @if ($changerequest->isClosed)
-                <a href="{!! route('changerequests.index') !!}" role="button" class="btn btn-info">{{ __('Cerrar') }}</a>
-                @else
+                <br>
+                <a href="{!! route('changerequests.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
+                @if ($changerequest->isOpen)
                     @if (Auth::user()->isAdmin())
                     <input type="submit" class="btn btn-info" name="action_validate" value="{{ __('Validar') }}">
                     <input type="submit" class="btn btn-warning" name="action_reject" value="{{ __('Rechazar') }}">
@@ -68,7 +68,7 @@
     var proposedFeatStr = '{!! $changerequest->feature !!}';
     var previousFeatStr = '{!! $changerequest->feature_previous !!}';
 
-    var operation = '{!! $changerequest->operation !!}';
+    var operation = '{{ $changerequest->operation }}';
     var zoom = 12;
     if (operation == 'create') {
         var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);

@@ -80,6 +80,8 @@
                 </div>-->
                 <div class="form-group">
                 </div>
+                <br>
+                <a href="{!! route('editablelayerdefs.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
                 {{ Form::submit('Guardar', ['class' => 'btn btn-info']) }}
                 {{-- <!-- Form::submit('Cerrar', ['class' => 'btn btn-info'])  -->  --}}
                 <!--  <a class="btn btn-info" href="{{url()->previous()}}" role="button">{{ __('Cerrar') }}</a>  -->

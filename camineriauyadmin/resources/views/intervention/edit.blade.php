@@ -11,6 +11,8 @@
             </h3>
             {{ Form::model( $intervention, ['route' => ['interventions.update', $intervention->id], 'method' => 'put', 'role' => 'form'] ) }}
                 @include('intervention._fields')
+                <br>
+                <a href="{!! route('interventions.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
                 {!! Form::submit('Guardar', ['class' => 'btn btn-info']) !!}
             {{ Form::close() }}
             <br />
