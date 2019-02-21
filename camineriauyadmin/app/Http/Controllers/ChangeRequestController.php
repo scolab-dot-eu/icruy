@@ -155,6 +155,14 @@ class ChangeRequestController extends Controller
     {
         // for the moment, don't allow any change in the ChR except the status
         $origChangerequest = ChangeRequest::findOrFail($id);
+        if (!$origChangerequest->isOpen) {
+            $message = 'Se intentó modificar una petición ya cerrada';
+            Log::error($message);
+            $error = \Illuminate\Validation\ValidationException::withMessages([
+                'user' => [$message],
+            ]);
+            throw $error;
+        }
         /*
         $feature = json_decode($origChangerequest->feature, true);
         $geom = Geometry::fromJson($origChangerequest->feature);*/
