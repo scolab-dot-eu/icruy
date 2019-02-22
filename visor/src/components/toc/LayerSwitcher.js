@@ -5,12 +5,13 @@ var Draw = require('../../components/edition/Draw.js');
 var TimeControl = require('../../components/toc/TimeControl.js');
 var AttributeTable = require('../../components/table/AttributeTable.js');
 
-function LayerSwitcher(config, map, baseLayers, overlays, sidebar, utils) {
+function LayerSwitcher(config, map, baseLayers, overlays, sidebar, utils, printUtils) {
     this.map = map;
     this.baseLayers = baseLayers;
     this.overlays = overlays;
     this.sidebar = sidebar;
     this.utils = utils;
+    this.printUtils = printUtils;
     this.config = config;
     this.lcoptions = {
         collapsed: false,
@@ -22,7 +23,7 @@ function LayerSwitcher(config, map, baseLayers, overlays, sidebar, utils) {
 LayerSwitcher.prototype = {  
     initialize: function() {
 
-        var draw = new Draw(this.config, this.map, this.sidebar, this.utils);
+        var draw = new Draw(this.config, this.map, this.sidebar, this.utils, this.printUtils);
         var table = new AttributeTable(this.map);
         var time = new TimeControl(this.map, this.sidebar);
         var controls = {

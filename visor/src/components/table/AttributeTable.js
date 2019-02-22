@@ -5,6 +5,7 @@ require('datatables_js');
 require('datatables_buttons_css');
 require('datatables_buttons_js');
 require('datatables_buttons_html5_js');
+
 function AttributeTable(map) {
     this.map = map;
     this.departamento = null;
@@ -41,6 +42,7 @@ AttributeTable.prototype = {
                     }                  
                     data.push(row);
                 }
+
             } else {
                 var row = [];
                 row.push(l.feature.id);

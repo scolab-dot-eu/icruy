@@ -6,13 +6,14 @@ var Legend = require('../../components/toc/Legend.js');
 var Search = require('../../components/toc/Search.js');
 var Login = require('../../components/toc/Login.js');
 
-function Toc(config, map, baseLayers, overlays, utils) {
+function Toc(config, map, baseLayers, overlays, utils, printUtils) {
     this.map = map;
     this.baseLayers = baseLayers;
     this.overlays = overlays.overlays;
     this.groupedOverlays = overlays.groupedOverlays;
     this.sidebar = null;
     this.utils = utils;
+    this.printUtils = printUtils;
     this.config = config;
     this.render();
     this.initialize();
@@ -91,7 +92,7 @@ Toc.prototype = {
     },
 
     loadLayerSwitcher: function() {
-        new LayerSwitcher(this.config, this.map, this.baseLayers, this.groupedOverlays, this.sidebar, this.utils);
+        new LayerSwitcher(this.config, this.map, this.baseLayers, this.groupedOverlays, this.sidebar, this.utils, this.printUtils);
     },
 
     loadLegend: function() {

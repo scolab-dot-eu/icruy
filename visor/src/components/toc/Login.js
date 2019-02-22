@@ -63,7 +63,14 @@ Login.prototype = {
             done(function(resp) {
                 location.href = window.serviceURL + '/visor';
             })
-            .fail(function(error) {});
+            .fail(function(error) {
+                
+            }).always(function (resp, textStatus, xhr) {
+                if(xhr.status == 401) {
+                    alert('Ha expirado la sesión');
+                    location.href = window.serviceURL + '/viewer_login';
+                }
+            });
         });
     }
 }

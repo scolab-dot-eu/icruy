@@ -26,7 +26,10 @@ PrintMF.prototype = {
 
     createPrintForm: function() {
         var self = this;
-		
+        
+        var mask = '<div id="animationload" class="animationload"><div class="osahanloading"></div></div>';
+        $('body').append(mask);
+
 		this.showDetailsTab();
 		this.detailsTab.empty();
 		
@@ -75,93 +78,61 @@ PrintMF.prototype = {
         var self = this;
         var title = $('#print-title').val();
         var dpi = $('#print-dpi').val();
+
+        var mask = '<div id="animationload" class="animationload"><div class="osahanloading"></div></div>';
+        $('body').append(mask);
         
-        //var mapLayers = this.map.getLayers().getArray();
         var printLayers = new Array();
         var legends = new Array();
         this.map.eachLayer(function(layer) {
-            console.log(layer);
-            if( layer instanceof L.TileLayer ) {
-                console.log('L.TileLayer');
-            } else if ( layer instanceof L.TileLayer.WMS ) {
-                console.log('L.TileLayer.WMS');
-            } else if ( layer instanceof L.GeoJSON ) {
-                console.log('L.GeoJSON');
-            }
-        });
-        /*for (var i=0; i<mapLayers.length; i++) {
-            if (!mapLayers[i].baselayer && mapLayers[i].layer_name != 'plg_catastro' && !(mapLayers[i] instanceof ol.layer.Vector)) {
-                if (mapLayers[i].getVisible()) {
-                    var layer = {
-                        "baseURL": mapLayers[i].wms_url_no_auth,
-                          "opacity": mapLayers[i].getOpacity(),
-                          "type": "WMS",
-                          "imageFormat": "image/png",
-                          "customParams": {
+            if (!layer.isBaseLayer) {
+                if( layer instanceof L.TileLayer ) {
+                    if (layer.wmsParams) {
+                        var url = layer._url;
+                        printLayers.push({
+                            "baseURL": url,
+                            "layers": [layer.wmsParams.layers],
+                            "opacity": 1,
+                            "type": "WMS",
+                            "imageFormat": "image/png",
+                            "customParams": {
                               "TRANSPARENT": "true"
-                          },
-                        "mergeableParams": {},
-                      };
-                    if (mapLayers[i].getSource().getParams()['STYLES']) {
-                        layer['styles'] = [mapLayers[i].getSource().getParams()['STYLES']];
+                            },
+                            "mergeableParams": {},
+                          }
+                        );
+
+                        legends.push({
+                            "name": layer.wmsParams.layers,
+                            "icons": [ url + '?SERVICE=WMS&VERSION=1.1.1&layer=' + layer.wmsParams.layers + '&REQUEST=getlegendgraphic&FORMAT=image/png']
+                        });
                     }
-                    if (mapLayers[i].getSource().getParams()['TIME']) {
-                        layer['customParams']['TIME'] = mapLayers[i].getSource().getParams()['TIME'];
-                    }
-                    if (mapLayers[i].isLayerGroup) {
-                        layer['layers'] = [mapLayers[i].layer_name];
-                    } else {
-                        layer['layers'] = [mapLayers[i].workspace + ':' + mapLayers[i].layer_name];
-                    }
-                    printLayers.push(layer);
-                    
-                    var legend = {
-                        "name": mapLayers[i].title,
-                        "icons": [mapLayers[i].legend_no_auth]
-                    };
-                    var legend = {
-                        "name": mapLayers[i].title,
-                        "icons": ["http://localhost:8080/geoserver/ws_jrodrigo/wms?SERVICE=WMS&VERSION=1.1.1&layer=lista_repetidores&REQUEST=getlegendgraphic&FORMAT=image/png"]
-                    };
-                    legends.push(legend);
-                }									
-            }
-        }*/
-        
-        /*var baseLayers = this.map.getLayers().getArray();
-        for (var i=0; i<baseLayers.length; i++) {
-            if (baseLayers[i].baselayer) {
-                if (baseLayers[i].getVisible()) {
-                    if (baseLayers[i].getSource().urls) {
-                        if(baseLayers[i].getSource().getUrls()[0].indexOf('data:image/gif;base64') == -1) {
-                            console.log(baseLayers[i]);
-                            if (baseLayers[i].getSource() instanceof ol.source.OSM) {
-                                printLayers.push({
-                                    "baseURL": "http://a.tile.openstreetmap.org",
-                                      "type": "OSM",
-                                      "imageExtension": "png"
-                                });
-                                
-                            } else if (baseLayers[i].getSource() instanceof ol.source.TileWMS) {
-                                printLayers.push({
-                                    "type": "WMS",
-                                    "layers": [baseLayers[i].getSource().getParams()['LAYERS']],
-                                    "baseURL": baseLayers[i].getSource().getUrls()[0],
-                                    "imageFormat": baseLayers[i].getSource().getParams()['FORMAT'],
-                                    "version": baseLayers[i].getSource().getParams()['VERSION'],
-                                    "customParams": {
-                                        "TRANSPARENT": "true"
-                                    }
-                                });
-                                
-                            }
-                        }
+                } else if ( layer instanceof L.GeoJSON ) {
+                    if (layer.isGeojsonLayer) {
+                        var url = layer.StyledLayerControl.wmsUrl;
+                        printLayers.push({
+                            "baseURL": url,
+                            "layers": [layer.name],
+                            "opacity": 1,
+                            "type": "WMS",
+                            "imageFormat": "image/png",
+                            "customParams": {
+                              "TRANSPARENT": "true"
+                            },
+                            "mergeableParams": {},
+                          }
+                        );
+
+                        legends.push({
+                            "name": layer.name,
+                            "icons": [ url + '?SERVICE=WMS&VERSION=1.1.1&layer=' + layer.name + '&REQUEST=getlegendgraphic&FORMAT=image/png']
+                        });
                     }
                 }
             }
-        }*/
+        });
 
-        /*printLayers.push({
+        printLayers.push({
             "baseURL": "http://a.tile.openstreetmap.org",
             "type": "OSM",
             "imageExtension": "png"
@@ -205,7 +176,7 @@ PrintMF.prototype = {
                 self.getReport(response);
             },
             error: function(){}
-        });*/
+        });
         
     },
 
@@ -217,6 +188,7 @@ PrintMF.prototype = {
               url: this.printUrl + '/print/a4_landscape/capabilities.json',
               success	:function(response){
                   capabilities = response;
+                  $('#animationload').remove();
               },
               error: function(){}
         });
@@ -250,7 +222,8 @@ PrintMF.prototype = {
               url: window.serviceURL + reportInfo.statusURL,
               success	:function(response){
                   if (response.done) {
-                      window.open(reportInfo.downloadURL);
+                    $('#animationload').remove();
+                    window.open(reportInfo.downloadURL);
                   } else {
                       window.setTimeout(self.getReport(reportInfo), 3000);
                   }

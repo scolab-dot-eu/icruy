@@ -1,8 +1,9 @@
-function Draw(config, map, sidebar, utils) {
+function Draw(config, map, sidebar, utils, printUtils) {
     this.map = map;
     this.config = config;
     this.sidebar = sidebar;
     this.utils = utils;
+    this.printUtils = printUtils;
     this.drawControl = null;
     this.editableLayer = null;
     this.departamento = null;
@@ -92,13 +93,6 @@ Draw.prototype = {
         this.map.on(L.Draw.Event.CREATED, function (e) {
             var type = e.layerType,
                 layer = e.layer;
-            if (type === 'marker') {
-                // Do marker specific actions
-            }
-            // Do whatever else you need to. (save to db; add to map etc)
-            //var icon = L.icon(_this.editableLayer.style);
-            //icon.options.iconUrl = require('../../../assets/images/pending-' + icon.options.iconUrl)
-            //layer.setIcon(icon);
             layer.setStyle(_this.editableLayer.style);
             _this.editableLayer.addLayer(layer);
             _this.loadFeatureForm(layer);
@@ -131,15 +125,35 @@ Draw.prototype = {
         $('#toc-result-content').append(html);
     
         $('#save-edition').on('click', function(){
+            var esCamino = false;
+            if (_this.editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
+                esCamino = true;
+            }
             var serielizedData = $("#feature-form").serializeArray();
             layer.feature = {};
             layer.feature.properties = {};
-            layer.feature['type'] = 'Feature';
-            layer.feature['geometry_name'] = 'thegeom';
-            layer.feature['geometry'] = {
-                type: 'Point',
-                coordinates: [layer._latlng.lat, layer._latlng.lng]
-            };
+            if (esCamino) {
+                layer.feature['type'] = 'Feature';
+                layer.feature['geometry_name'] = 'thegeom';
+                var coordinates = new Array();
+                for (var j=0; j<layer._latlngs.length; j++) {
+                    var c = [layer._latlngs[j].lat, layer._latlngs[j].lng];
+                    coordinates.push(c);
+                }
+                layer.feature['geometry'] = {
+                    type: 'LineString',
+                    coordinates: coordinates
+                };
+
+            } else {
+                layer.feature['type'] = 'Feature';
+                layer.feature['geometry_name'] = 'thegeom';
+                layer.feature['geometry'] = {
+                    type: 'Point',
+                    coordinates: [layer._latlng.lat, layer._latlng.lng]
+                };
+            }
+            
             for (i in serielizedData) {
                 layer.feature.properties[serielizedData[i].name] = serielizedData[i].value;
             }
@@ -163,7 +177,7 @@ Draw.prototype = {
         var html = '';
         html += '<div>';
         html += '<div style="text-align: center; width: 100%; padding: 15px;">';
-        html += '<span style="font-size: 18px; font-weight: bold; color: #888888;">' + eLayer.title + '</span>';
+        html += '<span style="font-size: 18px; font-weight: bold; color: #888888;">' + layer.title + '</span>';
         html += '</div>';
         html += '<table>';
         for (var key in layer.feature.properties) {
@@ -190,6 +204,15 @@ Draw.prototype = {
                 _this.editableLayer.eachLayer(function(layer) {
                     if (layer.feature.id == id) {
                         _this.loadInfo(layer);
+                    }
+                });
+            });
+
+            $('.popup-toolbar-button-print').click(function(e){
+                var id = this.dataset.fid;
+                _this.editableLayer.eachLayer(function(layer) {
+                    if (layer.feature.id == id) {
+                        _this.printElement(layer);
                     }
                 });
             });
@@ -257,7 +280,6 @@ Draw.prototype = {
         var stringData = JSON.stringify(data);
         var objectData = JSON.parse(stringData);
     
-        //CAMBIAR_ANTES_DE_SUBIR
         $.ajax({
             url: window.serviceURL + '/api/changerequest',
             type: 'POST',
@@ -273,13 +295,6 @@ Draw.prototype = {
                 var style = element.options;
                 style.fillOpacity = 1;          
                 element.setStyle(style);
-                /*if (element._icon.src.indexOf('pending') >= 0) {
-                    var pendingIcon = new L.Icon({
-                        iconUrl: element._icon.src.replace('pending', 'validated'),
-                        iconSize: [element._icon.width, element._icon.height]
-                    });
-                    element.setIcon(pendingIcon);
-                }*/
 
             } else {
                 element.feature.properties.status = 'PENDIENTE:CREACIÓN';
@@ -300,6 +315,11 @@ Draw.prototype = {
             for (var key in resp.responseJSON.errors) {
                 $('#creation-errors').append('<p style="padding: 5px 20px; color: #ff0000;">' + key + ': ' + resp.responseJSON.errors[key][0] + '</p>');
             }         
+        }).always(function (resp, textStatus, xhr) {
+            if(xhr.status == 401) {
+                alert('Ha expirado la sesión');
+                location.href = window.serviceURL + '/viewer_login';
+            }
         });
     },
 
@@ -328,11 +348,6 @@ Draw.prototype = {
     
             } else {
                 element.feature.properties.status = 'PENDIENTE:BORRADO';
-                /*var pendingIcon = new L.Icon({
-                    iconUrl: element._icon.src.replace('validated', 'pending'),
-                    iconSize: [element._icon.width, element._icon.height]
-                });
-                element.setIcon(pendingIcon);*/
                 var style = element.options;
                 style.fillOpacity = 0.1;          
                 element.setStyle(style);
@@ -340,6 +355,11 @@ Draw.prototype = {
     
         }).fail(function(error) {
             console.log( "Error al eliminar" );
+        }).always(function (resp, textStatus, xhr) {
+            if(xhr.status == 401) {
+                alert('Ha expirado la sesión');
+                location.href = window.serviceURL + '/viewer_login';
+            }
         });
     },
     
@@ -364,22 +384,9 @@ Draw.prototype = {
                 var style = element.options;
                 style.fillOpacity = 1;          
                 element.setStyle(style);
-                /*if (element._icon.src.indexOf('pending') >= 0) {
-                    var pendingIcon = new L.Icon({
-                        iconUrl: element._icon.src.replace('pending', 'validated'),
-                        iconSize: [element._icon.width, element._icon.height]
-                    });
-                    element.setIcon(pendingIcon);
-                    
-                }*/
     
             } else {
                 element.feature.properties.status = resp.feature.properties.status;
-                /*var pendingIcon = new L.Icon({
-                    iconUrl: element._icon.src.replace('validated', 'pending'),
-                    iconSize: [element._icon.width, element._icon.height]
-                });
-                element.setIcon(pendingIcon);*/
                 var style = element.options;
                 style.fillOpacity = 0.1;          
                 element.setStyle(style);
@@ -397,6 +404,12 @@ Draw.prototype = {
             for (var key in resp.responseJSON.errors) {
                 $('#modification-errors').append('<p style="padding: 5px 20px; color: #ff0000;">' + key + ': ' + resp.responseJSON.errors[key][0] + '</p>');
             } 
+
+        }).always(function (resp, textStatus, xhr) {
+            if(xhr.status == 401) {
+                alert('Ha expirado la sesión');
+                location.href = window.serviceURL + '/viewer_login';
+            }
         });
     },
     
@@ -466,6 +479,63 @@ Draw.prototype = {
         });
         
         this.sidebar.open('toc-result');
+    },
+
+    printElement: function(element) {
+        var _this = this;
+        var m = this.map;
+        if (element.getLatLng) {
+            m.setView(element.getLatLng(), 18);
+        }
+        else {
+            m.fitBounds(element.getBounds());
+        }
+    
+        var PIXEL_SIZE = 3.779528;   	
+        var MAP_WIDTH_MM = 180;
+        var MAP_HEIGHT_MM = 300;
+    
+        this.printUtils.showMask();
+    
+        var doc = new jsPDF('portrait', 'mm', 'a4');
+    
+        doc.addImage(this.printUtils.getLogoOpp(), 'PNG', 15, 15, 30, 10);
+        doc.addImage(this.printUtils.getLogoPresidencia(), 'PNG', 170, 8, 30, 20);
+    
+        leafletImage(m, function(err, canvas) {
+            var dataUrl = _this.printUtils.canvasToImage(canvas, '#ffffff');
+    
+            var pdfMapWidthInPx = parseInt(MAP_WIDTH_MM * PIXEL_SIZE);
+            var pdfMapHeightInPx = parseInt(MAP_HEIGHT_MM * PIXEL_SIZE);
+            var newSize = _this.printUtils.calculateAspectRatioFit(m.getSize().x, m.getSize().y, pdfMapWidthInPx, pdfMapHeightInPx);		
+            var mmNewWidth = newSize.width / PIXEL_SIZE;
+            var mmNewHeight= newSize.height / PIXEL_SIZE;
+            doc.addImage(dataUrl, 'PNG', 15, 40, 180, 90);
+    
+            var x = 15;
+            var y = 140;
+            for ( key in element.feature.properties) {
+                if (element.feature.properties[key] != null) {
+                    doc.setFontSize(10);
+                    doc.setTextColor(255, 164, 32);
+                    doc.text(15, y, key.toString().toUpperCase());
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(100, y, element.feature.properties[key].toString());
+                    y = y+7;
+                }   
+            }
+    
+            doc.setFontSize(10);
+            doc.setTextColor(12, 12, 12);
+            doc.text(60, 280, 'Torre Ejecutiva Sur, piso 7 | Liniers 1324, Montevideo - Uruguay');
+            doc.text(80, 285, 'Tel. (+598 2) 150  | www.opp.gub.uy');
+    
+            var uri = doc.output('dataurlstring');
+            _this.printUtils.openDataUriWindow(uri);
+            _this.printUtils.hideMask();
+        });
+    
     }
 }
    

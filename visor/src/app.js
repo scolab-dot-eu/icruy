@@ -82,7 +82,6 @@ function initialize() {
             async: false
 
         }).done(function(resp) {
-            //config = JSON.parse(resp);
             config = resp;
             map = L.map('map', { zoomControl:false, preferCanvas: true});
             map.fitBounds([
@@ -92,18 +91,20 @@ function initialize() {
 
         }).fail(function(error) {
             console.log( "Error al cargar configuración" );
+
+        }).always(function (resp, textStatus, xhr) {
+            if(xhr.status == 401) {
+                alert('Ha expirado la sesión');
+                location.href = window.serviceURL + '/viewer_login';
+            }
         });
 
     } else {
-        //config = require('./../src/config.json');
-        //map = L.map('map', { zoomControl:false, preferCanvas: true}).setView(config.map.center, config.map.zoom);
-        
         $.ajax({
             url: window.serviceURL + '/api/config/global',
             async: false
 
         }).done(function(resp) {
-            //config = JSON.parse(resp);
             config = resp;
             map = L.map('map', { 
                 zoomControl:false, 
@@ -112,6 +113,12 @@ function initialize() {
 
         }).fail(function() {
             console.log( "Error al cargar configuración" );
+
+        }).always(function (resp, textStatus, xhr) {
+            if(xhr.status == 401) {
+                alert('Ha expirado la sesión');
+                location.href = window.serviceURL + '/viewer_login';
+            }
         });
     }
 
@@ -126,8 +133,6 @@ function initialize() {
     var controls = loadControls(map, tocBaseLayers, overlaysObject, utils, printUtils);
     registerMapEvents(map, controls, utils, printUtils);
 }
-
-
 
 /**
  * Cargamos las capas base
@@ -189,8 +194,91 @@ function loadOverlays(map) {
             caminos = resp;
         }).fail(function(error) {
             console.log( "Error al obtener caminos" );
+        }).always(function (resp, textStatus, xhr) {
+            if(xhr.status == 401) {
+                alert('Ha expirado la sesión');
+                location.href = window.serviceURL + '/viewer_login';
+            }
         });
     }   
+
+    function popUp(f,l){
+        var editable = false;
+        var eLayer = null;
+    
+        if (f.id.indexOf('v_camineria') !== -1) {
+            var codigoMTOP = f.properties.codigo;
+            var gidMTOP = f.properties.gid;
+            f.properties = {};
+            f.properties['gid'] = gidMTOP;
+            f.properties['ancho_calzada'] = '';
+            f.properties['banquina'] = '';
+            f.properties['codigo_camino'] = codigoMTOP;
+            f.properties['cordon'] = '';
+            f.properties['cuneta'] = '';
+            f.properties['departamento'] = departamento;
+            f.properties['id'] = '';
+            f.properties['observaciones'] = '';
+            f.properties['origin'] = '';
+            f.properties['rodadura'] = '';
+            f.properties['senaliz_horiz'] = '';
+            f.properties['status'] = '';
+            f.properties['created_at'] = '';
+            f.properties['updated_at'] = '';
+            for (var i in caminos) {
+                if (caminos[i].codigo_camino == codigoMTOP) {
+                    $.extend(f.properties, caminos[i]);
+                }
+            }
+        }
+    
+        if (f.properties){
+            var html = '';
+            var fLayerName = f.id.split('.')[0];
+            for (i in editableLayers) {
+                if (editableLayers[i].name == fLayerName) {
+                    editable = true;
+                    eLayer = editableLayers[i].layer;
+                }
+            }
+    
+            
+            html += '<div>';
+            html += '<div style="text-align: center; width: 100%; padding: 15px;">';
+            html += '<span style="font-size: 18px; font-weight: bold; color: #888888;">' + eLayer.title + '</span>';
+            html += '</div>';
+            html += '<table>';
+            for (var key in f.properties) {
+                if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin') {
+                    html += '<tr>';
+                    html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
+                    html +=     '<td style="padding: 2px;">' + f.properties[key] + '</td>';
+                    html += '</tr>';
+                }
+    
+            }
+            html += '</table>';
+            html += '</div>';
+            if (!window.isMobile) {
+                html += '<ul class="custom-actions">';
+                if (window.editionMode) {
+                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
+                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit" title="Editar"><i class="fa fa-edit m-r-5"></i></a></li>';
+                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete" title="Eliminar"><i class="fa fa-trash m-r-5"></i></a></li>';
+                    
+                } else {
+                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+                    html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
+                }
+                html += '</ul>';
+            }
+            
+            l.bindPopup(html, {closeOnClick: false});
+    
+            
+        }
+    }
 
     var tocOverlays = [];
     var groupedOverlays = [];
@@ -249,82 +337,6 @@ function loadOverlays(map) {
 
                 
                 var parameters = L.Util.extend(defaultParameters, customParams);
-
-                function popUp(f,l){
-                    var editable = false;
-                    var eLayer = null;
-
-                    if (f.id.indexOf('v_camineria') !== -1) {
-                        var codigoMTOP = f.properties.codigo;
-                        f.properties = {};
-                        f.properties['ancho_calzada'] = '';
-                        f.properties['banquina'] = '';
-                        f.properties['codigo_camino'] = codigoMTOP;
-                        f.properties['cordon'] = '';
-                        f.properties['cuneta'] = '';
-                        f.properties['departamento'] = '';
-                        f.properties['id'] = '';
-                        f.properties['observaciones'] = '';
-                        f.properties['origin'] = '';
-                        f.properties['rodadura'] = '';
-                        f.properties['senaliz_horiz'] = '';
-                        f.properties['status'] = '';
-                        f.properties['created_at'] = '';
-                        f.properties['updated_at'] = '';
-                        for (var i in caminos) {
-                            if (caminos[i].codigo_camino == codigoMTOP) {
-                                $.extend(f.properties, caminos[i]);
-                            }
-                        }
-                    }
-
-                    if (f.properties){
-                        var html = '';
-                        var fLayerName = f.id.split('.')[0];
-                        for (i in editableLayers) {
-                            if (editableLayers[i].name == fLayerName) {
-                                editable = true;
-                                eLayer = editableLayers[i].layer;
-                            }
-                        }
-
-                        
-                        html += '<div>';
-                        html += '<div style="text-align: center; width: 100%; padding: 15px;">';
-                        html += '<span style="font-size: 18px; font-weight: bold; color: #888888;">' + eLayer.title + '</span>';
-                        html += '</div>';
-                        html += '<table>';
-                        for (var key in f.properties) {
-                            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin') {
-                                html += '<tr>';
-                                html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
-                                html +=     '<td style="padding: 2px;">' + f.properties[key] + '</td>';
-                                html += '</tr>';
-                            }
-
-                        }
-                        html += '</table>';
-                        html += '</div>';
-                        if (!window.isMobile) {
-                            html += '<ul class="custom-actions">';
-                            if (window.editionMode) {
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit" title="Editar"><i class="fa fa-edit m-r-5"></i></a></li>';
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete" title="Eliminar"><i class="fa fa-trash m-r-5"></i></a></li>';
-                                
-                            } else {
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
-                                html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
-                            }
-                            html += '</ul>';
-                        }
-                        
-                        l.bindPopup(html, {closeOnClick: false});
-
-                        
-                    }
-                }
 
                 if (config.overlays.groups[i].layers[j].style) {
                     if (config.overlays.groups[i].layers[j].geom_style == 'point') {
@@ -494,7 +506,7 @@ function loadControls(map, tocBaseLayers, overlays, utils, pUtils) {
         }).addTo(map);
         appendEpsgSelector();
     } 
-    var toc = new Toc(config, map, tocBaseLayers, overlays, utils);
+    var toc = new Toc(config, map, tocBaseLayers, overlays, utils, pUtils);
 
     new ToolBar(map, overlays, pUtils, toc);
 
@@ -562,7 +574,12 @@ function registerMapEvents(map, controls, utils, printUtils) {
                         var editableLayer = editableLayers[i].layer;
                         editableLayer.eachLayer(function(layer) {
                             if (layer.feature.id == id) {
-                                var clonedLayer = layer;
+                                var clonedLayer = null;
+                                if (layer instanceof L.CircleMarker) {
+                                    clonedLayer = L.circleMarker(layer.getLatLng(), {});
+                                } else if (layer instanceof L.Polyline) {
+                                    clonedLayer = L.polyline(layer.getLatLngs(), {});
+                                }
                                 if (layer.feature.geometry.type == 'Point') {
                                     map.setView(layer.getLatLng(), 15);
                                 } else {
@@ -625,8 +642,10 @@ function deleteElement(editableLayer, element) {
     };
 
     var url = window.serviceURL + '/api/changerequest';
+    var esCamino = false;
     if (editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
         url = window.serviceURL + '/api/mtopchangerequest';
+        esCamino = true;
     }
 
     $.ajax({
@@ -638,7 +657,8 @@ function deleteElement(editableLayer, element) {
 
     }).done(function(resp) {
         if (c.user.isadmin) {
-            element.remove();
+            //element.remove();
+            deleteTrams(editableLayer, element.feature.properties.codigo_camino);
 
         } else {
             element.feature.properties.status = 'PENDIENTE:BORRADO';
@@ -649,19 +669,38 @@ function deleteElement(editableLayer, element) {
 
     }).fail(function(error) {
         console.log( "Error al eliminar" );
+
+    }).always(function (resp, textStatus, xhr) {
+        if(xhr.status == 401) {
+            alert('Ha expirado la sesión');
+            location.href = window.serviceURL + '/viewer_login';
+        }
+    });
+}
+
+function deleteTrams(layer, codigo_camino) {
+    layer.eachLayer(function(l) {
+        if (l.feature.properties.codigo_camino == codigo_camino) {
+            l.remove();
+        }
     });
 }
 
 function updateElement(map, toc, element, editableLayer) {
+    var url = window.serviceURL + '/api/changerequest';
+    var esCamino = false;
+    if (editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
+        url = window.serviceURL + '/api/mtopchangerequest';
+        esCamino = true;
+    }
+
     var data = {
         'operation': 'update',
         'layer': editableLayer.name,
         'feature': element.toGeoJSON()
     };
-
-    var url = window.serviceURL + '/api/changerequest';
-    if (editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
-        url = window.serviceURL + '/api/mtopchangerequest';
+    if (esCamino) {
+        data['gid'] = element.feature.properties.gid;
     }
     
     $.ajax({
@@ -672,11 +711,19 @@ function updateElement(map, toc, element, editableLayer) {
         contentType: "application/json; charset=utf-8",
 
     }).done(function(resp) {
-        if (resp.feature.properties.status == 'VALIDADO') {
+        if (resp.status == 10) {
             element.feature.properties.status = 'VALIDADO';
-            var style = element.options;
-            style.fillOpacity = 1;          
-            element.setStyle(style);
+            element.feature.properties.id = resp.id;
+            element.feature.properties.created_at = resp.created_at;
+            element.feature.properties.updated_at = resp.updated_at;
+            if (esCamino) {
+                
+            } else {
+                var style = element.options;
+                style.fillOpacity = 1;          
+                element.setStyle(style);
+            }
+            
 
         } else {
             element.feature.properties.status = resp.feature.properties.status;
@@ -684,6 +731,9 @@ function updateElement(map, toc, element, editableLayer) {
             style.fillOpacity = 0.1;          
             element.setStyle(style);
             
+        }
+        if (esCamino) {
+            updateTrams(editableLayer, element.feature.properties, element.feature.properties.codigo_camino);
         }
         element.editing.disable();
         map.closePopup();
@@ -697,6 +747,22 @@ function updateElement(map, toc, element, editableLayer) {
         for (var key in resp.responseJSON.errors) {
             $('#modification-errors').append('<p style="padding: 5px 20px; color: #ff0000;">' + key + ': ' + resp.responseJSON.errors[key][0] + '</p>');
         } 
+    }).always(function (resp, textStatus, xhr) {
+        if(xhr.status == 401) {
+            alert('Ha expirado la sesión');
+            location.href = window.serviceURL + '/viewer_login';
+        }
+    });
+}
+
+function updateTrams(layer, properties, codigo) {
+    layer.eachLayer(function(l) {
+        if (l.feature.properties) {
+            if (l.feature.properties.codigo_camino == codigo) {
+                l.feature.properties = {};
+                $.extend(l.feature.properties, properties);
+            }
+        }       
     });
 }
 
@@ -755,8 +821,11 @@ function loadFeatureForm(map, toc, layer, clonedLayer, editableLayer, utils) {
 
     $('#cancel-edition').on('click', function(){
         layer.editing.disable();
-        layer.remove();
-        clonedLayer.addTo(map);
+        if (layer instanceof L.CircleMarker) {
+            layer.setLatLng(clonedLayer.getLatLng());
+        } else if (layer instanceof L.Polyline) {
+            layer.setLatLngs(clonedLayer.getLatLngs());
+        }
         map.closePopup();
         $('#toc-result-content').empty();
         toc.getSideBar().open('toc-layers');
@@ -769,7 +838,7 @@ function loadFeatureForm(map, toc, layer, clonedLayer, editableLayer, utils) {
 function printElement(m, element, pUtils) {
 
     if (element.getLatLng) {
-        m.setView(element.getLatLng(), 17);
+        m.setView(element.getLatLng(), 18);
     }
     else {
         m.fitBounds(element.getBounds());
