@@ -11,6 +11,8 @@
             </h3>
             {{ Form::model( $supportlayerdef, ['route' => ['supportlayerdefs.update', $supportlayerdef->id], 'method' => 'put', 'role' => 'form'] ) }}
                 @include('supportlayerdef._fields')
+                <br>
+                <a href="{!! route('supportlayerdefs.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
                 {!! Form::submit(__('Guardar'), ['class' => 'btn btn-info']) !!}
             {{ Form::close() }}
             <br />

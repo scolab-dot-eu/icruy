@@ -210,8 +210,15 @@ class ChangeRequest extends Model
             'updated_at'=>true,
             'created_at'=>true,
             'thegeom'=>true,
-            'thegeomjson'=>true
+            'thegeomjson'=>true,
+            'changerequest'=>true,
+            'mtopchangerequest'=>true,
+            'statusmtop'=>true
         ];
+        Log::debug("values1:");
+        Log::debug(json_encode($values1));
+        Log::debug("values2:");
+        Log::debug(json_encode($values2));
         foreach ($values1 as $field => $value) {
             if (!array_get($ignoredFields, $field) &&
                 array_get($values2, $field)!=$value) {
@@ -319,7 +326,7 @@ class ChangeRequest extends Model
                 $errors['feature.properties.id'] = __('Registro no encontrado para la capa, el departamento y el id proporcionados');
             }
         }
-        if (!ChangeRequest::comprobarCodigoCamino($codigo_camino, $department)) {
+        if (!ChangeRequest::comprobarEstructuraCodigoCamino($codigo_camino, $department)) {
             $errors['feature.properties.codigo_camino'] = __('El código de camino no es válido');
         }
         if (count($errors)>0) {
@@ -606,7 +613,7 @@ class ChangeRequest extends Model
         });
     }
     
-    public static function comprobarCodigoCamino($codigo_camino, $codigo_dep) {
+    public static function comprobarEstructuraCodigoCamino($codigo_camino, $codigo_dep) {
         if ($codigo_camino!=null && strlen($codigo_camino)==8) {
             if (substr($codigo_camino, 0, 4)==$codigo_dep) {
                 if (is_numeric(substr($codigo_camino, 4, 4))) {

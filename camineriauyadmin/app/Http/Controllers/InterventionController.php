@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Intervention;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\EditableLayerDef;
 use App\Http\Requests\InterventionFormRequest;
+use App\ChangeRequest;
 
 class InterventionController extends Controller
 {
@@ -52,7 +54,14 @@ class InterventionController extends Controller
      */
     public function store(InterventionFormRequest $request)
     {
-        $intervention = Intervention::create($request->validated());
+        $validated = $request->validated();
+        if ($request->user()->isAdmin()) {
+            $validated['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
+        }
+        else {
+            $validated['status'] = ChangeRequest::FEATURE_STATUS_PENDING_CREATE;
+        }
+        $intervention = Intervention::create($validated);
         return redirect()->route('interventions.index');
     }
 

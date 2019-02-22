@@ -2,20 +2,14 @@
           <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    {!! Form::label('layer', __('Tabla')) !!}
-                    {!! Form::text('layer', null, ['readonly' => '', 'class' => 'form-control']) !!}
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
                     {!! Form::label('operation', __('Operación')) !!}
-                    {!! Form::text('operation', $changerequest->operationLabel, ['readonly' => '', 'class' => 'form-control']) !!}
+                    {!! Form::text('operation', $mtopchangerequest->operationLabel, ['readonly' => '', 'class' => 'form-control']) !!}
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-6">
                 <div class="form-group">
                     {!! Form::label('status', __('Estado')) !!}
-                    {!! Form::text('status', $changerequest->statusLabel, ['readonly' => '', 'class' => 'form-control']) !!}
+                    {!! Form::text('status', $mtopchangerequest->statusLabel, ['readonly' => '', 'class' => 'form-control']) !!}
                 </div>
             </div>
           </div>
@@ -23,8 +17,8 @@
             <div class="col-sm-7">
                 <div class="form-group">
                     <label for="author_desc">Autor</label>
-                    @if ($changerequest->author)
-                        <input readonly class="form-control" name="author_desc" type="text" value="{{ $changerequest->author->name }} ({{ $changerequest->author->email }})" id="author_desc">
+                    @if ($mtopchangerequest->author)
+                        <input readonly class="form-control" name="author_desc" type="text" value="{{ $mtopchangerequest->author->name }} ({{ $mtopchangerequest->author->email }})" id="author_desc">
                     @else
                         <input readonly class="form-control" name="author_desc" type="text" value="" id="author_desc">
                     @endif
@@ -41,8 +35,8 @@
             <div class="col-sm-7">
                 <div class="form-group">
                     <label for="validator_desc">Revisada por</label>
-                    @if ($changerequest->validator)
-                        <input readonly class="form-control" name="validator_desc" type="text" value="{{ $changerequest->validator->name }} ({{ $changerequest->validator->email }})" id="validator_desc">
+                    @if ($mtopchangerequest->validator)
+                        <input readonly class="form-control" name="validator_desc" type="text" value="{{ $mtopchangerequest->validator->name }} ({{ $mtopchangerequest->validator->email }})" id="validator_desc">
                     @else
                         <input readonly class="form-control" name="validator_desc" type="text" value="" id="validator_desc">
                     @endif
@@ -55,6 +49,27 @@
                 </div>
             </div>
           </div>
+          <div class="row">
+            <div class="col-sm-7">
+                <div class="form-group">
+                    {!! Form::label('codigo_camino', __('Código de camino')) !!}
+                    {!! Form::text('codigo_camino', $mtopchangerequest->codigo_camino, ['readonly' => '', 'class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="form-group">
+                    {!! Form::label('feature_id', __('GID tramo')) !!}
+                    {!! Form::text('feature_id', null, ['readonly' => '', 'class' => 'form-control']) !!}
+                </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                     <a href="{!! route('mtopchangerequests.feature', ['id'=>$mtopchangerequest->id, 'codigo_camino'=>$mtopchangerequest->codigo_camino]) !!}" download role="button" class="btn btn-info">{{ __('Descargar GeoJSON') }}</a>
+                </div>
+            </div>
+          </div>
           <!-- 
           <div class="row">
             <div class="col">
@@ -64,7 +79,7 @@
                 </div>
             </div>
           </div> -->
-                    <div class="row">
+          <div class="row">
             <div class="col">
                 Elemento previo:
             </div>
@@ -84,24 +99,4 @@
             </div>
           </div>
           @endif
-          <div class="row">
-            <div class="col">
-                @if ($previousFeature!==null)
-                    @foreach($previousFeature->properties as $key => $value)
-                        @if ($key!='origin' && $key!='status' && $key!='created_at' && $key!='updated_at')
-                        <span style="text-transform: uppercase; color: #e0a800">{{ $key }}:</span> {{ $value }} <br>
-                        @endif 
-                    @endforeach
-                @endif
-            </div>
-            <div class="col">
-                @if ($proposedFeature!==null)
-                    @foreach($proposedFeature->properties as $key => $value)
-                        @if ($key!='origin' && $key!='status' && $key!='created_at' && $key!='updated_at')
-                        <span style="text-transform: uppercase; color: #e0a800">{{ $key }}:</span> {{ $value }} <br>
-                        @endif 
-                    @endforeach
-                @endif
-            </div>
-          </div>
         </div>

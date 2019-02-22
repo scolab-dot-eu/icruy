@@ -47,7 +47,7 @@ class MtopChangeRequestController extends Controller
         else {
             $data = MtopChangeRequest::open();
         }
-        if (!$request->user()->isAdmin()) {
+        if (!$request->user()->isMtopManager() && !$request->user()->isAdmin()) {
             $data = $data->where('requested_by_id', $request->user()->id);
         }
         $data->with(['author', 'validator'])->orderBy('updated_at', 'desc');
@@ -92,18 +92,24 @@ class MtopChangeRequestController extends Controller
      * @param  \App\ChangeRequest  $changeRequest
      * @return \Illuminate\Http\Response
      */
-    public function edit(MtopChangeRequest $changerequest)
+    public function edit(MtopChangeRequest $mtopchangerequest)
     {
-        //$previousFeature = json_decode($changerequest->feature_previous);
+        $user = request()->user();
+        if ((!$user->isMtopManager()) && (!$user->isAdmin()) &&
+            ($user->id != $mtopchangerequest->requested_by_id)) {
+                abort(403, 'Acceso no autorizado');
+        }
+        
+        $previousFeature = json_decode($mtopchangerequest->feature_previous);
         $previousFeature = null;
-        if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
+        if ($mtopchangerequest->operation == ChangeRequest::OPERATION_DELETE) {
             $proposedFeature = null;
         }
         else {
-            $proposedFeature = json_decode($changerequest->feature);
+            $proposedFeature = json_decode($mtopchangerequest->feature);
         }
 
-        return view('changerequest.edit', ['changerequest'=>$changerequest,
+        return view('mtopchangerequest.edit', ['mtopchangerequest'=>$mtopchangerequest,
             'previousFeature'=>$previousFeature,
             'proposedFeature'=>$proposedFeature
         ]);
@@ -118,8 +124,15 @@ class MtopChangeRequestController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // for the moment, don't allow any change in the ChR except the status
         $origChangerequest = MtopChangeRequest::findOrFail($id);
+        if (!$origChangerequest->isOpen) {
+            $message = 'Se intentó modificar una petición ya cerrada';
+            Log::error($message);
+            $error = \Illuminate\Validation\ValidationException::withMessages([
+                'user' => [$message],
+            ]);
+            throw $error;
+        }
         /*
         $feature = json_decode($origChangerequest->feature, true);
         $geom = Geometry::fromJson($origChangerequest->feature);*/
@@ -136,8 +149,8 @@ class MtopChangeRequestController extends Controller
             MtopChangeRequest::setCancelled($origChangerequest, $request->user());
             return redirect()->route('mtopchangerequests.index');
         }
-        if (!$request->user()->isAdmin()) {
-            $message = 'Un usuario no-administrador intentó modificar una petición: '.$request->user()->email;
+        if (!$request->user()->isMtopManager()) {
+            $message = 'Un usuario no-administrador MTOP intentó modificar una petición: '.$request->user()->email;
             Log::error($message);
             $error = \Illuminate\Validation\ValidationException::withMessages([
                 'user' => [$message],
@@ -155,6 +168,19 @@ class MtopChangeRequestController extends Controller
         return redirect()->route('mtopchangerequests.index');
     }
 
+    public function feature(Request $request, $id)
+    {
+        $mtopChangeRequest = MtopChangeRequest::findOrFail($id);
+        $user = $request->user();
+        if ((!$user->isMtopManager()) && (!$user->isAdmin()) &&
+            ($user->id != $mtopChangeRequest->requested_by_id)) {
+                abort(403, 'Acceso no autorizado');
+            }
+        
+        return response($mtopChangeRequest->feature, 200)
+            ->header('Content-Type', 'application/json');
+    }
+    
     /**
      * Remove the specified resource from storage.
      *

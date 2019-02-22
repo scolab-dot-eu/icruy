@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Intervention extends Model
 {
     protected $fillable = [
-        'anyo_interv', 'departamento', 'codigo_camino', 'tipo_elem', 'id_elem',
-        'longitud', 'tarea', 'financiacion', 'forma_ejecucion' 
+        'status', 'anyo_interv', 'departamento', 'codigo_camino', 'tipo_elem', 'id_elem',
+        'monto', 'longitud', 'tarea', 'financiacion', 'forma_ejecucion' 
     ];
     
     /**

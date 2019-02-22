@@ -49,6 +49,7 @@ class ChangeRequestApiController extends Controller
         $changerequest->operation = $validated['operation'];
         $feature = $validated['feature'];
         $feature_id = array_get($feature, "properties.id");
+        $changerequest->codigo_camino = array_get($feature, "properties.codigo_camino");
         $changerequest->departamento = array_get($feature, "properties.departamento");
         $feature_previous = ChangeRequest::getCurrentFeature($validated['layer'], $feature_id);
         if ($changerequest->operation != ChangeRequest::OPERATION_CREATE) {

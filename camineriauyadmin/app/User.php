@@ -71,9 +71,9 @@ class User extends Authenticatable
     /**
      * Get the mtopChangeRequests that have been processed  by the user.
      */
-    public function processedMtopChangeRequests()
+    public function validatedMtopChangeRequests()
     {
-        return $this->hasMany('App\MtopChangeRequest', 'processed_by_id');
+        return $this->hasMany('App\MtopChangeRequest', 'validated_by_id');
     }
     
     public function authorizeRoles($roles)

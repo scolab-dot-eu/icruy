@@ -7,17 +7,17 @@
         <div class="col">
 
             <h3>
-                {{ __('Actualizar petición de cambios') }}
+                {{ __('Actualizar petición de cambios MTOP') }}
             </h3>
-            {{ Form::model( $changerequest, ['route' => ['changerequests.update', $changerequest->id], 'method' => 'put', 'role' => 'form'] ) }}
-                @include('changerequest._fields')
+            {{ Form::model( $mtopchangerequest, ['route' => ['mtopchangerequests.update', $mtopchangerequest->id], 'method' => 'put', 'role' => 'form'] ) }}
+                @include('mtopchangerequest._fields')
                 <br>
-                <a href="{!! route('changerequests.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
-                @if ($changerequest->isOpen)
-                    @if (Auth::user()->isAdmin())
+                <a href="{!! route('mtopchangerequests.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
+                @if ($mtopchangerequest->isOpen)
+                    @if (Auth::user()->isMtopManager())
                     <input type="submit" class="btn btn-info" name="action_validate" value="{{ __('Validar') }}">
                     <input type="submit" class="btn btn-warning" name="action_reject" value="{{ __('Rechazar') }}">
-                    @else
+                    @elseif (Auth::user()->id == $mtopchangerequest->requested_by_id)
                     <input type="submit" class="btn btn-warning" name="action_cancel" value="{{ __('Cancelar') }}">
                     @endif
                 @endif
@@ -65,10 +65,10 @@
         return theMap;
     }
 
-    var proposedFeatStr = '{!! $changerequest->feature !!}';
-    var previousFeatStr = '{!! $changerequest->feature_previous !!}';
-
-    var operation = '{{ $changerequest->operation }}';
+    var proposedFeatStr = '{!! $mtopchangerequest->feature !!}';
+    var previousFeatStr = '{!! $mtopchangerequest->feature_previous !!}';
+    
+    var operation = '{{ $mtopchangerequest->operation }}';
     var zoom = 12;
     if (operation == 'create') {
         var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);

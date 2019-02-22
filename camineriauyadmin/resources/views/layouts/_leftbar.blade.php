@@ -23,10 +23,9 @@
                     <li class="{!! (Route::is('changerequests.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('changerequests.index') !!}">{{ __('Peticiones de cambios') }}</a>
                     </li>
-                    <!-- 
-                    <li class="{!! (Route::is('mtopchangerequests.index')) ? ' active' : '' !!}">
-                        <a class="list-group-item" href="">{{ __('Peticiones de cambios MTOP') }}</a>
-                    </li>-->
+                    <li class="{!! (Route::is('mtopchangerequests.*')) ? ' active' : '' !!}">
+                        <a class="list-group-item" href="{!! route('mtopchangerequests.index') !!}">{{ __('Peticiones de cambios MTOP') }}</a>
+                    </li>
                     <li class="{!! (Route::is('interventions.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('interventions.index') !!}">{{ __('Intervenciones') }}</a>
                     </li>
