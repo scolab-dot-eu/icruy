@@ -32,8 +32,11 @@ Route::prefix('dashboard')
             'show', 'create', 'store', 'destroy'
         ]]);
         Route::get('mtopchangerequests/{id}/feature-{codigo_camino}.geojson', 'MtopChangeRequestController@feature')
-            ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+'])
+        ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+'])
             ->name('mtopchangerequests.feature');
+            Route::get('mtopchangerequests/{id}/feature-{codigo_camino}-{feature_id}.geojson', 'MtopChangeRequestController@feature')
+            ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+', 'feature_id' => '[0-9]+'])
+            ->name('mtopchangerequests.feature.gid');
 
     Route::group(['middleware' => ['isadmin']], function() {
         

@@ -66,7 +66,11 @@
           <div class="row">
             <div class="col-sm-12">
                 <div class="form-group">
-                     <a href="{!! route('mtopchangerequests.feature', ['id'=>$mtopchangerequest->id, 'codigo_camino'=>$mtopchangerequest->codigo_camino]) !!}" download role="button" class="btn btn-info">{{ __('Descargar GeoJSON') }}</a>
+                @if ($mtopchangerequest->feature_id)
+                     <a href="{!! route('mtopchangerequests.feature.gid', ['id'=>$mtopchangerequest->id, 'codigo_camino'=>$mtopchangerequest->codigo_camino, 'feature_id'=>$mtopchangerequest->feature_id]) !!}" download role="button" class="btn btn-info">{{ __('Descargar GeoJSON') }}</a>
+                @else
+                    <a href="{!! route('mtopchangerequests.feature', ['id'=>$mtopchangerequest->id, 'codigo_camino'=>$mtopchangerequest->codigo_camino]) !!}" download role="button" class="btn btn-info">{{ __('Descargar GeoJSON') }}</a>
+                @endif
                 </div>
             </div>
           </div>

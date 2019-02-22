@@ -9,6 +9,8 @@ use App\Http\Requests\MtopChangeRequestApiFormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MtopChangeRequestCreated;
 
 class MtopChangeRequestApiController extends Controller
 {
@@ -38,10 +40,11 @@ class MtopChangeRequestApiController extends Controller
         elseif ($operation==ChangeRequest::OPERATION_UPDATE || $operation==ChangeRequest::OPERATION_DELETE) {
             $gid = array_get($feature, "properties.gid", null);
         }
+        $codigo_camino = array_get($feature, "properties.codigo_camino", null);
         $mtopchangerequest = new MtopChangeRequest();
         $mtopchangerequest->operation = $operation;
         $mtopchangerequest->feature_id = $gid;
-        $mtopchangerequest->codigo_camino = array_get($feature, "properties.codigo_camino", null);
+        $mtopchangerequest->codigo_camino = $codigo_camino;
         $mtopchangerequest->departamento = array_get($feature, "properties.departamento");
         if ($user->isAdmin()) {
             $mtopchangerequest->status = ChangeRequest::STATUS_VALIDATED;
@@ -56,13 +59,22 @@ class MtopChangeRequestApiController extends Controller
         if ($feature_previous!==null) {
             $mtopchangerequest->feature_previous = json_encode($feature_previous);
         }
-        $old_props = $feature['properties'];
         $feature['properties'] = [
-            'codigo'=>array_get($old_props, "codigo_camino"),
-            'gid'=>array_get($old_props, "gid", ''),
+            'codigo'=>$codigo_camino,
+            'gid'=>$gid
         ];
         $mtopchangerequest->feature = json_encode($feature);
         $user->mtopChangeRequests()->save($mtopchangerequest);
+        
+        try {
+            //Mail::to($request->user())->send(new MtopChangeRequestCreated($mtopchangerequest));
+            //Mail::to('cmartinez@scolab.es')->send(new MtopChangeRequestCreated($mtopchangerequest));
+        }
+        catch(\Exception $ex) {
+            Log::error($ex->getMessage());
+            Log::error($ex);
+        }
+        
         return $mtopchangerequest;
     }
     
@@ -76,11 +88,7 @@ class MtopChangeRequestApiController extends Controller
         $codigo_camino = array_get($feature, "properties.codigo_camino");
         
         $layer = Camino::LAYER_NAME;
-        Log::debug("cmi01");
-        Log::debug($layer);
-        Log::debug($codigo_camino);
         $feature_previous = MtopChangeRequest::getCurrentFeature($layer, $codigo_camino);
-        Log::debug(json_encode(MtopChangeRequest::feature2array($feature_previous)));
         // la operación para el camino MTOP no es la misma que la operación en la tabla de caminos
         if ($feature_previous == null) {
             if ($mtopOperation==ChangeRequest::OPERATION_UPDATE) {
