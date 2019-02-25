@@ -46,12 +46,8 @@ class MtopChangeRequestApiController extends Controller
         $mtopchangerequest->feature_id = $gid;
         $mtopchangerequest->codigo_camino = $codigo_camino;
         $mtopchangerequest->departamento = array_get($feature, "properties.departamento");
-        if ($user->isAdmin()) {
-            $mtopchangerequest->status = ChangeRequest::STATUS_VALIDATED;
-        }
-        else {
-            $mtopchangerequest->status = ChangeRequest::STATUS_PENDING;
-        }
+        // always pending status since they have to be validated by MTOP
+        $mtopchangerequest->status = ChangeRequest::STATUS_PENDING;
         // encode to keep only the geometry (the rest of properties will be cleaned)
         $feature_previous = MtopChangeRequest::getCurrentMtopFeature($mtopchangerequest->departamento, $mtopchangerequest->codigo_camino, $gid);
         Log::info("feature_previous:");
@@ -96,13 +92,13 @@ class MtopChangeRequestApiController extends Controller
             }
             else {
                 // we don't need a ChR on cr_caminos table in this case
-                return;
+                return null;
             }
         }
         else {
             if (ChangeRequest::equalValues($feature['properties'], $feature_previous)) {
                 // don't need to create the ChR if values are equal
-                return;
+                return null;
             }
             if ($feature_previous->status != ChangeRequest::FEATURE_STATUS_VALIDATED) {
             
@@ -140,6 +136,13 @@ class MtopChangeRequestApiController extends Controller
             }
             $changerequest->feature_previous = MtopChangeRequest::feature2json($feature_previous);
         }
+        // validate all the fields before storing the ChR
+        $feature['properties'] = ChangeRequest::prepareFeature($layer, $feature, $operation);
+        $feature = ChangeRequest::prepareInternalFields($feature, $operation, $changerequest->status, $feature_previous);
+        $newId = ChangeRequest::applyChangeRequest($layer, $operation, $feature);
+        if ($newId) {
+            $feature['properties']['id'] = $newId;
+        }
         
         if ($user->isAdmin()) {
             $changerequest->validator()->associate($user);
@@ -150,18 +153,6 @@ class MtopChangeRequestApiController extends Controller
         $the_feat['properties'] = $feature['properties'];
         $changerequest->feature = json_encode($the_feat);
         $user->changeRequests()->save($changerequest);
-        // validate all the fields before storing the ChR
-        $feature['properties'] = ChangeRequest::prepareFeature($layer, $feature, $operation);
-        // feature status will always be PENDING (even for administrator) because MTOP request also has to be validated
-        $feature = ChangeRequest::prepareInternalFields($feature, $operation, ChangeRequest::STATUS_PENDING, $feature_previous);
-        /*
-        $feature['statusmtop'] = ChangeRequest::STATUS_PENDING;
-        */
-        $newId = ChangeRequest::applyChangeRequest($layer, $operation, $feature);
-        if ($newId) {
-            $feature['properties']['id'] = $newId;
-        }
-        
         return $changerequest;
     }
 
@@ -178,21 +169,33 @@ class MtopChangeRequestApiController extends Controller
         $values = $request->validated();
         $operation = $values['operation'];
         $feature = $values['feature'];
-        $transResult = DB::transaction(function () use ($operation, $feature, $user) {
+        $transResponse = DB::transaction(function () use ($operation, $feature, $user) {
             $mtopchangerequest = $this->createMtopChangeRequest($operation, $feature, $user);
             $changerequest = $this->createChangeRequest($operation, $feature, $user);
             $result = [
-                "mchr"=>$mtopchangerequest,
-                "chr"=>$changerequest
+                "mtopChangeRequest"=>$mtopchangerequest,
+                "changeRequest"=>$changerequest
             ];
             return $result;
         });
-        $mtopchangerequest = $transResult['mchr'];
-        $changerequest = $transResult['chr'];
-        $response = $mtopchangerequest->toArray();
-        $response['feature'] = $feature;
-        $response['status_label'] = $mtopchangerequest->statusLabel;
-        $response['operation_label'] = $mtopchangerequest->operationLabel;
+        
+        $mtopchangerequest = $transResponse['mtopChangeRequest'];
+        $changerequest = $transResponse['changeRequest'];
+        if ($changerequest !== null) {
+            $response = $changerequest->toArray();
+        }
+        else {
+            $response['feature'] = $feature;
+        }
+        if ($mtopchangerequest !== null) {
+            $response["mtopChangeRequest"] = [
+                'id'=>$mtopchangerequest->id,
+                'status'=>$mtopchangerequest->status,
+                'status_label'=>$mtopchangerequest->status_label,
+                'operation'=>$mtopchangerequest->operation,
+                'operation_label'=>$mtopchangerequest->operation_label
+            ];
+        }
         return response()->json($response, 201);
     }
 
