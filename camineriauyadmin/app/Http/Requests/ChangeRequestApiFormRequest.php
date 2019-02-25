@@ -20,10 +20,7 @@ class ChangeRequestApiFormRequest extends JsonRequest
     protected function validationData()
     {
         $validated = parent::validationData();;
-        //Log::error('validationData cmi');
-        //Log::error($validated['layer']);
         $validated['layer'] = ChangeRequest::getTableName($validated['layer']);
-        //Log::error($validated['layer']);
         return $validated;
     }
     

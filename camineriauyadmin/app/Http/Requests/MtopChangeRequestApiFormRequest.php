@@ -20,14 +20,8 @@ class MtopChangeRequestApiFormRequest extends JsonRequest
     
     protected function validationData()
     {
-        Log::debug('validationData cmi 00');
-        Log::debug(json_encode($this->all()));
-        Log::debug(json_encode($this));
         $validated = parent::validationData();
-        Log::debug(json_encode($validated));
-        //Log::debug($validated['layer']);
         $validated['layer'] = ChangeRequest::getTableName($validated['layer']);
-        //Log::debug($validated['layer']);
         return $validated;
     }
     
