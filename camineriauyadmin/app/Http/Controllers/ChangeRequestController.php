@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\Mail\ChangeRequestUpdated;
+use App\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ChangeRequestController extends Controller
 {
@@ -166,10 +169,11 @@ class ChangeRequestController extends Controller
         /*
         $feature = json_decode($origChangerequest->feature, true);
         $geom = Geometry::fromJson($origChangerequest->feature);*/
+        $user = $request->user();
         if (!empty($request->action_cancel)) {
             // FIXME: we need a more meaningful name
-            if ($request->user()->id != $origChangerequest->requested_by_id) {
-                $message = 'El usuario intentó cancelar una petición que no inició: '.$request->user()->email;
+            if ($user->id != $origChangerequest->requested_by_id) {
+                $message = 'El usuario intentó cancelar una petición que no inició: '.$user->email;
                 Log::error($message);
                 $error = \Illuminate\Validation\ValidationException::withMessages([
                     'user' => [$message],
@@ -179,8 +183,8 @@ class ChangeRequestController extends Controller
             ChangeRequest::setCancelled($origChangerequest, $request->user());
             return redirect()->route('changerequests.index');
         }
-        if (!$request->user()->isAdmin()) {
-            $message = 'Un usuario no-administrador intentó modificar una petición: '.$request->user()->email;
+        if (!$user->isAdmin()) {
+            $message = 'Un usuario no-administrador intentó modificar una petición: '.$user->email;
             Log::error($message);
             $error = \Illuminate\Validation\ValidationException::withMessages([
                 'user' => [$message],
@@ -196,12 +200,24 @@ class ChangeRequestController extends Controller
                 $origChangerequest->operation,
                 $feature, $geom);*/
             // FIXME: we need a more meaningful name
-            ChangeRequest::setValidated($origChangerequest, $request->user());
+            ChangeRequest::setValidated($origChangerequest, $user);
         }
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
-            ChangeRequest::setRejected($origChangerequest, $request->user());
+            ChangeRequest::setRejected($origChangerequest, $user);
         }
+        
+        try {
+            $origChangerequest = $origChangerequest->fresh();
+            $notification = new ChangeRequestUpdated($origChangerequest);
+            $notification->onQueue('email');
+            Mail::to($origChangerequest->author)->queue($notification);
+        }
+        catch(\Exception $ex) {
+            Log::error($ex->getMessage());
+            Log::error($ex);
+        }
+        
         return redirect()->route('changerequests.index');
     }
 

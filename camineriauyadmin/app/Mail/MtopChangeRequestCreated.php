@@ -39,11 +39,10 @@ class MtopChangeRequestCreated extends Mailable
         
         $changeRequestUrl = route('mtopchangerequests.edit', $this->mtopChangeRequest->id);
         return $this->from('icr@opp.gub.uy')
-                ->subject('ICR - Nueva petición MTOP')
+                ->subject('ICR - Nueva petición MTOP - '.$this->mtopChangeRequest->id)
                 ->markdown('emails.mtopchangerequest.created')
                 ->attachData($this->mtopChangeRequest->feature, $fileName,  ['mime'=>'application/json'])
                 ->with([
-                    'mtopChangeRequest'=>$this->mtopChangeRequest,
                     'changeRequestUrl' => $changeRequestUrl
                 ]);
     }

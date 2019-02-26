@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Camino;
 use App\MtopChangeRequest;
 use App\ChangeRequest;
+use App\Role;
 use App\Http\Requests\MtopChangeRequestApiFormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\ChangeRequestCreated;
 use App\Mail\MtopChangeRequestCreated;
 
 class MtopChangeRequestApiController extends Controller
@@ -63,8 +65,10 @@ class MtopChangeRequestApiController extends Controller
         $user->mtopChangeRequests()->save($mtopchangerequest);
         
         try {
-            //Mail::to($request->user())->send(new MtopChangeRequestCreated($mtopchangerequest));
-            //Mail::to('cmartinez@scolab.es')->send(new MtopChangeRequestCreated($mtopchangerequest));
+            $notification = new MtopChangeRequestCreated($mtopchangerequest);
+            $notification->onQueue('email');
+            $managers = Role::mtopManagers()->first()->users()->get();
+            Mail::to($managers)->queue($notification);
         }
         catch(\Exception $ex) {
             Log::error($ex->getMessage());
@@ -128,7 +132,7 @@ class MtopChangeRequestApiController extends Controller
         $changerequest->codigo_camino = $codigo_camino;
         
         if ($operation != ChangeRequest::OPERATION_CREATE) {
-            if (ChangeRequest::open()->where('layer', $layer)->where('feat_id', $codigo_camino)->count()>0) {
+            if (ChangeRequest::open()->where('layer', $layer)->where('feature_id', $codigo_camino)->count()>0) {
                 /* if ($changerequest && $changerequest->requested_by!=$user) {}*/
                 
                 // ya existe un ChR sobre este camino
@@ -153,6 +157,20 @@ class MtopChangeRequestApiController extends Controller
         $the_feat['properties'] = $feature['properties'];
         $changerequest->feature = json_encode($the_feat);
         $user->changeRequests()->save($changerequest);
+        
+        if (!$user->isAdmin()) {
+            try {
+                $notification = new ChangeRequestCreated($changerequest);
+                $notification->onQueue('email');
+                $admins = Role::admins()->first()->users()->get();
+                Mail::to($admins)->queue($notification);
+            }
+            catch(\Exception $ex) {
+                Log::error($ex->getMessage());
+                Log::error($ex);
+            }
+        }
+        
         return $changerequest;
     }
 

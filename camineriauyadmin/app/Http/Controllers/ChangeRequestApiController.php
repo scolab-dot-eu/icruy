@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\Role;
+use App\Mail\ChangeRequestCreated;
 use App\Http\Requests\ChangeRequestApiFormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Grimzy\LaravelMysqlSpatial\Types\Geometry;
 
 class ChangeRequestApiController extends Controller
@@ -76,7 +80,28 @@ class ChangeRequestApiController extends Controller
         }
         $changerequest->feature_id = array_get($feature, "properties.id");
         $changerequest->feature = json_encode($feature);
-        $request->user()->changeRequests()->save($changerequest);
+        $user = $request->user();
+        $user->changeRequests()->save($changerequest);
+        
+        if (!$user->isAdmin()) {
+            try {
+                $notification = new ChangeRequestCreated($changerequest);
+                $notification->onQueue('email');
+                //Mail::to($request->user())->send($notification);
+                $admins = Role::admins()->first()->users()->get();
+                Mail::to($admins)->queue($notification);
+                /*
+                foreach ( as $admin) {
+                    /*Log::debug('email');
+                    Log::debug(json_encode($admin));
+                    
+                }*/
+            }
+            catch(\Exception $ex) {
+                Log::error($ex->getMessage());
+                Log::error($ex);
+            }
+        }
         
         $response = $changerequest->toArray();
         $response['feature'] = $feature;

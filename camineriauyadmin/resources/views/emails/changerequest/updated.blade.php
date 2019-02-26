@@ -1,8 +1,9 @@
 @component('mail::message')
 # Inventario de Caminería Rural
 
-Se ha creado una nueva [petición de cambios]({{ $changeRequestUrl }}) que requiere ser revisada.
+Se ha actualizado su [petición de cambios]({{ $changeRequestUrl }}).
 
+Estado: {{ $status }}  
 Tipo de elemento: {{ $layer }}  
 Departamento: {{ $departamento }}  
 Operación: {{ $operation }}  
