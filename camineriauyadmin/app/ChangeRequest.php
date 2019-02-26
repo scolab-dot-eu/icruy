@@ -213,7 +213,10 @@ class ChangeRequest extends Model
             'thegeomjson'=>true,
             'changerequest'=>true,
             'mtopchangerequest'=>true,
-            'statusmtop'=>true
+            'statusmtop'=>true,
+            'origin'=>true,
+            'validated_by_id'=>true,
+            'created_by_id'=>true
         ];
         Log::debug("values1:");
         Log::debug(json_encode($values1));
@@ -222,16 +225,19 @@ class ChangeRequest extends Model
         foreach ($values1 as $field => $value) {
             if (!array_get($ignoredFields, $field) &&
                 array_get($values2, $field)!=$value) {
+                    Log::debug("diferentes: ".$value." - ".array_get($values2, $field));
                     return false;
                 }
                 $ignoredFields[$field] = true;
         }
         foreach ($values2 as $field => $value) {
             if (!array_get($ignoredFields, $field) &&
-                (array_get($values2, $field)!=$value)) {
+                (array_get($values1, $field)!=$value)) {
+                    Log::debug("diferentes: ".$value." - ".array_get($values1, $field));
                     return false;
                 }
         }
+        Log::debug("are equal");
         return true;
     }
 
@@ -239,8 +245,10 @@ class ChangeRequest extends Model
         $values = [];
         $errors = [];
         $layer_def = EditableLayerDef::where('name', $layer_name)->first();
-        
-        $fields_def = json_decode(array_get($layer_def, 'fields', []), true);
+        Log::debug(json_encode($layer_def));
+        $fields = array_get($layer_def, 'fields', []);
+        Log::debug(json_encode($fields));
+        $fields_def = json_decode($fields, true);
         foreach ($feature['properties'] as $field => $value) {
             $field_def = array_first($fields_def, function ($aFieldDef, $key) use ($field) {
                 return (array_get($aFieldDef, 'name')===$field);
@@ -323,7 +331,7 @@ class ChangeRequest extends Model
         else {
             $table_name = ChangeRequest::getTableName($layer_name);
             if (!ChangeRequest::checkFeatureExists($table_name, $id, $department)) {
-                $errors['feature.properties.id'] = __('Registro no encontrado para la capa, el departamento y el id proporcionados');
+                $errors['feature.properties.id'] = __('Registro no encontrado para la capa, el departamento y el id proporcionados: '.$table_name." - ".$id." - ".$department);
             }
         }
         if (!ChangeRequest::comprobarEstructuraCodigoCamino($codigo_camino, $department)) {
