@@ -57,8 +57,6 @@ class MtopChangeRequest extends Model
     }
     
     public function getOperationLabelAttribute(){
-        Log::debug('cmi label0:'.json_encode($this));
-        Log::debug('cmi label:'.$this->operation);
         return ChangeRequest::$OPERATION_LABELS[$this->operation];
     }
     
