@@ -178,13 +178,6 @@ class EditableLayerDef extends Model
             $version = EditableLayerDef::getMysqlVersion();
             $table->increments('id');
             
-            if ($historic) {
-                //$table->string('cod_elem');
-            }
-            else {
-                $table->integer('version')->unsigned()->nullable();
-                //$table->string('cod_elem')->nullable()->unique()->default(null);
-            }
             if (strtolower($geom_type) == 'point') {
                 if (version_compare($version, '8.0') >= 0) { // SRID is only supported from MySQL v8.0
                     $table->point('thegeom', 4326);
@@ -223,6 +216,7 @@ class EditableLayerDef extends Model
             }
             else {
                 $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE)->nullable();
+                $table->integer('version')->unsigned()->nullable();
                 //$table->string('status', 23)->default('VALIDADO');
                 //$table->string('origin', 9)->nullable();
             }

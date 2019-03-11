@@ -61,7 +61,6 @@ class CreateCaminosTable extends Migration
                 $table->string('codigo_camino', 8)->unique();
                 $table->string('departamento', 4);
                 $table->integer('feat_id');
-                $table->integer('version')->unsigned();
                 $table->string('nombre', 255)->nullable(true)->default(null);
                 $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
                 $table->string('rodadura')->nullable(true)->default(null);
