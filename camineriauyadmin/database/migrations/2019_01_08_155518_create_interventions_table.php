@@ -29,7 +29,8 @@ class CreateInterventionsTable extends Migration
                 'id',
                 'status',
                 'departamento',
-                'codigo_camino'];
+                'codigo_camino'
+            ];
             EditableLayerDef::createFields($table, $fieldsDef, $ignoredFields, $errors);
             $table->foreign('departamento')->references('code')->on('departments');
             $table->index(['status', 'financiacion', 'departamento', 'tarea', 'codigo_camino'], 'idx_sta_fin_dep_tar_cam');

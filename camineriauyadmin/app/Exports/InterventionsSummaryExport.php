@@ -98,10 +98,12 @@ class InterventionsSummaryExport
             $query->where('financiacion', $this->financiacion);
         }
         if ($this->from_year) {
-            $query->where('anyo_interv', '>=', $this->from_year);
+            $from_date = $this->from_year.'-01-01';
+            $query->where('fecha_interv', '>=', $from_date);
         }
         if ($this->to_year) {
-            $query->where('anyo_interv', '<=', $this->to_year);
+            $to_date = $this->to_year.'-12-31';
+            $query->where('fecha_interv', '<=', $to_date);
         }
         if ($this->from_date) {
             //$query->where('codigo_camino', $this->codigo_camino);

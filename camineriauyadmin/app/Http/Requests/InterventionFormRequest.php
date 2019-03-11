@@ -39,7 +39,7 @@ class InterventionFormRequest extends FormRequest
                 }
              ],
             'nombre' => 'sometimes|nullable',
-            'anyo_interv'             => 'required|integer',
+            'fecha_interv'             => 'required|date',
             'codigo_camino'             => 'required',
             'tipo_elem'             => 'required|exists:editablelayerdefs,name',
             'id_elem'               => 'nullable|numeric',

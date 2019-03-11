@@ -22,8 +22,10 @@
           <div class="row">
             <div class="col-md-6 col-12">
                 <div class="form-group">
-                    {!! Form::label('anyo_interv', __('Año intervención')) !!}
-                    {!! Form::number('anyo_interv', null, ['class' => 'form-control', 'required' => true]) !!}
+                    {!! Form::label('fecha_interv', __('Fecha intervención')) !!}
+                    {!! Form::date('fecha_interv', null, ['class' => 'form-control', 'required' => true]) !!}
+                    <!-- {!! Form::number('anyo_interv', null, ['class' => 'form-control', 'required' => true]) !!}
+                     -->
                 </div>
             </div>
             <div class="col-md-6 col-12">

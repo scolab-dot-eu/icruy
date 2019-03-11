@@ -105,10 +105,12 @@ class InterventionsExport
             $query->where('financiacion', $this->financiacion);
         }
         if ($this->from_year) {
-            $query->where('anyo_interv', '>=', $this->from_year);
+            $from_date = $this->from_year.'-01-01';
+            $query->where('fecha_interv', '>=', $from_date);
         }
         if ($this->to_year) {
-            $query->where('anyo_interv', '<=', $this->to_year);
+            $to_date = $this->to_year.'-12-31';
+            $query->where('fecha_interv', '<=', $to_date);
         }
         if ($this->from_date) {
             //$query->where('codigo_camino', $this->codigo_camino);
@@ -134,7 +136,7 @@ class InterventionsExport
             return [
                 $intervention->id,
                 $intervention->departamento,
-                $intervention->anyo_interv,
+                $intervention->fecha_interv,
                 $intervention->codigo_camino,
                 $intervention->id_elem,
                 $intervention->longitud,
@@ -147,7 +149,7 @@ class InterventionsExport
         return [
             $intervention->id,
             $intervention->departamento,
-            $intervention->anyo_interv,
+            $intervention->fecha_interv,
             $intervention->codigo_camino,
             $intervention->longitud,
             $intervention->monto,
@@ -173,10 +175,10 @@ class InterventionsExport
             $tipoElemFilterTitle = 'Tipo de elemento: '.$this->tipoElemLabel;
         }
         if ($this->id_elem!==null) {
-            $header = ['ID', 'DEPARTAMENTO', 'AÑO INTERVENCIÓN', 'CAMINO', 'ID ELEMENTO','LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
+            $header = ['ID', 'DEPARTAMENTO', 'FECHA INTERVENCIÓN', 'CAMINO', 'ID ELEMENTO','LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
         }
         else {
-            $header = ['ID', 'DEPARTAMENTO', 'AÑO INTERVENCIÓN', 'CAMINO', 'LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
+            $header = ['ID', 'DEPARTAMENTO', 'FECHA INTERVENCIÓN', 'CAMINO', 'LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
         }
     
         return [

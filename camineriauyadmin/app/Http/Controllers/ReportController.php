@@ -111,40 +111,4 @@ class ReportController extends Controller
         }
         return $interventionsExport->download($fileName);
     }
-    
-    public function download(Request $request)
-    {
-        $interventions = Intervention::all();
-        
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setCellValue('A1', 'ID');
-        $sheet->setCellValue('B1', 'DEPARTAMENTO');
-        $sheet->setCellValue('C1', 'AÑO INTERVENCIÓN');
-        $sheet->setCellValue('D1', 'CAMINO');
-        $sheet->setCellValue('E1', 'LONGITUD (KM)');
-        $sheet->setCellValue('F1', 'MONTO');
-        $sheet->setCellValue('G1', 'TAREA');
-        $sheet->setCellValue('H1', 'FINANCIACIÓN');
-        $sheet->setCellValue('I1', 'FORMA EJECUCIÓN');
-
-        $row = 1;
-        foreach ($interventions as $intervention) {
-            $row = $row + 1;
-            $sheet->setCellValue('A'.$row, $intervention->id);
-            $sheet->setCellValue('B'.$row, $intervention->departamento);
-            $sheet->setCellValue('C'.$row, $intervention->anyo_interv);
-            $sheet->setCellValue('D'.$row, $intervention->codigo_camino);
-            $sheet->setCellValue('E'.$row, $intervention->longitud);
-            $sheet->setCellValue('F'.$row, $intervention->monto);
-            $sheet->setCellValue('G'.$row, $intervention->tarea);
-            $sheet->setCellValue('H'.$row, $intervention->financiacion);
-            $sheet->setCellValue('I'.$row, $intervention->forma_ejecucion);
-        }
-        
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('/tmp/helloworld.xlsx');
-        return response()->file('/tmp/helloworld.xlsx');
-            //->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');;
-    }
 }
