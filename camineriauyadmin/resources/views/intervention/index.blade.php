@@ -9,7 +9,10 @@
                 <td>ID</td>
                 <td>{{ __('Tipo elemento') }}</td>
                 <td>{{ __('Año') }}</td>
-                <td>{{ __('Departamento') }}</td>
+                <td>{{ __('Dep.') }}</td>
+                @if (!Auth::user()->isAdmin())
+                <td>{{ __('Estado') }}</td>
+                @endif
                 <td>{{ __('Camino') }}</td>
                 <td>{{ __('Tarea') }}</td>
                 <td>{{ __('Monto') }}</td>
@@ -23,11 +26,14 @@
                 <td>{{ $value->tipo_elem }}</td>
                 <td>{{ $value->anyo_interv }}</td>
                 <td>{{ $value->departamento }}</td>
+                @if (!Auth::user()->isAdmin())
+                <td>{{ $value->status }}</td>
+                @endif
                 <td>{{ $value->codigo_camino }}</td>
                 <td>{{ $value->tarea }}</td>
                 <td>{{ $value->monto }}</td>
                 <td>
-                    <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/interventions/' . $value->id . '/edit') }}">Editar</a>
+                    <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/interventions/' . $value->id . '/edit') }}">Consultar</a>
                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="{{$value->id}}" data-name="{{ $value->anyo }} - {{$value->codigo_camino}}">Borrar</button>
                 </td>
             </tr>

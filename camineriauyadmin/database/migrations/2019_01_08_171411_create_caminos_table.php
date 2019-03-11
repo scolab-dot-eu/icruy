@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use App\ChangeRequest;
 use App\EditableLayerDef;
+use App\Camino;
 
 class CreateCaminosTable extends Migration
 {
@@ -20,8 +21,24 @@ class CreateCaminosTable extends Migration
             $table->increments('id');
             $table->string('codigo_camino', 8)->unique();
             $table->string('departamento', 4);
+            
+            $errors = [];
+            $fieldsDef = json_decode(Camino::FIELD_DEF);
+            $ignoredFields = [
+                'id',
+                'status',
+                'statusmtop',
+                'departamento',
+                'codigo_camino',
+                'version',
+                'validated_by_id'
+            ];
+            EditableLayerDef::createFields($table, $fieldsDef, $ignoredFields, $errors);
             $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
             $table->string('statusmtop', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
+            $table->integer('version')->unsigned();
+            /*
+            $table->string('nombre', 255)->nullable(true)->default(null);
             $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
             $table->string('rodadura')->nullable(true)->default(null);
             $table->boolean('banquina')->nullable(true)->default(null);
@@ -29,10 +46,10 @@ class CreateCaminosTable extends Migration
             $table->string('cuneta')->nullable(true)->default(null);
             $table->string('senaliz_horiz')->nullable(true)->default(null);
             $table->string('observaciones')->nullable(true)->default(null);
-            $table->string('origin')->nullable();
-            $table->integer('validated_by_id')->unsigned()->nullable();
             $table->date('updated_at')->nullable();
             $table->date('created_at')->nullable();
+            */
+            $table->integer('validated_by_id')->unsigned()->nullable();
             $table->foreign('departamento')->references('code')->on('departments');
             $table->index(['status', 'codigo_camino', 'statusmtop']);
             $table->index(['departamento', 'status', 'codigo_camino', 'statusmtop']);
@@ -44,6 +61,8 @@ class CreateCaminosTable extends Migration
                 $table->string('codigo_camino', 8)->unique();
                 $table->string('departamento', 4);
                 $table->integer('feat_id');
+                $table->integer('version')->unsigned();
+                $table->string('nombre', 255)->nullable(true)->default(null);
                 $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
                 $table->string('rodadura')->nullable(true)->default(null);
                 $table->boolean('banquina')->nullable(true)->default(null);
@@ -67,12 +86,11 @@ class CreateCaminosTable extends Migration
             BEFORE INSERT
                ON ".$name." FOR EACH ROW
             BEGIN
-               IF NEW.status IS NULL OR (NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' AND 
-                   NEW.status <> '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."') THEN
+               IF NEW.status IS NULL OR NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
                        SET NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."';
                END IF;
-               IF NEW.origin IS NULL OR NEW.origin <> '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
-                   SET NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."';
+               IF NEW.version IS NULL OR NEW.version <> 1 THEN
+                   SET NEW.version = 0;
                    SET NEW.created_at = CURDATE();
                    SET NEW.updated_at = CURDATE();
                END IF;
@@ -83,7 +101,7 @@ class CreateCaminosTable extends Migration
             CREATE TRIGGER ".$name."_create_changerequest
             AFTER INSERT
                 ON ".$name." FOR EACH ROW BEGIN
-                IF NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."' THEN
+                IF NEW.version = 0 THEN
                     IF NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
                         INSERT INTO changerequests
                             (requested_by_id, layer, feature_id, departamento, status, operation)

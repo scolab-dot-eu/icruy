@@ -10,7 +10,9 @@
                 Nueva intervención
             </h3>
             {{ Form::model( $intervention, ['route' => ['interventions.store'], 'method' => 'post', 'role' => 'form'] ) }}
+                <div class="container">
                 @include('intervention._fields')
+                </div>
                 {!! Form::submit(__('Guardar'), ['class' => 'btn btn-info']) !!}
             {{ Form::close() }}
             <br />

@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use App\ChangeRequest;
+use App\EditableLayerDef;
+use App\Intervention;
 
 class CreateInterventionsTable extends Migration
 {
@@ -13,24 +15,28 @@ class CreateInterventionsTable extends Migration
      * @return void
      */
     public function up()
-    {
+    { 
         Schema::create('interventions', function (Blueprint $table) {
+            
             $table->increments('id');
-            $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
-            $table->integer('anyo_interv')->unsigned();
+            //$table->integer('status_code')->unsigned()->default(ChangeRequest::STATUS_PENDING);
+            $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE)->nullable();
             $table->string('departamento', 4);
             $table->string('codigo_camino', 8);
-            $table->string('tipo_elem', 255)->nullable(); // alcantarilla, puente, etc
-            $table->integer('id_elem')->unsigned()->nullable();
-            $table->decimal('longitud', 3, 2)->nullable();
-            $table->decimal('monto', 12, 2);
-            $table->string('tarea', 255);
-            $table->string('financiacion', 3);
-            $table->string('forma_ejecucion', 3);
-            $table->timestamps();
+            $errors = [];
+            $fieldsDef = json_decode(Intervention::FIELD_DEF);
+            $ignoredFields = [
+                'id',
+                'status',
+                'departamento',
+                'codigo_camino'];
+            EditableLayerDef::createFields($table, $fieldsDef, $ignoredFields, $errors);
             $table->foreign('departamento')->references('code')->on('departments');
-            $table->index(['status', 'codigo_camino', 'id_elem']);
-            $table->index(['departamento', 'status', 'codigo_camino', 'id_elem']);
+            $table->index(['status', 'financiacion', 'departamento', 'tarea', 'codigo_camino'], 'idx_sta_fin_dep_tar_cam');
+            $table->index(['departamento', 'status', 'codigo_camino', 'financiacion', 'tarea'], 'idx_dep_sta_cam_fin_tar');
+            $table->index(['status', 'codigo_camino', 'financiacion', 'tarea'], 'idx_sta_cam_fin_tar');
+            $table->index(['status', 'codigo_camino', 'id_elem'], 'idx_sta_cam_elem');
+            $table->index(['departamento', 'status', 'codigo_camino', 'id_elem'], 'idx_dep_sta_cam_elem');
         });
     }
 

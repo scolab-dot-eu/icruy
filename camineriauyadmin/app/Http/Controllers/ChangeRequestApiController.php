@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Grimzy\LaravelMysqlSpatial\Types\Geometry;
+use App\ChangeRequests\ChangeRequestProcessor;
 
 class ChangeRequestApiController extends Controller
 {
@@ -32,7 +33,12 @@ class ChangeRequestApiController extends Controller
     {
         //
     }
-
+    
+    public static function throwPendingElementNotModifiableError() {
+        $errors = ['Error' => "No se puede modificar un elemento que está pendiente de validación"];
+        $error = \Illuminate\Validation\ValidationException::withMessages($errors);
+        throw $error;
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -42,71 +48,21 @@ class ChangeRequestApiController extends Controller
     public function store(ChangeRequestApiFormRequest $request)
     {
         $validated = $request->validated();
-        $changerequest = new ChangeRequest;
-        if ($request->user()->isAdmin()) {
-            $changerequest->status = ChangeRequest::STATUS_VALIDATED;
-        }
-        else {
-            $changerequest->status = ChangeRequest::STATUS_PENDING;
-        }
-        $changerequest->layer = $validated['layer'];
-        $changerequest->operation = $validated['operation'];
         $feature = $validated['feature'];
-        $feature_id = array_get($feature, "properties.id");
-        $changerequest->codigo_camino = array_get($feature, "properties.codigo_camino");
-        $changerequest->departamento = array_get($feature, "properties.departamento");
-        $feature_previous = ChangeRequest::getCurrentFeature($validated['layer'], $feature_id);
-        if ($changerequest->operation != ChangeRequest::OPERATION_CREATE) {
-            if ($feature_previous && $feature_previous->status != ChangeRequest::FEATURE_STATUS_VALIDATED) {
-                $errors = ['Error' => "No se puede modificar un elemento que está pendiente de validación"];
-                $error = \Illuminate\Validation\ValidationException::withMessages($errors);
-                throw $error;
-            }
-            $changerequest->feature_previous = ChangeRequest::feature2geojson($feature_previous);
-        }
-        
+        $properties = $feature["properties"];
+        $feature_id = array_get($properties, "id");
         // parse as a Geometry object to ensure we have a valid geom
         $geom = Geometry::fromJson(json_encode($feature));
-        // validate all the fields before storing the ChR
-        $feature['properties'] = ChangeRequest::prepareFeature($validated['layer'], $feature, $validated['operation']);
-        $feature = ChangeRequest::prepareInternalFields($feature, $validated['operation'], $changerequest->status, $feature_previous);
-        $newId = ChangeRequest::applyChangeRequest($validated['layer'], $validated['operation'], $feature, $geom);
-        if ($newId) {
-            $feature['properties']['id'] = $newId;
-        }
-        if ($request->user()->isAdmin()) {
-            //Log::error("user is admin!");
-            $changerequest->validator()->associate($request->user());
-        }
-        $changerequest->feature_id = array_get($feature, "properties.id");
-        $changerequest->feature = json_encode($feature);
-        $user = $request->user();
-        $user->changeRequests()->save($changerequest);
         
-        if (!$user->isAdmin()) {
-            try {
-                $notification = new ChangeRequestCreated($changerequest);
-                $notification->onQueue('email');
-                //Mail::to($request->user())->send($notification);
-                $admins = Role::admins()->first()->users()->get();
-                Mail::to($admins)->queue($notification);
-                /*
-                foreach ( as $admin) {
-                    /*Log::debug('email');
-                    Log::debug(json_encode($admin));
-                    
-                }*/
-            }
-            catch(\Exception $ex) {
-                Log::error($ex->getMessage());
-                Log::error($ex);
-            }
-        }
-        
-        $response = $changerequest->toArray();
-        $response['feature'] = $feature;
-        $response['status_label'] = $changerequest->statusLabel;
-        $response['operation_label'] = $changerequest->operationLabel;
+        $changeRequestProcessor = new ChangeRequestProcessor();
+        $response = $changeRequestProcessor
+                        ->createChangeRequest(
+                            $validated['layer'],
+                            $validated['operation'],
+                            $properties,
+                            $request->user(),
+                            $geom,
+                            $feature_id);
         return response()->json($response, 201);
     }
 

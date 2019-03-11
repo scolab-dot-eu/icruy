@@ -26,7 +26,19 @@ class InterventionFormRequest extends FormRequest
     public function rules()
     {
         return [
-            'departamento'             => 'required',
+            'departamento'    => ['required', function ($attribute, $value, $fail)
+                {
+                    if (!$this->user()->isAdmin()) {
+                        if (!$this->user()->isManager()) {
+                            $fail('El usuario no tiene permisos para editar el departamento: '.$value);
+                        }
+                        if ($this->user()->departments()->where('code', $value)->count()==0) {
+                            $fail('El usuario no tiene permisos para editar el departamento: '.$value);
+                        }
+                    }
+                }
+             ],
+            'nombre' => 'sometimes|nullable',
             'anyo_interv'             => 'required|integer',
             'codigo_camino'             => 'required',
             'tipo_elem'             => 'required|exists:editablelayerdefs,name',

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\ChangeRequests\ChangeRequestProcessor;
 use App\Mail\ChangeRequestUpdated;
 use App\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Intervention;
 
 class ChangeRequestController extends Controller
 {
@@ -110,37 +112,6 @@ class ChangeRequestController extends Controller
             }
             $proposedFeature = json_decode($changerequest->feature);
         }
-        
-//        Log::error($changerequest->feature_previous);
-//        Log::error($changerequest->feature);
-        
-        /*
-        $layer = $changerequest->layer;
-//         Log::error('id: ');
-//         Log::error($changerequest->feature_id);
-        $feat_id = ChangeRequest::getFeatureId($changerequest->feature_id);
-//         Log::error($feat_id);
-        
-//         Log::error('id bis: ');
-//         Log::error($proposedFeature->properties->id);
-        
-//         $feat_id = array_get($proposedFeature, "properties.id");
-//         Log::error($feat_id);
-//         $feat_id = ChangeRequest::getFeatureId($feat_id);
-//         Log::error($feat_id);
-        $previousFeatureArray = [];
-        
-        $the_geom = '';
-        if ($feat_id > 0) {
-            $currentFeature = ChangeRequest::getCurrentFeature($layer, $feat_id);
-            $the_geom = $currentFeature-> thegeomjson;
-            foreach ($currentFeature as $key => $value) {
-                if ($key != 'thegeom' && $key != 'thegeomjson') {
-                    $previousFeatureArray[$key] = $value;
-                }
-            }
-        }
-        */
         return view('changerequest.edit', ['changerequest'=>$changerequest,
             'previousFeature'=>$previousFeature,
             'proposedFeature'=>$proposedFeature
@@ -166,9 +137,8 @@ class ChangeRequestController extends Controller
             ]);
             throw $error;
         }
-        /*
-        $feature = json_decode($origChangerequest->feature, true);
-        $geom = Geometry::fromJson($origChangerequest->feature);*/
+        $changeRequestProcessor = ChangeRequestProcessor::getProcessor($origChangerequest->layer);
+
         $user = $request->user();
         if (!empty($request->action_cancel)) {
             // FIXME: we need a more meaningful name
@@ -180,7 +150,7 @@ class ChangeRequestController extends Controller
                 ]);
                 throw $error;
             }
-            ChangeRequest::setCancelled($origChangerequest, $request->user());
+            $changeRequestProcessor->setCancelled($origChangerequest, $request->user());
             return redirect()->route('changerequests.index');
         }
         if (!$user->isAdmin()) {
@@ -193,18 +163,12 @@ class ChangeRequestController extends Controller
         }
         
         if (!empty($request->action_validate)) {
-            
-            /*
-            ChangeRequest::applyValidatedChangeRequest(
-                $origChangerequest->layer,
-                $origChangerequest->operation,
-                $feature, $geom);*/
             // FIXME: we need a more meaningful name
-            ChangeRequest::setValidated($origChangerequest, $user);
+            $changeRequestProcessor->setValidated($origChangerequest, $user);
         }
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
-            ChangeRequest::setRejected($origChangerequest, $user);
+            $changeRequestProcessor->setRejected($origChangerequest, $user);
         }
         
         try {
