@@ -36,7 +36,7 @@ class SupportLayerDefFormRequest extends FormRequest
             'url' => 'required_if:protocol,wms,wfs,tilelayer',
             'api_key' => 'nullable',
             'isbaselayer'    => 'sometimes|accepted',
-            'visible'    => 'sometimes|accepted',
+            'isvisible'    => 'sometimes|accepted',
             'layergroup'    => 'nullable', # fixme
             'conf'    => ['nullable', 'json', function ($attribute, $value, $fail) {
             }]

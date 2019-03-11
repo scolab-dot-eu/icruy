@@ -41,7 +41,7 @@ class SupportLayerDefController extends Controller
         $validated = $request->validated();
         $validated['url'] = explode('?', $validated['url'])[0];
         Helpers::set_boolean_value($validated, 'isbaselayer');
-        Helpers::set_boolean_value($validated, 'visible');
+        Helpers::set_boolean_value($validated, 'isvisible');
         SupportLayerDef::create($validated);
         return redirect()->route('supportlayerdefs.index');
     }
@@ -81,7 +81,7 @@ class SupportLayerDefController extends Controller
         $validated = $request->validated();
         $validated['url'] = explode('?', $validated['url'])[0];
         Helpers::set_boolean_value($validated, 'isbaselayer');
-        Helpers::set_boolean_value($validated, 'visible');
+        Helpers::set_boolean_value($validated, 'isvisible');
         $supportlayerdef->update($validated);
         return redirect()->route('supportlayerdefs.index');
     }

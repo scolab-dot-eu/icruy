@@ -57,7 +57,7 @@ class EditableLayerDefController extends Controller
         EditableLayerDef::checkTableName($validated['name']);
         $validated['geom_type'] = array_get($validated, 'geom_type', 'point');
         //$validated['protocol'] = array_get($validated, 'protocol', 'wfs');
-        Helpers::set_boolean_value($validated, 'visible');
+        Helpers::set_boolean_value($validated, 'isvisible');
         Helpers::set_boolean_value($validated, 'download');
         Helpers::set_boolean_value($validated, 'showTable');
         Helpers::set_boolean_value($validated, 'showInSearch');
@@ -149,7 +149,7 @@ class EditableLayerDefController extends Controller
                 // TODO can we ignore the error?
             }
         }
-        Helpers::set_boolean_value($validated, 'visible');
+        Helpers::set_boolean_value($validated, 'isvisible');
         Helpers::set_boolean_value($validated, 'download');
         Helpers::set_boolean_value($validated, 'showTable');
         Helpers::set_boolean_value($validated, 'showInSearch');

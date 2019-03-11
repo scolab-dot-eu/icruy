@@ -25,8 +25,17 @@ class EditableLayerDef extends Model
     protected $fillable = [
         'name', 'title', 'geom_type', 'protocol',
         'url', 'fields', 'geom_style', 'style',
-        'metadata', 'conf', 'visible', 'download', 'showTable', 'showInSearch'
+        'metadata', 'conf', 'isvisible', 'download', 'showTable', 'showInSearch'
     ];
+
+    public function scopeEnabled($query)
+    {
+        return $query->where('enabled', True);
+    }
+    public function scopeGeometricLayers($query)
+    {
+        return $query->where('geom_type', '!=', 'none');
+    }
     
     public static function checkTableName($tablename) {
         try {
@@ -70,6 +79,97 @@ class EditableLayerDef extends Model
         return $pdo->query('select version()')->fetchColumn();
     }
     
+    public static function createFields(Blueprint $table, array $fieldsDef, array $ignoredFields, array &$errors) {
+        $createdFields = [];
+        foreach ($fieldsDef as $field) {
+            if (in_array($field->name, $ignoredFields)) {
+                    continue;
+                }
+                elseif ($field->name == 'feat_id') {
+                    $errors[$field->name] = 'No se permite usar feat_id como nombre de campo';
+                    continue;
+                }
+                
+            $typeparams = isset($field->typeparams) ? $field->typeparams:'';
+            if ($field->type == 'string') {
+                if (is_numeric($typeparams)) {
+                    $length = intval($typeparams);
+                    $field_def = $table->string($field->name, $length);
+                }
+                else {
+                    $field_def = $table->string($field->name);
+                }
+            }
+            elseif ($field->type == 'decimal') {
+                $typeparams_parts = explode(",", $typeparams);
+                if (count($typeparams_parts)==2
+                    && is_numeric($typeparams_parts[0])
+                    && is_numeric($typeparams_parts[1])) {
+                        $precision = intval($typeparams_parts[0]);
+                        $scale = intval($typeparams_parts[1]);
+                        $field_def = $table->decimal($field->name, $precision, $scale);
+                    }
+                    else {
+                        $errors[$field->name] = 'La definción de la precisión y la escala es incorrecta';
+                        continue;
+                    }
+            }
+            elseif ($field->type == 'intdecimal') {
+                if (is_numeric($typeparams)) {
+                    $length = intval($typeparams);
+                    $field_def = $table->decimal($field->name, $length, 0);
+                }
+                else {
+                    $field_def = $table->integer($field->name);
+                }
+            }
+            elseif ($field->type == 'stringdomain') {
+                if ($field->domain !== null) {
+                    $domainValues = [];
+                    foreach ($field->domain as $domain) {
+                        $domainValues[] = $domain->code;
+                    }
+                    Log::info('domain values: '.json_encode($domainValues));
+                    $field_def = $table->enum($field->name, $domainValues);
+                }
+                else {
+                    $errors[$field->name] = 'No se ha definido el dominio';
+                    continue;
+                }
+            }
+            elseif ($field->type == 'date') {
+                $field_def = $table->date($field->name);
+            }
+            elseif ($field->type == 'dateTime') {
+                $field_def = $table->dateTime($field->name);
+            }
+            elseif ($field->type == 'boolean') {
+                $field_def = $table->boolean($field->name);
+            }
+            elseif ($field->type == 'double') {
+                $field_def = $table->double($field->name);
+                
+            }
+            elseif ($field->type == 'integer') {
+                $field_def = $table->integer($field->name);
+            }
+            elseif ($field->type == 'text') {
+                $field_def = $table->text($field->name);
+            }
+            else {
+                $errors[$field->name] = 'Tipo de campo no permitido';
+                continue;
+            }
+            
+            if (!isset($field->mandatory) || $field->mandatory!==true) {
+                $field_def->nullable();
+            }
+            
+            $createdFields[] = $field->name;
+        }
+        return $createdFields;
+    }
+    
     public static function doCreateTable($name, $fields_str, $geom_type, $historic=false) {
         $fields = json_decode($fields_str);
         $errors = [];
@@ -77,13 +177,14 @@ class EditableLayerDef extends Model
         Schema::create($name, function (Blueprint $table) use ($name, $fields, $geom_type, $historic, &$specificFields, &$errors) {
             $version = EditableLayerDef::getMysqlVersion();
             $table->increments('id');
-            /*
+            
             if ($historic) {
-                $table->string('cod_elem');
+                //$table->string('cod_elem');
             }
             else {
-                $table->string('cod_elem')->nullable()->unique()->default(null);
-            }*/
+                $table->integer('version')->unsigned();
+                //$table->string('cod_elem')->nullable()->unique()->default(null);
+            }
             if (strtolower($geom_type) == 'point') {
                 if (version_compare($version, '8.0') >= 0) { // SRID is only supported from MySQL v8.0
                     $table->point('thegeom', 4326);
@@ -108,6 +209,9 @@ class EditableLayerDef extends Model
                     $table->polygon('thegeom');
                 }
             }
+            elseif (strtolower($geom_type) == 'none' || substr(strtolower($geom_type), 0, 9) == 'external:') {
+                // ignore
+            }
             else {
                 $errors['thegeom'] = 'Tipo de geometría no permitido';
             }
@@ -120,105 +224,23 @@ class EditableLayerDef extends Model
             else {
                 $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE)->nullable();
                 //$table->string('status', 23)->default('VALIDADO');
-                $table->string('origin', 9)->nullable();
+                //$table->string('origin', 9)->nullable();
             }
             
-            $specificFields = [];
+            $ignoredFields = [
+                'id',
+                'origin',
+                'cod_elem',
+                'status',
+                'departamento', 
+                'codigo_camino',
+                'thegeom',
+                'updated_at',
+                'created_at',
+                'version'
+            ];
+            $specificFields = EditableLayerDef::createFields($table, $fields, $ignoredFields, $errors);
             
-            foreach ($fields as $field) {
-                if ($field->name == 'id' ||
-                    $field->name == 'origin' ||
-                    $field->name == 'cod_elem' ||
-                    $field->name == 'status' ||
-                    $field->name == 'departamento' ||
-                    $field->name == 'codigo_camino' ||
-                    $field->name == 'thegeom' ||
-                    $field->name == 'updated_at' ||
-                    $field->name == 'created_at') {
-                    continue;
-                }
-                elseif ($field->name == 'feat_id') {
-                    $errors[$field->name] = 'No se permite usar feat_id como nombre de campo';
-                    continue;
-                }
-                
-                $typeparams = isset($field->typeparams) ? $field->typeparams:'';
-                if ($field->type == 'string') {
-                    if (is_numeric($typeparams)) {
-                        $length = intval($typeparams);
-                        $field_def = $table->string($field->name, $length);
-                    }
-                    else {
-                        $field_def = $table->string($field->name);
-                    }
-                }
-                elseif ($field->type == 'decimal') {
-                    $typeparams_parts = explode(",", $typeparams);
-                    if (count($typeparams_parts)==2
-                        && is_numeric($typeparams_parts[0])
-                        && is_numeric($typeparams_parts[1])) {
-                            $precision = intval($typeparams_parts[0]);
-                            $scale = intval($typeparams_parts[1]);
-                            $field_def = $table->decimal($field->name, $precision, $scale);
-                        }
-                        else {
-                            $errors[$field->name] = 'La definción de la precisión y la escala es incorrecta';
-                            continue;
-                        }
-                }
-                elseif ($field->type == 'intdecimal') {
-                    if (is_numeric($typeparams)) {
-                        $length = intval($typeparams);
-                        $field_def = $table->decimal($field->name, $length, 0);
-                    }
-                    else {
-                        $field_def = $table->integer($field->name);
-                    }
-                }
-                elseif ($field->type == 'stringdomain') {
-                    if ($field->domain !== null) {
-                        $domainValues = [];
-                        foreach ($field->domain as $domain) {
-                            $domainValues[] = $domain->code;
-                        }
-                        Log::info('domain values: '.json_encode($domainValues));
-                        $field_def = $table->enum($field->name, $domainValues);
-                    }
-                    else {
-                        $errors[$field->name] = 'No se ha definido el dominio';
-                        continue;
-                    }
-                }
-                elseif ($field->type == 'date') {
-                    $field_def = $table->date($field->name);
-                }
-                elseif ($field->type == 'dateTime') {
-                    $field_def = $table->dateTime($field->name);
-                }
-                elseif ($field->type == 'boolean') {
-                    $field_def = $table->boolean($field->name);
-                }
-                elseif ($field->type == 'double') {
-                    $field_def = $table->double($field->name);
-                    
-                }
-                elseif ($field->type == 'integer') {
-                    $field_def = $table->integer($field->name);
-                }
-                elseif ($field->type == 'text') {
-                    $field_def = $table->text($field->name);
-                }
-                else {
-                    $errors[$field->name] = 'Tipo de campo no permitido';
-                    continue;
-                }
-                
-                if (!isset($field->mandatory) || $field->mandatory!==true) {
-                    $field_def->nullable();
-                }
-                
-                $specificFields[] = $field->name;
-            }
             $table->date('updated_at')->nullable();
             $table->date('created_at')->nullable();
             $table->index('codigo_camino');
@@ -237,102 +259,7 @@ class EditableLayerDef extends Model
         });
         
         if (!$historic) {
-            DB::unprepared("
-                INSERT INTO `camineria`.`geometry_columns`
-                    (`F_TABLE_NAME`,
-                    `F_GEOMETRY_COLUMN`,
-                    `COORD_DIMENSION`,
-                    `SRID`,
-                    `TYPE`)
-                VALUES
-                    ('".$name."',
-                    'thegeom',
-                    2,
-                    0,
-                    'POINT')
-            ");
-            
-            $historicName = EditableLayerDef::getHistoricTableName($name);
-            DB::unprepared("
-                CREATE TRIGGER ".$name."_before_insert
-                BEFORE INSERT
-                   ON ".$name." FOR EACH ROW
-                BEGIN
-                   IF NEW.status IS NULL OR (NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' AND 
-                       NEW.status <> '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."') THEN
-                           SET NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."';
-                   END IF;
-                   IF NEW.origin IS NULL OR NEW.origin <> '".ChangeRequest::FEATURE_ORIGIN_ICRWEB."' THEN
-                       SET NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."';
-                       SET NEW.created_at = CURDATE();
-                       SET NEW.updated_at = CURDATE();
-                   END IF;
-                END
-            ");
-            
-            DB::unprepared("
-                CREATE TRIGGER ".$name."_create_changerequest
-                AFTER INSERT
-                    ON ".$name." FOR EACH ROW BEGIN
-                    IF NEW.origin = '".ChangeRequest::FEATURE_ORIGIN_BATCHLOAD."' THEN
-                        IF NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
-                            INSERT INTO changerequests
-                                (requested_by_id, layer, feature_id, departamento, status, operation)
-                            VALUES
-                                (0, '".$name."', NEW.id, NEW.departamento, 0, '".ChangeRequest::OPERATION_CREATE."');
-                        END IF;
-                    END IF;
-                END
-            ");
-            
-            DB::unprepared("
-                CREATE TRIGGER ".$name."_after_insert
-                AFTER INSERT
-                    ON ".$name." FOR EACH ROW BEGIN
-                    IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
-                        -- Insert the new record into history table
-                        INSERT INTO ".$historicName."
-                            ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
-                            ."`".implode('`, `', $specificFields)."` ) 
-                        VALUES
-                            ( NEW.thegeom, NEW.id, NOW(), '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
-                            ."NEW.`".implode('`, NEW.`', $specificFields)."` );
-                    END IF;
-                END
-            ");
-            
-            DB::unprepared("
-                CREATE TRIGGER ".$name."_before_update
-                BEFORE UPDATE
-                    ON ".$name." FOR EACH ROW BEGIN
-                    DECLARE theCurrentTime DATETIME;
-                    IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
-                        SELECT NOW() INTO theCurrentTime;
-                        -- Insert the new record into history table
-                        UPDATE ".$historicName."
-                            SET valid_to = theCurrentTime
-                        WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
-                        INSERT INTO ".$historicName."
-                            ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
-                                ."`".implode('`, `', $specificFields)."` )
-                        VALUES
-                            ( NEW.thegeom, NEW.id, theCurrentTime, '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
-                                ."NEW.`".implode('`, NEW.`', $specificFields)."` );
-                    END IF;
-                END
-            ");
-            
-            DB::unprepared("
-                CREATE TRIGGER ".$name."_before_delete
-                BEFORE DELETE
-                   ON ".$name." FOR EACH ROW
-                BEGIN
-                  -- Set end of life for the old record
-                  UPDATE ".$historicName."
-                  SET valid_to = NOW()
-                  WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
-                END
-            ");
+            EditableLayerDef::doCreateTriggers($name, $specificFields);
         }
         if (count($errors) > 0) {
             Log::error('Error creating table'.$name);
@@ -341,6 +268,104 @@ class EditableLayerDef extends Model
             $error = TableCreationException::withMessages($errors);
             throw $error;
         }
+    }
+    
+    protected static function doCreateTriggers(string $name, array $specificFields) {
+        DB::unprepared("
+            INSERT INTO `camineria`.`geometry_columns`
+                (`F_TABLE_NAME`,
+                `F_GEOMETRY_COLUMN`,
+                `COORD_DIMENSION`,
+                `SRID`,
+                `TYPE`)
+            VALUES
+                ('".$name."',
+                'thegeom',
+                2,
+                0,
+                'POINT')
+        ");
+        
+        $historicName = EditableLayerDef::getHistoricTableName($name);
+        DB::unprepared("
+            CREATE TRIGGER ".$name."_before_insert
+            BEFORE INSERT
+               ON ".$name." FOR EACH ROW
+            BEGIN
+               IF NEW.status IS NULL OR NEW.status <> '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                       SET NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."';
+               END IF;
+               IF NEW.version IS NULL OR NEW.version <> 1 THEN
+                   SET NEW.version = 0;
+                   SET NEW.created_at = CURDATE();
+                   SET NEW.updated_at = CURDATE();
+               END IF;
+            END
+        ");
+        
+        DB::unprepared("
+            CREATE TRIGGER ".$name."_create_changerequest
+            AFTER INSERT
+                ON ".$name." FOR EACH ROW BEGIN
+                IF NEW.version = 0 THEN
+                    IF NEW.status = '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
+                        INSERT INTO changerequests
+                            (requested_by_id, layer, feature_id, departamento, status, operation)
+                        VALUES
+                            (0, '".$name."', NEW.id, NEW.departamento, 0, '".ChangeRequest::OPERATION_CREATE."');
+                    END IF;
+                END IF;
+            END
+        ");
+        
+        DB::unprepared("
+            CREATE TRIGGER ".$name."_after_insert
+            AFTER INSERT
+                ON ".$name." FOR EACH ROW BEGIN
+                IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                    -- Insert the new record into history table
+                    INSERT INTO ".$historicName."
+                        ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
+            ."`".implode('`, `', $specificFields)."` )
+                    VALUES
+                        ( NEW.thegeom, NEW.id, NOW(), '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
+            ."NEW.`".implode('`, NEW.`', $specificFields)."` );
+                END IF;
+            END
+        ");
+            
+            DB::unprepared("
+            CREATE TRIGGER ".$name."_before_update
+            BEFORE UPDATE
+                ON ".$name." FOR EACH ROW BEGIN
+                DECLARE theCurrentTime DATETIME;
+                IF NEW.status = '".ChangeRequest::FEATURE_STATUS_VALIDATED."' THEN
+                    SELECT NOW() INTO theCurrentTime;
+                    -- Insert the new record into history table
+                    UPDATE ".$historicName."
+                        SET valid_to = theCurrentTime
+                    WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
+                    INSERT INTO ".$historicName."
+                        ( thegeom, feat_id, valid_from, valid_to, departamento, codigo_camino, updated_at, created_at, "
+                ."`".implode('`, `', $specificFields)."` )
+                    VALUES
+                        ( NEW.thegeom, NEW.id, theCurrentTime, '9999-12-31 23:59:59', NEW.departamento, NEW.codigo_camino, NEW.updated_at, NEW.created_at, "
+                ."NEW.`".implode('`, NEW.`', $specificFields)."` );
+                END IF;
+            END
+        ");
+                
+                DB::unprepared("
+            CREATE TRIGGER ".$name."_before_delete
+            BEFORE DELETE
+               ON ".$name." FOR EACH ROW
+            BEGIN
+              -- Set end of life for the old record
+              UPDATE ".$historicName."
+              SET valid_to = NOW()
+              WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
+            END
+        ");
     }
     
     public static function publishLayer($name, $title) {
@@ -357,7 +382,7 @@ class EditableLayerDef extends Model
         $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
         $datastore = env('DEFAULT_GEOSERVER_DS', 'mysqlcamineria');
         $url = $baseUrl . "/rest/workspaces/" . $workspace . "/datastores/" . $datastore . "/featuretypes";
-        error_log($url);
+        //error_log($url);
         $qualified_store = $workspace . ":" . $datastore;
         $jsonBody = ["featureType"=> [
             "name" => $name,
@@ -423,7 +448,7 @@ class EditableLayerDef extends Model
         $workspace = env('DEFAULT_GEOSERVER_WS', 'camineria');
         //$url = $baseUrl . "/rest/workspaces/" . $workspace . "/layers/".$layerName;
         $url = $baseUrl . "/rest/layers/".$workspace.":".$layerName;
-        error_log($url);
+        //error_log($url);
         $response = $client->request('GET', $url, [
             'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],
             'headers' => [
@@ -440,7 +465,7 @@ class EditableLayerDef extends Model
         $qualifiedStyleName = $workspace.':'.$styleName;
         $styleUrl = $baseUrl .  "/rest/workspaces/" . $workspace . "/styles/" . $styleName . '.json';
         $layerConf['layer']['defaultStyle'] = ['name' => $qualifiedStyleName, 'workspace'=> $workspace, 'href' => $styleUrl];
-        error_log(json_encode($layerConf));
+        //error_log(json_encode($layerConf));
         try {
             $response = $client->request('PUT', $url, [
                 'auth' =>  [env('GEOSERVER_USER', 'admin'), env('GEOSERVER_PASS', 'geoserver')],

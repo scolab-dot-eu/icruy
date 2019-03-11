@@ -18,7 +18,7 @@ class CreateSupportlayerdefsTable extends Migration
             $table->string('name', 200)->unique();
             $table->string('title', 255);
             $table->boolean('isbaselayer')->default(false);
-            $table->boolean('visible')->default(false);
+            $table->boolean('isvisible')->default(false);
             $table->string('layergroup', 200);
             $table->text('url')->nullable();
             $table->text('api_key')->nullable();

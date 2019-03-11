@@ -22,7 +22,7 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->protocol = 'tilelayer';
         $lyr->url = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         $lyr->isbaselayer = true;
-        $lyr->visible = true;
+        $lyr->isvisible = true;
         $lyr->layergroup = 'Capas base';
         $lyr->api_key = '';
         $lyr->save();
@@ -33,7 +33,7 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->protocol = 'bing';
         $lyr->url = '';
         $lyr->isbaselayer = true;
-        $lyr->visible = false;
+        $lyr->isvisible = false;
         $lyr->layergroup = 'Capas base';
         $lyr->api_key = env('BING_API_KEY', '');
         $lyr->save();
@@ -44,7 +44,7 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->protocol = 'bing';
         $lyr->url = '';
         $lyr->isbaselayer = true;
-        $lyr->visible = false;
+        $lyr->isvisible = false;
         $lyr->layergroup = 'Capas base';
         $lyr->api_key = env('BING_API_KEY', '');
         $lyr->save();
@@ -57,7 +57,7 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->url = 'http://geoservicios.mtop.gub.uy/geoserver/geoportal_capas_base/wms';
         //$lyr->url = 'https://www.dinama.gub.uy/geoserver/u19600217/wms?';
         $lyr->isbaselayer = false;
-        $lyr->visible = false;
+        $lyr->isvisible = false;
         $lyr->layergroup = 'Capas de apoyo';
         $lyr->api_key = '';
         $lyr->conf = '{"metadata": "", "showTable": false, "hasMetadata": false, "showInSearch": false}';
@@ -69,7 +69,7 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->protocol = 'wms';
         $lyr->url = 'http://www.dinama.gub.uy/geoserver/u19600217/wms';
         $lyr->isbaselayer = false;
-        $lyr->visible = false;
+        $lyr->isvisible = false;
         $lyr->layergroup = 'Capas de apoyo';
         $lyr->api_key = '';
         $lyr->conf = '{"metadata": "", "showTable": false, "hasMetadata": false, "showInSearch": false}';
@@ -81,11 +81,24 @@ class SupportLayerDefTableSeeder extends Seeder
         $lyr->protocol = 'wms';
         $lyr->url = 'http://www.dinama.gub.uy/geoserver/u19600217/wms';
         $lyr->isbaselayer = false;
-        $lyr->visible = false;
+        $lyr->isvisible = false;
         $lyr->layergroup = 'Capas de apoyo';
         $lyr->api_key = '';
         $lyr->conf = '{"metadata": "", "showTable": false, "hasMetadata": false, "showInSearch": false}';
         $lyr->save();
         
+        $lyr = new SupportLayerDef();
+        $lyr->name = 'v_rutas_nacionales';
+        $lyr->title = 'Rutas nacionales';
+        $lyr->protocol = 'wms';
+        $lyr->url = 'http://geoservicios.mtop.gub.uy/geoserver/vialidad/v_rutas_nacionales/wms';
+        $lyr->isbaselayer = false;
+        $lyr->isvisible = true;
+        $lyr->layergroup = 'Capas de apoyo';
+        $lyr->api_key = '';
+        $lyr->conf = '{"metadata": "", "showTable": false, "hasMetadata": false, "showInSearch": false}';
+        $lyr->save();
+        
+        http://geoservicios.mtop.gub.uy/geoserver/vialidad/v_rutas_nacionales/wms?request=GetCapabilities 
     }
 }

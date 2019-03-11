@@ -39,7 +39,7 @@ class EditableLayerDefUpdateFormRequest extends FormRequest
             'fields'  => 'required|json',
             'color' => 'required|regex:/^#[a-fA-F0-9]{6}$/',
             'metadata' => 'sometimes|nullable',
-            'visible' => 'sometimes|nullable',
+            'isvisible' => 'sometimes|nullable',
             'download' => 'sometimes|nullable',
             'showTable' => 'sometimes|nullable',
             'showInSearch' => 'sometimes|nullable'
