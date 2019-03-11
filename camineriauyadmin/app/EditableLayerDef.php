@@ -182,7 +182,7 @@ class EditableLayerDef extends Model
                 //$table->string('cod_elem');
             }
             else {
-                $table->integer('version')->unsigned();
+                $table->integer('version')->unsigned()->nullable();
                 //$table->string('cod_elem')->nullable()->unique()->default(null);
             }
             if (strtolower($geom_type) == 'point') {
