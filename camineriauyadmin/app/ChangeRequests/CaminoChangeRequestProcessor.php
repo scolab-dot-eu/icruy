@@ -95,7 +95,7 @@ class CaminoChangeRequestProcessor extends ChangeRequestProcessor
                 // ya existe un ChR sobre este camino
                 ChangeRequestApiController::throwPendingElementNotModifiableError();
             }
-            $changerequest->feature_previous = $this->feature2json($feature_previous);
+            $changerequest->feature_previous = ChangeRequest::feature2geojson($feature_previous);
         }
         // validate all the fields before storing the ChR
         $feature = [];
