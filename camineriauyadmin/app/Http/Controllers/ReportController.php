@@ -11,13 +11,18 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use App\Exports\InterventionsExport;
 use App\Exports\InterventionsSummaryExport;
 use App\Helpers\Helpers;
+use App\User;
 
 
 
 class ReportController extends Controller
 {
-    protected function getFormVariables($user) {
+    protected function getFormVariables(User $user) {
         $all_layers = EditableLayerDef::enabled()->get();
+        if ($user===null || !$user->exists) {
+            $error = \Illuminate\Validation\ValidationException::withMessages([['error'=>'Sesión caducada']]);
+            throw $error;
+        }
         $user->load(['departments']);
         $user_departments = ['UY'=>'Uruguay'];
         foreach ($user->departments as $current_dep) {
@@ -60,7 +65,7 @@ class ReportController extends Controller
     }
 
     public function export(Request $request) {
-        Log::debug(json_encode($request->all()));
+        //Log::debug(json_encode($request->all()));
         $format = $request->input('format');
         $tipoReporte = $request->input('tipo_reporte', 'detalle');
         $ambitoGeografico = $request->input('ambito', 'UY');
@@ -72,8 +77,8 @@ class ReportController extends Controller
         $financiacion = $request->input('financiacion');
         $from_year = $request->input('from_year');
         $to_year = $request->input('to_year');
-        $from_date = $request->input('from_date');
-        $to_date = $request->input('to_date');
+        //$from_date = $request->input('from_date');
+        //$to_date = $request->input('to_date');
         
 
         if ($format=='pdf') {
