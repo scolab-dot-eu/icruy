@@ -33,8 +33,7 @@ class ChangeRequestApiFormRequest extends JsonRequest
     {
         return [
             'operation'             => 'required|in:create,update,delete',
-            //'layer'             => 'required|exists:editablelayerdefs,name',
-            'layer'             => 'required',
+            'layer'             => 'required|exists:editablelayerdefs,name',
             //'departamento'    => 'required',
             'feature'    => 'required',
             'feature.properties'    => 'required',
