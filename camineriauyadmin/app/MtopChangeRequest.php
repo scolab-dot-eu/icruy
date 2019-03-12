@@ -31,7 +31,7 @@ class MtopChangeRequest extends Model
     
     public function comments()
     {
-        return $this->hasMany('App\MtopChangeRequestComment');
+        return $this->hasMany('App\MtopChangeRequestComment', 'mtopchangerequest_id');
     }
     
     

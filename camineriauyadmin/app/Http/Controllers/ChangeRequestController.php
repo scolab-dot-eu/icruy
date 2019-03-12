@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Intervention;
+use function GuzzleHttp\json_encode;
+use App\ChangeRequestComment;
 
 class ChangeRequestController extends Controller
 {
@@ -98,6 +100,7 @@ class ChangeRequestController extends Controller
      */
     public function edit(ChangeRequest $changerequest)
     {
+        $comments = $changerequest->comments()->with('user')->get();
         $previousFeature = json_decode($changerequest->feature_previous);
         if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
             $proposedFeature = null;
@@ -114,8 +117,19 @@ class ChangeRequestController extends Controller
         }
         return view('changerequest.edit', ['changerequest'=>$changerequest,
             'previousFeature'=>$previousFeature,
-            'proposedFeature'=>$proposedFeature
+            'proposedFeature'=>$proposedFeature,
+            'comments'=>$comments
         ]);
+    }
+    
+    protected function addComment($changeRequest, $message, $user) {
+        $comment = new ChangeRequestComment();
+        $comment->message = $message;
+        $comment->updated_at = now();
+        $comment->created_at = now();
+        $comment->user_id = $user->id;
+        $changeRequest->comments()->save($comment);
+        return $comment;
     }
 
     /**
@@ -129,6 +143,13 @@ class ChangeRequestController extends Controller
     {
         // for the moment, don't allow any change in the ChR except the status
         $origChangerequest = ChangeRequest::findOrFail($id);
+        $user = $request->user();
+        Log::debug('all');
+        Log::debug(json_encode($request->all()));
+        if (!empty($request->action_comment)) {
+            $this->addComment($origChangerequest, $request->input('newcomment'), $user);
+            return redirect()->to(route('changerequests.edit', $origChangerequest->id).'#theComments');
+        }
         if (!$origChangerequest->isOpen) {
             $message = 'Se intentó modificar una petición ya cerrada';
             Log::error($message);
@@ -139,7 +160,6 @@ class ChangeRequestController extends Controller
         }
         $changeRequestProcessor = ChangeRequestProcessor::getProcessor($origChangerequest->layer);
 
-        $user = $request->user();
         if (!empty($request->action_cancel)) {
             // FIXME: we need a more meaningful name
             if ($user->id != $origChangerequest->requested_by_id) {
@@ -150,8 +170,11 @@ class ChangeRequestController extends Controller
                 ]);
                 throw $error;
             }
+            if (!empty($request->newcomment)) {
+                $this->addComment($origChangerequest, $request->newcomment, $user);
+            }
             $changeRequestProcessor->setCancelled($origChangerequest, $request->user());
-            return redirect()->route('changerequests.index');
+            return redirect()->route('changerequests.edit', $origChangerequest->id);
         }
         if (!$user->isAdmin()) {
             $message = 'Un usuario no-administrador intentó modificar una petición: '.$user->email;
@@ -162,6 +185,9 @@ class ChangeRequestController extends Controller
             throw $error;
         }
         
+        if (!empty($request->newcomment)) {
+            $this->addComment($origChangerequest, $request->newcomment, $user);
+        }
         if (!empty($request->action_validate)) {
             // FIXME: we need a more meaningful name
             $changeRequestProcessor->setValidated($origChangerequest, $user);
@@ -182,7 +208,7 @@ class ChangeRequestController extends Controller
             Log::error($ex);
         }
         
-        return redirect()->route('changerequests.index');
+        return redirect()->route('changerequests.edit', $origChangerequest->id);
     }
 
     /**

@@ -27,6 +27,7 @@ class ChangeRequestFormRequest extends FormRequest
             'operation'             => 'required|in:create,update,delete',
             'layer'             => 'required|exists:editablelayerdefs,name',
             'status'             => 'required',
+            'newcomment'         => 'sometimes|required'
             //'feature' => 'sometimes'
             //'departamento'    => 'required',
             ];

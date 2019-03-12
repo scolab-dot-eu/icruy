@@ -87,7 +87,7 @@ class ChangeRequest extends Model
 
     public function comments()
     {
-        return $this->hasMany('App\ChangeRequestComment');
+        return $this->hasMany('App\ChangeRequestComment', 'changerequest_id');
     }
     
     public function scopeOpen($query)
