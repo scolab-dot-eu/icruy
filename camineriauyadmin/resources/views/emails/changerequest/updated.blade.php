@@ -1,7 +1,13 @@
 @component('mail::message')
 # Inventario de Caminería Rural
 
-Se ha actualizado su [petición de cambios]({{ $changeRequestUrl }}).
+Se ha actualizado la [petición de cambios \[\#{{ $changeRequestId }}\]]({{ $changeRequestUrl }}).
+@if ($newComment)
+
+El siguiente comentario se ha añadido:
+
+*{{$newComment}}*
+@endif
 
 Estado: {{ $status }}  
 Tipo de elemento: {{ $layer }}  
