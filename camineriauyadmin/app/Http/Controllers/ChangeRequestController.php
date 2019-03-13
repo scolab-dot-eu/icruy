@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\User;
 use App\ChangeRequests\ChangeRequestProcessor;
 use App\Mail\ChangeRequestUpdated;
 use App\Role;
@@ -131,6 +132,18 @@ class ChangeRequestController extends Controller
         $changeRequest->comments()->save($comment);
         return $comment;
     }
+    
+    protected function sendNotification(ChangeRequest $origChangerequest, User $requestorUser, $newComment = null) {
+        $notification = new ChangeRequestUpdated($origChangerequest, $newComment);
+        $notification->onQueue('email');
+        if ($requestorUser->isAdmin()) {
+            Mail::to($origChangerequest->author)->queue($notification);
+        }
+        else {
+            $admins = Role::admins()->first()->users()->get();
+            Mail::to($admins)->queue($notification);
+        }
+    }
 
     /**
      * Update the specified resource in storage.
@@ -144,10 +157,12 @@ class ChangeRequestController extends Controller
         // for the moment, don't allow any change in the ChR except the status
         $origChangerequest = ChangeRequest::findOrFail($id);
         $user = $request->user();
+        $newComment = $request->input('newcomment');
         Log::debug('all');
         Log::debug(json_encode($request->all()));
         if (!empty($request->action_comment)) {
-            $this->addComment($origChangerequest, $request->input('newcomment'), $user);
+            $this->addComment($origChangerequest, $newComment, $user);
+            $this->sendNotification($origChangerequest, $user, $newComment);
             return redirect()->to(route('changerequests.edit', $origChangerequest->id).'#theComments');
         }
         if (!$origChangerequest->isOpen) {
@@ -174,6 +189,7 @@ class ChangeRequestController extends Controller
                 $this->addComment($origChangerequest, $request->newcomment, $user);
             }
             $changeRequestProcessor->setCancelled($origChangerequest, $request->user());
+            $this->sendNotification($origChangerequest, $user, $newComment);
             return redirect()->route('changerequests.edit', $origChangerequest->id);
         }
         if (!$user->isAdmin()) {
@@ -185,8 +201,8 @@ class ChangeRequestController extends Controller
             throw $error;
         }
         
-        if (!empty($request->newcomment)) {
-            $this->addComment($origChangerequest, $request->newcomment, $user);
+        if (!empty($newComment)) {
+            $this->addComment($origChangerequest, $newComment, $user);
         }
         if (!empty($request->action_validate)) {
             // FIXME: we need a more meaningful name
@@ -199,9 +215,7 @@ class ChangeRequestController extends Controller
         
         try {
             $origChangerequest = $origChangerequest->fresh();
-            $notification = new ChangeRequestUpdated($origChangerequest);
-            $notification->onQueue('email');
-            Mail::to($origChangerequest->author)->queue($notification);
+            $this->sendNotification($origChangerequest, $user, $newComment);
         }
         catch(\Exception $ex) {
             Log::error($ex->getMessage());
