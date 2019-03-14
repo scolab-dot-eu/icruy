@@ -5,6 +5,10 @@ require('datatables_js');
 require('datatables_buttons_css');
 require('datatables_buttons_js');
 require('datatables_buttons_html5_js');
+require('fixed_header_js');
+require('responsive_js');
+require('fixed_header_css');
+require('responsive_css');
 
 function AttributeTable(map) {
     this.map = map;
@@ -26,32 +30,44 @@ AttributeTable.prototype = {
         }
     },
 
+    sortObject: function(obj) {
+        return Object.keys(obj).sort().reduce(function (result, key) {
+            result[key] = obj[key];
+            return result;
+        }, {});
+    },
+
     createTable: function(layer, layer_id) {
         var _this = this;
 
         var properties = null;
         var data = [];
         layer.eachLayer(function (l) {
-            properties = l.feature.properties;
-            if (_this.departamento != null) {
-                if (properties['departamento'] == _this.departamento) {
+            if (l.feature) {
+                properties = _this.sortObject(l.feature.properties);
+                if (_this.departamento != null) {
+                    if (properties['departamento'] == _this.departamento) {
+                        var row = [];
+                        row.push(l.feature.id);
+                        for (key in properties) {
+                            if (key != 'id' && key != 'created_at' && key != 'updated_at' && key != 'version' && key != 'origin') {
+                                row.push(properties[key]);
+                            }                      
+                        }                  
+                        data.push(row);
+                    }
+
+                } else {
                     var row = [];
                     row.push(l.feature.id);
                     for (key in properties) {
-                        row.push(properties[key]);
+                        if (key != 'id' && key != 'created_at' && key != 'updated_at' && key != 'version' && key != 'origin') {
+                            row.push(properties[key]);
+                        } 
                     }                  
                     data.push(row);
                 }
-
-            } else {
-                var row = [];
-                row.push(l.feature.id);
-                for (key in properties) {
-                    row.push(properties[key]);
-                }                  
-                data.push(row);
-            }
-              
+            } 
         });
 
         var html = '';
@@ -60,7 +76,9 @@ AttributeTable.prototype = {
         html +=         '<tr>';
         html +=         '<th>fid</th>';
         for (key in properties) {
-            html +=     '<th>' + key + '</th>';
+            if (key != 'id' && key != 'created_at' && key != 'updated_at' && key != 'version' && key != 'origin') {
+                html +=     '<th>' + key + '</th>';
+            }
         }
         html +=         '</tr>';
         html +=     '</thead>';
@@ -68,7 +86,11 @@ AttributeTable.prototype = {
         for (i in data) {
             html +=         '<tr>';
             for (j in data[i]) {
-                html +=     '<td>' + data[i][j] + '</td>';
+                var d = data[i][j];
+                if (d == null || d == 'null') {
+                    d = '';
+                }
+                html +=     '<td>' + d + '</td>';
             }
         html +=         '</tr>';
         }
@@ -77,6 +99,10 @@ AttributeTable.prototype = {
 
         $('#att-table-dialog').empty();
         $('#att-table-dialog').append(html);
+        var responsive = false;
+        if (window.isMobile) {
+            responsive = true;
+        }
         var dt = $('#table-' + layer_id).DataTable({
             language: {
                 processing		: "Procesando petición...",
@@ -100,6 +126,7 @@ AttributeTable.prototype = {
                     sortDescending: ": Orden descendente"
                 }
             },
+            responsive: responsive,
             "columnDefs": [
                 {
                     "targets": [0],
@@ -112,7 +139,17 @@ AttributeTable.prototype = {
             //scrollY: '50vh',
             //scrollCollapse: true,
             buttons: [
-                'csv', 'excelHtml5', 'print'
+                {
+                    text: 'CSV',
+                    action: function ( e, dt, node, config ) {
+                        window.open(layer.definedUrl + '?service=WFS&request=GetFeature&version=1.0.0&outputFormat=csv&typeName=' + layer.name, '_blank');
+                    }
+                }, {
+                    text: 'Excel',
+                    action: function ( e, dt, node, config ) {
+                        window.open(layer.definedUrl + '?service=WFS&request=GetFeature&version=1.0.0&outputFormat=excel2007&typeName=' + layer.name, '_blank');
+                    }
+                }
             ],
             dom: 'Bfrtp<"top"l><"bottom"i>',
             "bSort" : false,
@@ -131,9 +168,14 @@ AttributeTable.prototype = {
             }
         });
 
-        $('#att-table-dialog').dialog({
-            width: 800
-        });
+        if (window.isMobile) {
+            new $.fn.dataTable.FixedHeader( dt );
+            $('#att-table-dialog').dialog({});
+        } else {
+            $('#att-table-dialog').dialog({width: 800});
+        }
+
+        
         $( "#att-table-dialog" ).dialog( "open" );
 
     },

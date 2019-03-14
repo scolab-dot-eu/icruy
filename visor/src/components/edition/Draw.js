@@ -7,7 +7,6 @@ function Draw(config, map, sidebar, utils, printUtils) {
     this.drawControl = null;
     this.editableLayer = null;
     this.departamento = null;
-    this.inEdition = false;
 
     L.drawLocal.draw.toolbar.buttons.marker = 'Dibujar punto';
     L.drawLocal.draw.toolbar.buttons.polyline = 'Dibujar linea';
@@ -36,12 +35,12 @@ Draw.prototype = {
             draw: {},
             edit: false
         };
-        var features = new L.FeatureGroup();
+        /*var features = new L.FeatureGroup();
         layer.eachLayer(
             function(l){
                 features.addLayer(l);
             }
-        );
+        );*/
 
         var geomType = layer.geom_type;
  
@@ -70,7 +69,7 @@ Draw.prototype = {
             options['draw'].circlemarker = false;
             options['draw'].rectangle = false;
         }
-        options.edit.featureGroup = features;
+        //options.edit.featureGroup = features;
         this.drawControl = new L.Control.Draw(options);
         this.map.addControl(this.drawControl);
     },
@@ -93,7 +92,9 @@ Draw.prototype = {
         this.map.on(L.Draw.Event.CREATED, function (e) {
             var type = e.layerType,
                 layer = e.layer;
-            layer.setStyle(_this.editableLayer.style);
+            var style = _this.editableLayer.style;
+            style['pane'] = _this.editableLayer.options.style.pane;
+            layer.setStyle(style);
             _this.editableLayer.addLayer(layer);
             _this.loadFeatureForm(layer);
          });
@@ -116,7 +117,7 @@ Draw.prototype = {
         html +=     '<div id="creation-errors" class="form-group row">';
         html +=     '</div>';
         for(i in this.editableLayer.fields){
-            if (this.editableLayer.fields[i].name != 'id' && this.editableLayer.fields[i].name != 'created_at' && this.editableLayer.fields[i].name != 'updated_at') {
+            if (this.editableLayer.fields[i].name != 'id' && this.editableLayer.fields[i].name != 'created_at' && this.editableLayer.fields[i].name != 'updated_at' && this.editableLayer.fields[i].name != 'modified_by' && this.editableLayer.fields[i].name != 'last_modification' && this.editableLayer.fields[i].name != 'gid' && this.editableLayer.fields[i].name != 'origin' && this.editableLayer.fields[i].name != 'version') {
                 html += this.utils.getAttributeEmptyInput(this.editableLayer.fields[i]);
             }
         }
@@ -181,19 +182,24 @@ Draw.prototype = {
         html += '</div>';
         html += '<table>';
         for (var key in layer.feature.properties) {
-            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin') {
+            var v = layer.feature.properties[key];
+            if (layer.feature.properties[key] == 'null' || layer.feature.properties[key] == null) {
+                v = '';
+            }
+            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {
                 html += '<tr>';
                 html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
-                html +=     '<td style="padding: 2px;">' + layer.feature.properties[key] + '</td>';
+                html +=     '<td style="padding: 2px;">' + v + '</td>';
                 html += '</tr>';
             }
         }
         html += '</table>';
         html += '</div>';
         html += '<ul class="custom-actions">';
-        html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-info"><i class="fa fa-info m-r-5"></i> Información</a></li>';
-        html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-edit"><i class="fa fa-edit m-r-5"></i> Editar</a></li>';
-        html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-delete"><i class="fa fa-trash m-r-5"></i> Eliminar</a></li>';
+        html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+        html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
+        html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-edit" title="Editar"><i class="fa fa-edit m-r-5"></i></a></li>';
+        html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-delete" title="Eliminar"><i class="fa fa-trash m-r-5"></i></a></li>';
         html += '</ul>';
 
         layer.bindPopup(html, {closeOnClick: false});
@@ -202,41 +208,60 @@ Draw.prototype = {
             $('.popup-toolbar-button-info').click(function(e){
                 var id = this.dataset.fid;
                 _this.editableLayer.eachLayer(function(layer) {
-                    if (layer.feature.id == id) {
-                        _this.loadInfo(layer);
+                    if (layer.feature) {
+                        if (layer.feature.id == id) {
+                            _this.loadInfo(layer);
+                        }
                     }
+                    
                 });
             });
 
             $('.popup-toolbar-button-print').click(function(e){
                 var id = this.dataset.fid;
                 _this.editableLayer.eachLayer(function(layer) {
-                    if (layer.feature.id == id) {
-                        _this.printElement(layer);
+                    if (layer.feature) {
+                        if (layer.feature.id == id) {
+                            _this.printElement(layer);
+                        }
                     }
+                    
                 });
             });
 
             $('.popup-toolbar-button-edit').click(function(e){
-                if (!_this.inEdition) {
+                if (!window.inEdition) {
                     var id = this.dataset.fid;
                     _this.editableLayer.eachLayer(function(layer) {
-                        if (layer.feature.id == id) {
-                            var clonedLayer = layer;
-                            if (layer.feature.geometry.type == 'Point') {
-                                _this.map.setView(layer.getLatLng(), 15);
-                            } else {
-                                var bounds = layer.getBounds();
-                                _this.map.fitBounds(bounds);
+                        if (layer.feature) {
+                            if (layer.feature.id == id) {
+                                var clonedLayer = null;
+                                if (layer instanceof L.CircleMarker) {
+                                    clonedLayer = L.circleMarker(layer.getLatLng(), {});
+                                } else if (layer instanceof L.Polyline) {
+                                    clonedLayer = L.polyline(layer.getLatLngs(), {});
+                                }
+                                if (layer.feature.geometry.type == 'Point') {
+                                    _this.map.setView(layer.getLatLng(), 15);
+                                } else {
+                                    var bounds = layer.getBounds();
+                                    _this.map.fitBounds(bounds);
+                                }
+                                layer.editing.enable();
+                                window.inEdition = true;
+                                _this.loadFeatureForm2(layer, clonedLayer);
                             }
-                            layer.editing.enable();
-                            _this.inEdition = true;
-                            _this.loadFeatureForm2(layer, clonedLayer);
                         }
+                        
                     });
 
                 } else {
-                    alert('Otra capa en edición');
+                    $.notify({
+                        message: 'Otra capa en edición'
+                    },{
+                        type: 'danger',
+                        placement:{align: 'center'}
+                    });
                 }
                 
             });
@@ -254,9 +279,12 @@ Draw.prototype = {
                         "Borrar elemento": function() {
                             var id = dataset.fid;
                             _this.editableLayer.eachLayer(function(layer) {
-                                if (layer.feature.id == id) {
-                                    _this.deleteElement(layer);
+                                if (layer.feature) {
+                                    if (layer.feature.id == id) {
+                                        _this.deleteElement(layer);
+                                    }
                                 }
+                                
                             });
                             $(this).dialog("close");
                         },
@@ -271,6 +299,14 @@ Draw.prototype = {
 
     saveElement: function(element) {
         var _this = this;
+
+        var url = window.serviceURL + '/api/changerequest';
+        var esCamino = false;
+        if (this.editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
+            url = window.serviceURL + '/api/mtopchangerequest';
+            esCamino = true;
+        }
+
         var data = {
             'operation': 'create',
             'layer': this.editableLayer.name,
@@ -281,29 +317,43 @@ Draw.prototype = {
         var objectData = JSON.parse(stringData);
     
         $.ajax({
-            url: window.serviceURL + '/api/changerequest',
+            url: url,
             type: 'POST',
             async: false,
             data: JSON.stringify(objectData),
             contentType: "application/json; charset=utf-8",
     
         }).done(function(resp) {
-            if (resp.feature.properties.status == 'VALIDADO') {
-                element.feature.id = _this.editableLayer.name.split(':')[1] + '.' + resp.feature.properties.id.toString();
-                element.feature.properties.id = resp.feature.properties.id;
-                element.feature.properties.status = 'VALIDADO';
-                var style = element.options;
-                style.fillOpacity = 1;          
-                element.setStyle(style);
+            if (esCamino) {
+                element.feature.properties.status = 'PENDIENTE:CREACIÓN';
+                var randomId = _this.getRndInteger(9999, 99999);
+                element.feature.id = _this.editableLayer.name.split(':')[1] + '.' + randomId;
+                element.feature.properties.created_at = resp.created_at;
+                element.feature.properties.updated_at = resp.updated_at;
 
             } else {
-                element.feature.properties.status = 'PENDIENTE:CREACIÓN';
-                element.feature.id = _this.editableLayer.name.split(':')[1] + '.' + _this.getRndInteger(9999, 99999);
-                element.feature.properties.id = resp.feature.properties.id;
-                var style = element.options;
-                style.fillOpacity = 0.1;          
-                element.setStyle(style);
+                if (resp.feature.properties.status == 'VALIDADO') {
+                    element.feature.id = _this.editableLayer.name.split(':')[1] + '.' + resp.feature.properties.id.toString();
+                    element.feature.properties.id = resp.feature.properties.id;
+                    element.feature.properties.status = 'VALIDADO';
+                    element.feature.properties.created_at = resp.created_at;
+                    element.feature.properties.updated_at = resp.updated_at;
+                    var style = element.options;
+                    style.fillOpacity = 1;          
+                    element.setStyle(style);
+    
+                } else {
+                    element.feature.properties.status = 'PENDIENTE:CREACIÓN';
+                    element.feature.id = _this.editableLayer.name.split(':')[1] + '.' + _this.getRndInteger(9999, 99999);
+                    element.feature.properties.id = resp.feature.properties.id;
+                    element.feature.properties.created_at = resp.created_at;
+                    element.feature.properties.updated_at = resp.updated_at;
+                    var style = element.options;
+                    style.fillOpacity = 0.1;          
+                    element.setStyle(style);
+                }
             }
+            
             _this.map.closePopup();
             $('#toc-result-content').empty();
             _this.sidebar.open('toc-layers');
@@ -329,6 +379,14 @@ Draw.prototype = {
 
     deleteElement: function(element) {
         var _this = this;
+
+        var url = window.serviceURL + '/api/changerequest';
+        var esCamino = false;
+        if (this.editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
+            url = window.serviceURL + '/api/mtopchangerequest';
+            esCamino = true;
+        }
+
         var data = {
             'operation': 'delete',
             'layer': this.editableLayer.name,
@@ -336,7 +394,7 @@ Draw.prototype = {
         };
     
         $.ajax({
-            url: window.serviceURL + '/api/changerequest',
+            url: url,
             type: 'POST',
             async: false,
             data: JSON.stringify(data),
@@ -344,7 +402,12 @@ Draw.prototype = {
     
         }).done(function(resp) {
             if (_this.config.user.isadmin) {
-                element.remove();
+                if (esCamino) {
+                    _this.deleteTrams(_this.editableLayer, element.feature.properties.codigo_camino);
+                } else {
+                    element.remove();
+                }
+                
     
             } else {
                 element.feature.properties.status = 'PENDIENTE:BORRADO';
@@ -362,28 +425,71 @@ Draw.prototype = {
             }
         });
     },
+
+    updateTrams: function(layer, properties, codigo) {
+        layer.eachLayer(function(l) {
+            if (l.feature) {
+                if (l.feature.properties) {
+                    if (l.feature.properties.codigo_camino == codigo) {
+                        l.feature.properties = {};
+                        $.extend(l.feature.properties, properties);
+                    }
+                } 
+            }
+                  
+        });
+    },
+
+    deleteTrams: function(layer, codigo_camino) {
+        layer.eachLayer(function(l) {
+            if (l.feature) {
+                if (l.feature.properties.codigo_camino == codigo_camino) {
+                    l.remove();
+                }
+            }       
+        });
+    },
     
     updateElement: function(element) {
         var _this = this;
+
+        var url = window.serviceURL + '/api/changerequest';
+        var esCamino = false;
+        if (this.editableLayer.name.indexOf('caminerias_intendencias') !== -1) {
+            url = window.serviceURL + '/api/mtopchangerequest';
+            esCamino = true;
+        }
+
         var data = {
             'operation': 'update',
             'layer': this.editableLayer.name,
             'feature': element.toGeoJSON()
         };
+        if (esCamino) {
+            data['gid'] = element.feature.properties.gid;
+        }
         
         $.ajax({
-            url: window.serviceURL + '/api/changerequest',
+            url: url,
             type: 'POST',
             async: false,
             data: JSON.stringify(data),
             contentType: "application/json; charset=utf-8",
     
         }).done(function(resp) {
-            if (resp.feature.properties.status == 'VALIDADO') {
+            if (resp.status == 10) {
                 element.feature.properties.status = 'VALIDADO';
-                var style = element.options;
-                style.fillOpacity = 1;          
-                element.setStyle(style);
+                element.feature.properties.id = resp.feature.properties.id;
+                element.feature.properties.created_at = resp.created_at;
+                element.feature.properties.updated_at = resp.updated_at;
+                if (esCamino) {
+                    
+                } else {
+                    var style = element.options;
+                    style.fillOpacity = 1;          
+                    element.setStyle(style);
+                }
+                
     
             } else {
                 element.feature.properties.status = resp.feature.properties.status;
@@ -392,11 +498,14 @@ Draw.prototype = {
                 element.setStyle(style);
                 
             }
+            if (esCamino) {
+                _this.updateTrams(_this.editableLayer, element.feature.properties, element.feature.properties.codigo_camino);
+            }
             element.editing.disable();
             _this.map.closePopup();
             $('#toc-result-content').empty();
             _this.sidebar.open('toc-layers');
-            _this.inEdition = false;
+            window.inEdition = false;
             
     
         }).fail(function(resp) {
@@ -420,12 +529,14 @@ Draw.prototype = {
         var html = '';
         html += '<div class="list-group">';
         for(key in layer.feature.properties){
-            html += '<a href="#" class="list-group-item list-group-item-action flex-column align-items-start">';
-            html +=     '<div class="d-flex w-100 justify-content-between">';
-            html +=         '<h6 style="color: #e0a800;" class="mb-1">' + key + '</h6>';
-            html +=     '</div>';
-            html +=     '<p class="mb-1">' + layer.feature.properties[key] + '</p>';
-            html += '</a>';
+            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {
+                html += '<a href="#" class="list-group-item list-group-item-action flex-column align-items-start">';
+                html +=     '<div class="d-flex w-100 justify-content-between">';
+                html +=         '<h6 style="color: #e0a800;" class="mb-1">' + key + '</h6>';
+                html +=     '</div>';
+                html +=     '<p class="mb-1">' + layer.feature.properties[key] + '</p>';
+                html += '</a>';
+            }
         }
         html += '</div>';
     
@@ -452,7 +563,7 @@ Draw.prototype = {
         html +=     '<div id="modification-errors" class="form-group row">';
         html +=     '</div>';
         for(key in layer.feature.properties){
-            if (key != 'created_at' && key != 'updated_at' != key != 'id') {
+            if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version'){
                 html += _this.utils.getAttributeInput(this.editableLayer.fields, key, layer.feature.properties[key]);
             }      
         }
@@ -470,12 +581,15 @@ Draw.prototype = {
     
         $('#cancel-edition').on('click', function(){
             layer.editing.disable();
-            layer.remove();
-            clonedLayer.addTo(_this.map);
+            if (layer instanceof L.CircleMarker) {
+                layer.setLatLng(clonedLayer.getLatLng());
+            } else if (layer instanceof L.Polyline) {
+                layer.setLatLngs(clonedLayer.getLatLngs());
+            }
             _this.map.closePopup();
             $('#toc-result-content').empty();
             _this.sidebar.open('toc-layers');
-            _this.inEdition = false;
+            window.inEdition = false;
         });
         
         this.sidebar.open('toc-result');
