@@ -35,5 +35,26 @@ class Helpers
         }
         return $array;
     }
+    
+    
+    public static function domainDefToSelectArray($domainDef, $baseArray=null, $prependCode=False, $separator=' - ') {
+        if (is_array($baseArray)) {
+            $selectArray = $baseArray;
+        }
+        else {
+            $selectArray = [];
+        }
+        if ($prependCode) {
+            foreach ($domainDef as $domainElement) {
+                $selectArray[$domainElement['code']] = $domainElement['code'].$separator.$domainElement['definition'];
+            }
+        }
+        else {
+            foreach ($domainDef as $domainElement) {
+                $selectArray[$domainElement['code']] = $domainElement['definition'];
+            }
+        }
+        return $selectArray;
+    }
 
 }

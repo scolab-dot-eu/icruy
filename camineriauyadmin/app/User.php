@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasMany('App\ChangeRequest', 'requested_by_id');
     }
     
+    public function changeRequestComments()
+    {
+        return $this->hasMany('App\ChangeRequestComments', 'user_id');
+    }
+    
     /**
      * Get the changeRequests that have been validated by the user.
      */
@@ -67,6 +72,13 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\MtopChangeRequest', 'requested_by_id');
     }
+    
+    
+    public function mtopChangeRequestComments()
+    {
+        return $this->hasMany('App\MtopChangeRequestComments', 'user_id');
+    }
+    
     
     /**
      * Get the mtopChangeRequests that have been processed  by the user.

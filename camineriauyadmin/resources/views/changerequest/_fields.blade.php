@@ -104,4 +104,21 @@
                 @endif
             </div>
           </div>
+          <div class="row">
+            <div class="col">
+                <h4 id="theComments">Comentarios:</h4>
+                @foreach($comments as $comment)
+                    Autor: {{ $comment->user->name }} ({{ $comment->user->email }}) - Añadido: {{ $comment->createdAtFormatted }}
+                    <div class="alert alert-primary" role="alert">
+                    {{ $comment->message }}
+                    </div> 
+                @endforeach
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+                    {!! Form::label('newcomment', __('Añadir comentario')) !!}
+                    {!! Form::textarea('newcomment', null, ['class' => 'form-control', 'rows' => 4]) !!}
+            </div>
+          </div>
         </div>

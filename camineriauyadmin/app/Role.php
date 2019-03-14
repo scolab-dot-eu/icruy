@@ -26,4 +26,20 @@ class Role extends Model
     public static function getMtopManagerRoleName( ) {
         return 'mtopManager';
     }
+    
+    
+    public function scopeMtopManagers($query)
+    {
+        return $query->where('name', Role::getMtopManagerRoleName());
+    }
+    
+    public function scopeManagers($query)
+    {
+        return $query->where('name', Role::getManagerRoleName());
+    }
+    
+    public function scopeAdmins($query)
+    {
+        return $query->where('name', Role::getAdminRoleName());
+    }
 }

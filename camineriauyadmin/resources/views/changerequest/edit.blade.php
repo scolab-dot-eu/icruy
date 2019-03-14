@@ -13,12 +13,13 @@
                 @include('changerequest._fields')
                 <br>
                 <a href="{!! route('changerequests.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
+                <input type="submit" class="btn btn-info" name="action_comment" value="{{ __('Comentar') }}">
                 @if ($changerequest->isOpen)
                     @if (Auth::user()->isAdmin())
                     <input type="submit" class="btn btn-info" name="action_validate" value="{{ __('Validar') }}">
                     <input type="submit" class="btn btn-warning" name="action_reject" value="{{ __('Rechazar') }}">
                     @else
-                    <input type="submit" class="btn btn-warning" name="action_cancel" value="{{ __('Cancelar') }}">
+                    <input type="submit" class="btn btn-warning" name="action_cancel" value="{{ __('Cancelar petición') }}">
                     @endif
                 @endif
             {{ Form::close() }}

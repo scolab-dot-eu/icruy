@@ -3,8 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\User;
+use App\ChangeRequests\ChangeRequestProcessor;
+use App\Mail\ChangeRequestUpdated;
+use App\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Intervention;
+use function GuzzleHttp\json_encode;
+use App\ChangeRequestComment;
 
 class ChangeRequestController extends Controller
 {
@@ -93,6 +101,7 @@ class ChangeRequestController extends Controller
      */
     public function edit(ChangeRequest $changerequest)
     {
+        $comments = $changerequest->comments()->with('user')->get();
         $previousFeature = json_decode($changerequest->feature_previous);
         if ($changerequest->operation == ChangeRequest::OPERATION_DELETE) {
             $proposedFeature = null;
@@ -107,41 +116,33 @@ class ChangeRequestController extends Controller
             }
             $proposedFeature = json_decode($changerequest->feature);
         }
-        
-//        Log::error($changerequest->feature_previous);
-//        Log::error($changerequest->feature);
-        
-        /*
-        $layer = $changerequest->layer;
-//         Log::error('id: ');
-//         Log::error($changerequest->feature_id);
-        $feat_id = ChangeRequest::getFeatureId($changerequest->feature_id);
-//         Log::error($feat_id);
-        
-//         Log::error('id bis: ');
-//         Log::error($proposedFeature->properties->id);
-        
-//         $feat_id = array_get($proposedFeature, "properties.id");
-//         Log::error($feat_id);
-//         $feat_id = ChangeRequest::getFeatureId($feat_id);
-//         Log::error($feat_id);
-        $previousFeatureArray = [];
-        
-        $the_geom = '';
-        if ($feat_id > 0) {
-            $currentFeature = ChangeRequest::getCurrentFeature($layer, $feat_id);
-            $the_geom = $currentFeature-> thegeomjson;
-            foreach ($currentFeature as $key => $value) {
-                if ($key != 'thegeom' && $key != 'thegeomjson') {
-                    $previousFeatureArray[$key] = $value;
-                }
-            }
-        }
-        */
         return view('changerequest.edit', ['changerequest'=>$changerequest,
             'previousFeature'=>$previousFeature,
-            'proposedFeature'=>$proposedFeature
+            'proposedFeature'=>$proposedFeature,
+            'comments'=>$comments
         ]);
+    }
+    
+    protected function addComment($changeRequest, $message, $user) {
+        $comment = new ChangeRequestComment();
+        $comment->message = $message;
+        $comment->updated_at = now();
+        $comment->created_at = now();
+        $comment->user_id = $user->id;
+        $changeRequest->comments()->save($comment);
+        return $comment;
+    }
+    
+    protected function sendNotification(ChangeRequest $origChangerequest, User $requestorUser, $newComment = null) {
+        $notification = new ChangeRequestUpdated($origChangerequest, $newComment);
+        $notification->onQueue('email');
+        if ($requestorUser->isAdmin()) {
+            Mail::to($origChangerequest->author)->queue($notification);
+        }
+        else {
+            $admins = Role::admins()->first()->users()->get();
+            Mail::to($admins)->queue($notification);
+        }
     }
 
     /**
@@ -155,6 +156,15 @@ class ChangeRequestController extends Controller
     {
         // for the moment, don't allow any change in the ChR except the status
         $origChangerequest = ChangeRequest::findOrFail($id);
+        $user = $request->user();
+        $newComment = $request->input('newcomment');
+        Log::debug('all');
+        Log::debug(json_encode($request->all()));
+        if (!empty($request->action_comment)) {
+            $this->addComment($origChangerequest, $newComment, $user);
+            $this->sendNotification($origChangerequest, $user, $newComment);
+            return redirect()->to(route('changerequests.edit', $origChangerequest->id).'#theComments');
+        }
         if (!$origChangerequest->isOpen) {
             $message = 'Se intentó modificar una petición ya cerrada';
             Log::error($message);
@@ -163,24 +173,27 @@ class ChangeRequestController extends Controller
             ]);
             throw $error;
         }
-        /*
-        $feature = json_decode($origChangerequest->feature, true);
-        $geom = Geometry::fromJson($origChangerequest->feature);*/
+        $changeRequestProcessor = ChangeRequestProcessor::getProcessor($origChangerequest->layer);
+
         if (!empty($request->action_cancel)) {
             // FIXME: we need a more meaningful name
-            if ($request->user()->id != $origChangerequest->requested_by_id) {
-                $message = 'El usuario intentó cancelar una petición que no inició: '.$request->user()->email;
+            if ($user->id != $origChangerequest->requested_by_id) {
+                $message = 'El usuario intentó cancelar una petición que no inició: '.$user->email;
                 Log::error($message);
                 $error = \Illuminate\Validation\ValidationException::withMessages([
                     'user' => [$message],
                 ]);
                 throw $error;
             }
-            ChangeRequest::setCancelled($origChangerequest, $request->user());
-            return redirect()->route('changerequests.index');
+            if (!empty($request->newcomment)) {
+                $this->addComment($origChangerequest, $request->newcomment, $user);
+            }
+            $changeRequestProcessor->setCancelled($origChangerequest, $request->user());
+            $this->sendNotification($origChangerequest, $user, $newComment);
+            return redirect()->route('changerequests.edit', $origChangerequest->id);
         }
-        if (!$request->user()->isAdmin()) {
-            $message = 'Un usuario no-administrador intentó modificar una petición: '.$request->user()->email;
+        if (!$user->isAdmin()) {
+            $message = 'Un usuario no-administrador intentó modificar una petición: '.$user->email;
             Log::error($message);
             $error = \Illuminate\Validation\ValidationException::withMessages([
                 'user' => [$message],
@@ -188,21 +201,28 @@ class ChangeRequestController extends Controller
             throw $error;
         }
         
+        if (!empty($newComment)) {
+            $this->addComment($origChangerequest, $newComment, $user);
+        }
         if (!empty($request->action_validate)) {
-            
-            /*
-            ChangeRequest::applyValidatedChangeRequest(
-                $origChangerequest->layer,
-                $origChangerequest->operation,
-                $feature, $geom);*/
             // FIXME: we need a more meaningful name
-            ChangeRequest::setValidated($origChangerequest, $request->user());
+            $changeRequestProcessor->setValidated($origChangerequest, $user);
         }
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
-            ChangeRequest::setRejected($origChangerequest, $request->user());
+            $changeRequestProcessor->setRejected($origChangerequest, $user);
         }
-        return redirect()->route('changerequests.index');
+        
+        try {
+            $origChangerequest = $origChangerequest->fresh();
+            $this->sendNotification($origChangerequest, $user, $newComment);
+        }
+        catch(\Exception $ex) {
+            Log::error($ex->getMessage());
+            Log::error($ex);
+        }
+        
+        return redirect()->route('changerequests.edit', $origChangerequest->id);
     }
 
     /**

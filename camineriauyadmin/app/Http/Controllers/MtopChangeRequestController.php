@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\ChangeRequest;
 use App\MtopChangeRequest;
+use App\Mail\MtopChangeRequestUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class MtopChangeRequestController extends Controller
 {
@@ -136,9 +138,10 @@ class MtopChangeRequestController extends Controller
         /*
         $feature = json_decode($origChangerequest->feature, true);
         $geom = Geometry::fromJson($origChangerequest->feature);*/
+        $user = $request->user();
         if (!empty($request->action_cancel)) {
             // FIXME: we need a more meaningful name
-            if ($request->user()->id != $origChangerequest->requested_by_id) {
+            if ($user->id != $origChangerequest->requested_by_id) {
                 $message = 'El usuario intentó cancelar una petición que no inició: '.$request->user()->email;
                 Log::error($message);
                 $error = \Illuminate\Validation\ValidationException::withMessages([
@@ -146,10 +149,10 @@ class MtopChangeRequestController extends Controller
                 ]);
                 throw $error;
             }
-            MtopChangeRequest::setCancelled($origChangerequest, $request->user());
+            MtopChangeRequest::setCancelled($origChangerequest, $user);
             return redirect()->route('mtopchangerequests.index');
         }
-        if (!$request->user()->isMtopManager()) {
+        if (!$user->isMtopManager()) {
             $message = 'Un usuario no-administrador MTOP intentó modificar una petición: '.$request->user()->email;
             Log::error($message);
             $error = \Illuminate\Validation\ValidationException::withMessages([
@@ -159,12 +162,23 @@ class MtopChangeRequestController extends Controller
         }
         
         if (!empty($request->action_validate)) {
-            MtopChangeRequest::setValidated($origChangerequest, $request->user());
+            MtopChangeRequest::setValidated($origChangerequest, $user);
         }
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
-            MtopChangeRequest::setRejected($origChangerequest, $request->user());
+            MtopChangeRequest::setRejected($origChangerequest, $user);
         }
+        try {
+            $origChangerequest = $origChangerequest->fresh();
+            $notification = new MtopChangeRequestUpdated($origChangerequest);
+            $notification->onQueue('email');
+            Mail::to($origChangerequest->author)->queue($notification);
+        }
+        catch(\Exception $ex) {
+            Log::error($ex->getMessage());
+            Log::error($ex);
+        }
+        
         return redirect()->route('mtopchangerequests.index');
     }
 

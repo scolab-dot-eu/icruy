@@ -20,10 +20,7 @@ class ChangeRequestApiFormRequest extends JsonRequest
     protected function validationData()
     {
         $validated = parent::validationData();;
-        //Log::error('validationData cmi');
-        //Log::error($validated['layer']);
         $validated['layer'] = ChangeRequest::getTableName($validated['layer']);
-        //Log::error($validated['layer']);
         return $validated;
     }
     
@@ -36,8 +33,7 @@ class ChangeRequestApiFormRequest extends JsonRequest
     {
         return [
             'operation'             => 'required|in:create,update,delete',
-            //'layer'             => 'required|exists:editablelayerdefs,name',
-            'layer'             => 'required',
+            'layer'             => 'required|exists:editablelayerdefs,name',
             //'departamento'    => 'required',
             'feature'    => 'required',
             'feature.properties'    => 'required',

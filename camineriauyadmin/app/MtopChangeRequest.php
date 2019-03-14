@@ -9,6 +9,8 @@ use App\Http\Controllers\ViewerConfigApiController;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use App\ChangeRequests\ChangeRequestProcessor;
+use App\ChangeRequests\CaminoChangeRequestProcessor;
 
 class MtopChangeRequest extends Model
 {
@@ -29,7 +31,7 @@ class MtopChangeRequest extends Model
     
     public function comments()
     {
-        return $this->hasMany('App\MtopChangeRequestComment');
+        return $this->hasMany('App\MtopChangeRequestComment', 'mtopchangerequest_id');
     }
     
     
@@ -57,8 +59,6 @@ class MtopChangeRequest extends Model
     }
     
     public function getOperationLabelAttribute(){
-        Log::debug('cmi label0:'.json_encode($this));
-        Log::debug('cmi label:'.$this->operation);
         return ChangeRequest::$OPERATION_LABELS[$this->operation];
     }
     
@@ -72,50 +72,14 @@ class MtopChangeRequest extends Model
     public function getUpdatedAtFormattedAttribute(){
         return Carbon::parse($this->updated_at)->format('d/m/Y');
     }
-    
-    public static function getCurrentFeature($layer_name, $id) {
-        //DB::enableQueryLog();
-        try {
-            $table_name = ChangeRequest::getTableName($layer_name);
-            $feat = DB::table($table_name)
-            ->where('codigo_camino', $id)
-            ->first();
-            //$db_log = json_encode(DB::getQueryLog());
-            //Log::error($db_log);
-            return $feat;
-        } catch (\Illuminate\Database\QueryException $e) {
-            Log::error($e);
-        }
-        return null;
-    }
-    
-    public static function feature2array($feature) {
-        if ($feature) {
-            $the_feat = [];
-            $the_feat['properties'] = [];
-            foreach ($feature as $key => $value) {
-                if ($key != 'thegeom' && $key != 'thegeomjson') {
-                    $the_feat['properties'][$key] = $value;
-                }
-            }
-            return $the_feat;
-        }
-        return null;
-    }
-    
-    public static function feature2json($feature) {
-        if ($feature!==null) {
-            return json_encode(MtopChangeRequest::feature2array($feature));
-        }
-        return null;
-    }
-    
-    
+
     public static function applyValidatedChangeRequest($layer_name, $operation, &$feature) {
+        $changeRequestProcessor = CaminoChangeRequestProcessor();
         $values = array_get($feature, 'properties', []);
         $table_name = ChangeRequest::getTableName($layer_name);
         if ($operation==ChangeRequest::OPERATION_CREATE) {
-            $feature['properties']['id'] = ChangeRequest::insertFeature($table_name, $values);
+            
+            $feature['properties']['id'] = $changeRequestProcessor->insertFeature($table_name, $values);
             //ChangeRequest::historyInsert($table_name, $values);
         }
         else {
@@ -134,11 +98,11 @@ class MtopChangeRequest extends Model
              }
              */
             if  ($operation==ChangeRequest::OPERATION_UPDATE) {
-                ChangeRequest::updateFeature($table_name, $id, $values);
+                $changeRequestProcessor->updateFeature($table_name, $id, $values);
                 //ChangeRequest::historyUpdate($table_name, $values);
             }
             elseif  ($operation==ChangeRequest::OPERATION_DELETE) {
-                ChangeRequest::deleteFeature($table_name, $id);
+                $changeRequestProcessor->deleteFeature($table_name, $id);
                 //ChangeRequest::historyDelete($table_name, $id);
             }
         }
@@ -186,11 +150,14 @@ class MtopChangeRequest extends Model
         $dep = Department::where('code', $departamento)->first();
         $camineria_wfs_url = env('CAMINERIA_WMS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WFS_URL);
         if ($gid!=null) {
-            $url = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&cql_filter=gid='".$gid."'";
+            //$url = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&cql_filter=gid='".$gid."'";
+            $url = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&Filter=<Filter><PropertyIsEqualTo><PropertyName>gid</PropertyName><Literal>".$gid."</Literal></PropertyIsEqualTo></Filter>";
+            
             //$url = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&cql_filter=gid='".$gid."'%20AND%20"."codigo='".$codigo_camino."'";
         }
         else {
-            $url = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&cql_filter=codigo='".$codigo_camino."'";
+            //$url = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&cql_filter=codigo='".$codigo_camino."'";
+            $url = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&Filter=<Filter><PropertyIsEqualTo><PropertyName>codigo</PropertyName><Literal>".$codigo_camino."</Literal></PropertyIsEqualTo></Filter>";
         }
         try {
             $response = $client->request('GET', $url, [

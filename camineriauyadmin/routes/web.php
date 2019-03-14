@@ -32,9 +32,14 @@ Route::prefix('dashboard')
             'show', 'create', 'store', 'destroy'
         ]]);
         Route::get('mtopchangerequests/{id}/feature-{codigo_camino}.geojson', 'MtopChangeRequestController@feature')
-            ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+'])
+        ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+'])
             ->name('mtopchangerequests.feature');
-
+            Route::get('mtopchangerequests/{id}/feature-{codigo_camino}-{feature_id}.geojson', 'MtopChangeRequestController@feature')
+            ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+', 'feature_id' => '[0-9]+'])
+            ->name('mtopchangerequests.feature.gid');
+        Route::resource('interventions', 'InterventionController', ['except' => [
+            'show'
+        ]]);
     Route::group(['middleware' => ['isadmin']], function() {
         
         //Route::resource('users', 'UsersController');
@@ -54,9 +59,6 @@ Route::prefix('dashboard')
         ]]);
         Route::post('users/{id}/enable', 'UserController@enable')->name('users.enable');
         Route::post('users/{id}/disable', 'UserController@disable')->name('users.disable');
-        Route::resource('interventions', 'InterventionController', ['except' => [
-            'show'
-        ]]);
     });
 });
 /* 
@@ -106,6 +108,11 @@ Route::get('password/reset', 'Auth\ForgotPasswordController@showLinkRequestForm'
 Route::post('password/email', 'Auth\ForgotPasswordController@sendResetLinkEmail')->name('password.email');
 Route::get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm')->name('password.reset');
 Route::post('password/reset', 'Auth\ResetPasswordController@reset')->name('password.update');
+
+Route::get('dashboard/reports', 'ReportController@query')->name('reports.query');
+//Route::post('dashboard/reports', 'ReportController@download')->name('reports.download');
+Route::post('dashboard/reports', 'ReportController@export')->name('reports.download');
+
 
 Route::prefix('/api/layers')->group(function () {
     Route::resource('cr_caminos', 'CaminoLayerApiController', ['only' => [

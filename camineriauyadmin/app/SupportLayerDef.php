@@ -12,7 +12,7 @@ class SupportLayerDef extends Model
         'name',
         'title',
         'isbaselayer',
-        'visible',
+        'isvisible',
         'layergroup',
         'url',
         'protocol',

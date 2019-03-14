@@ -87,7 +87,7 @@ class ViewerConfigApiController extends Controller
                     'url'=>array_get($lyr, 'url', ''),
                     'name'=>$lyr->name,
                     'title'=>$lyr->title,
-                    'visible'=>$lyr->visible,
+                    'visible'=>$lyr->isvisible,
                     'api_key'=>array_get($lyr, 'api_key', '')
                 ];
             }
@@ -102,7 +102,7 @@ class ViewerConfigApiController extends Controller
                 $conf['url'] = array_get($lyr, 'url', '');
                 $conf['name'] = $lyr->name;
                 $conf['title'] = $lyr->title;
-                $conf['visible'] = $lyr->visible;
+                $conf['visible'] = $lyr->isvisible;
                 $conf['api_key'] = array_get($lyr, 'api_key', '');
                 $conf['editable'] = false;
                 if (empty($lyr->metadata)) {
@@ -131,7 +131,7 @@ class ViewerConfigApiController extends Controller
         $wfs_url = env('WFS_URL','');
         $protocol = 'wfs';
         
-        foreach (EditableLayerDef::where('enabled', 1)->get() as $lyr) {
+        foreach (EditableLayerDef::enabled()->geometricLayers()->get() as $lyr) {
             $conf = json_decode($lyr->conf, true);
             if (($lyr->name == 'cr_caminos') && ($department_code==null)) {
                 continue;
@@ -179,7 +179,7 @@ class ViewerConfigApiController extends Controller
                 $conf['editable'] = false;
             }
             */
-            $conf['visible'] = $lyr->visible;
+            $conf['visible'] = $lyr->isvisible;
             $conf['showInSearch'] = $lyr->showInSearch;
             $conf['showTable'] = $lyr->showTable;
             $conf['download'] = $lyr->download;

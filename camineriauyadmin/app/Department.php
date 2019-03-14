@@ -19,4 +19,9 @@ class Department extends Model
     {
         return $this->belongsToMany('App\EditableLayer');
     }
+    
+    public function interventions()
+    {
+        return $this->hasMany('App\Intervention', 'departamento', 'code');
+    }
 }
