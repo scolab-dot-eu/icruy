@@ -85,24 +85,30 @@
           </div> -->
           <div class="row">
             <div class="col">
-                Elemento previo:
+                Elemento existente:
             </div>
             <div class="col">
                 Elemento propuesto:
             </div>
           </div>
-          @if (isset($previousFeature->geometry) || isset($proposedFeature->geometry))
           <div class="row">
             <div class="col">
                 <div class="dashboard-map" id="map-previous-feat">
+                    <br>
+                    Cargando elemento existente...
+                    <br>
+                    <div class="progress">
+                      <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                    </div>
                 </div>
             </div>
             <div class="col">
                 <div  class="dashboard-map" id="map-proposed-feat">
+                    <br>
+                    Cargando elemento propuesto...
                 </div>
             </div>
           </div>
-          @endif
           <div class="row">
             <div class="col">
                 <h4 id="theComments">Comentarios:</h4>

@@ -31,7 +31,6 @@
 @endsection
 
 @section('custom_scripts')
-    @if (isset($previousFeature->geometry) || isset($proposedFeature->geometry))
     <script type="text/javascript">
     function createMap(div_id, feature, zoom, center=null) {
         var zoom = 12;
@@ -81,15 +80,33 @@
         var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
         var previousFeatMap = createMap('map-previous-feat', null, zoom, proposedFeatMap.getCenter());
     }
-    else if (operation == 'delete') {
-        var previousFeatMap = createMap('map-previous-feat', previousFeat, zoom);
-        var proposedFeatMap = createMap('map-proposed-feat', null, zoom, previousFeatMap.getCenter());
-        
-    }
     else {
-        var previousFeatMap = createMap('map-previous-feat', previousFeat, zoom);
-        var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
+        if (operation == 'update') {
+            var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
+        }
+
+        var currentFeatureUrl = '{!! $currentFeatureUrl !!}';
+        $.ajax({
+            url: currentFeatureUrl,
+            async: true
+        }).done(function(existingFeature) {
+            $('#map-previous-feat').empty();
+            if (operation == 'delete') {
+                var previousFeatMap = createMap('map-previous-feat', existingFeature, zoom);
+                var proposedFeatMap = createMap('map-proposed-feat', null, zoom, previousFeatMap.getCenter());
+            }
+            else { // update
+                var previousFeatMap = createMap('map-previous-feat', existingFeature, zoom);
+            }
+        }).fail(function(error) {
+            console.log( "Error al cargar configuración" );
+            $('#map-previous-feat').text('El geoservicio de Caminería no está disponible. Inténtelo de nuevo más tarde.');
+        }).always(function (resp, textStatus, xhr) {
+            if(xhr.status != 200) {
+                console.log( "Error al cargar configuración" );
+                $('#map-previous-feat').text('El geoservicio de Caminería no está disponible. Inténtelo de nuevo más tarde.');
+            }
+        });
     }
     </script>
-    @endif
 @endsection

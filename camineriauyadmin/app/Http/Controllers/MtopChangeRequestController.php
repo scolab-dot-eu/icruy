@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\Department;
 use App\MtopChangeRequest;
 use App\Role;
 use App\User;
@@ -139,10 +140,16 @@ class MtopChangeRequestController extends Controller
             $proposedFeature = json_decode($mtopchangerequest->feature);
         }
 
+        $camineria_wfs_url = env('CAMINERIA_WMS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WFS_URL);
+        $dep_code = $mtopchangerequest->departamento;
+        $gid = $mtopchangerequest->feature_id;
+        $dep = Department::where('code', $dep_code)->first();
+        $currentFeatureUrl = $camineria_wfs_url . "?service=WFS&version=1.0.0&request=getFeature&typeName=".$dep->layer_name."&outputFormat=application/json&Filter=<Filter><PropertyIsEqualTo><PropertyName>gid</PropertyName><Literal>".$gid."</Literal></PropertyIsEqualTo></Filter>";
         return view('mtopchangerequest.edit', ['mtopchangerequest'=>$mtopchangerequest,
             'previousFeature'=>$previousFeature,
             'proposedFeature'=>$proposedFeature,
-            'comments'=>$comments
+            'comments'=>$comments,
+            'currentFeatureUrl'=>$currentFeatureUrl
         ]);
     }
 
