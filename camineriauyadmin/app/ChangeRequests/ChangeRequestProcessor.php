@@ -233,7 +233,6 @@ class ChangeRequestProcessor
             'thegeomjson'=>true,
             'changerequest'=>true,
             'mtopchangerequest'=>true,
-            'statusmtop'=>true,
             'origin'=>true,
             'validated_by_id'=>true,
             'created_by_id'=>true

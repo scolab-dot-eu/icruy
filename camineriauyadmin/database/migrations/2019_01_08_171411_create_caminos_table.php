@@ -27,7 +27,6 @@ class CreateCaminosTable extends Migration
             $ignoredFields = [
                 'id',
                 'status',
-                'statusmtop',
                 'departamento',
                 'codigo_camino',
                 'version',
@@ -35,7 +34,6 @@ class CreateCaminosTable extends Migration
             ];
             EditableLayerDef::createFields($table, $fieldsDef, $ignoredFields, $errors);
             $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
-            $table->string('statusmtop', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
             $table->integer('version')->unsigned();
             /*
             $table->string('nombre', 255)->nullable(true)->default(null);
@@ -51,8 +49,8 @@ class CreateCaminosTable extends Migration
             */
             $table->integer('validated_by_id')->unsigned()->nullable();
             $table->foreign('departamento')->references('code')->on('departments');
-            $table->index(['status', 'codigo_camino', 'statusmtop']);
-            $table->index(['departamento', 'status', 'codigo_camino', 'statusmtop']);
+            $table->index(['status', 'codigo_camino']);
+            $table->index(['departamento', 'status', 'codigo_camino']);
         });
 
         $historicName = EditableLayerDef::getHistoricTableName($name);
