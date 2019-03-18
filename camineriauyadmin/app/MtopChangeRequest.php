@@ -173,6 +173,7 @@ class MtopChangeRequest extends Model
                  throw $error;*/
             }
         } catch (RequestException $e) {
+            Log::error('Error getting "camino" from MTOP WFS: '.$url);
             Log::error($e->getMessage());
             Log::error(\GuzzleHttp\Psr7\str($e->getRequest()));
             if ($e->hasResponse()) {

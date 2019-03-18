@@ -56,5 +56,22 @@ class Helpers
         }
         return $selectArray;
     }
-
+    
+    /**
+     * Gets the value of a field from an array or an stdObj
+     * 
+     * @param $container
+     * @param $field
+     * @return
+     */
+    public static function getValue($container, $field) {
+        if (is_array($container)
+            && isset($container[$field])) {
+                return $container[$field];
+            }
+            elseif (isset($container->$field)) {
+                return $container->$field;
+            }
+            return null;
+    }
 }

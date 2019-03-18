@@ -133,11 +133,11 @@ class ChangeRequestController extends Controller
         return $comment;
     }
     
-    protected function sendNotification(ChangeRequest $origChangerequest, User $requestorUser, $newComment = null) {
-        $notification = new ChangeRequestUpdated($origChangerequest, $newComment);
+    protected function sendNotification(ChangeRequest $changerequest, User $requestorUser, $newComment = null) {
+        $notification = new ChangeRequestUpdated($changerequest, $newComment);
         $notification->onQueue('email');
         if ($requestorUser->isAdmin()) {
-            Mail::to($origChangerequest->author)->queue($notification);
+            Mail::to($changerequest->author)->queue($notification);
         }
         else {
             $admins = Role::admins()->first()->users()->get();
@@ -152,20 +152,18 @@ class ChangeRequestController extends Controller
      * @param  \App\ChangeRequest  $changeRequest
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, ChangeRequest $changerequest)
     {
         // for the moment, don't allow any change in the ChR except the status
-        $origChangerequest = ChangeRequest::findOrFail($id);
         $user = $request->user();
         $newComment = $request->input('newcomment');
-        Log::debug('all');
-        Log::debug(json_encode($request->all()));
+
         if (!empty($request->action_comment)) {
-            $this->addComment($origChangerequest, $newComment, $user);
-            $this->sendNotification($origChangerequest, $user, $newComment);
-            return redirect()->to(route('changerequests.edit', $origChangerequest->id).'#theComments');
+            $this->addComment($changerequest, $newComment, $user);
+            $this->sendNotification($changerequest, $user, $newComment);
+            return redirect()->to(route('changerequests.edit', $changerequest->id).'#theComments');
         }
-        if (!$origChangerequest->isOpen) {
+        if (!$changerequest->isOpen) {
             $message = 'Se intentó modificar una petición ya cerrada';
             Log::error($message);
             $error = \Illuminate\Validation\ValidationException::withMessages([
@@ -173,11 +171,11 @@ class ChangeRequestController extends Controller
             ]);
             throw $error;
         }
-        $changeRequestProcessor = ChangeRequestProcessor::getProcessor($origChangerequest->layer);
+        $changeRequestProcessor = ChangeRequestProcessor::getProcessor($changerequest->layer);
 
         if (!empty($request->action_cancel)) {
             // FIXME: we need a more meaningful name
-            if ($user->id != $origChangerequest->requested_by_id) {
+            if ($user->id != $changerequest->requested_by_id) {
                 $message = 'El usuario intentó cancelar una petición que no inició: '.$user->email;
                 Log::error($message);
                 $error = \Illuminate\Validation\ValidationException::withMessages([
@@ -186,11 +184,11 @@ class ChangeRequestController extends Controller
                 throw $error;
             }
             if (!empty($request->newcomment)) {
-                $this->addComment($origChangerequest, $request->newcomment, $user);
+                $this->addComment($changerequest, $request->newcomment, $user);
             }
-            $changeRequestProcessor->setCancelled($origChangerequest, $request->user());
-            $this->sendNotification($origChangerequest, $user, $newComment);
-            return redirect()->route('changerequests.edit', $origChangerequest->id);
+            $changeRequestProcessor->setCancelled($changerequest, $request->user());
+            $this->sendNotification($changerequest, $user, $newComment);
+            return redirect()->route('changerequests.edit', $changerequest->id);
         }
         if (!$user->isAdmin()) {
             $message = 'Un usuario no-administrador intentó modificar una petición: '.$user->email;
@@ -202,27 +200,27 @@ class ChangeRequestController extends Controller
         }
         
         if (!empty($newComment)) {
-            $this->addComment($origChangerequest, $newComment, $user);
+            $this->addComment($changerequest, $newComment, $user);
         }
         if (!empty($request->action_validate)) {
             // FIXME: we need a more meaningful name
-            $changeRequestProcessor->setValidated($origChangerequest, $user);
+            $changeRequestProcessor->setValidated($changerequest, $user);
         }
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
-            $changeRequestProcessor->setRejected($origChangerequest, $user);
+            $changeRequestProcessor->setRejected($changerequest, $user);
         }
         
         try {
-            $origChangerequest = $origChangerequest->fresh();
-            $this->sendNotification($origChangerequest, $user, $newComment);
+            $changerequest = $changerequest->fresh();
+            $this->sendNotification($changerequest, $user, $newComment);
         }
         catch(\Exception $ex) {
             Log::error($ex->getMessage());
             Log::error($ex);
         }
         
-        return redirect()->route('changerequests.edit', $origChangerequest->id);
+        return redirect()->route('changerequests.edit', $changerequest->id);
     }
 
     /**

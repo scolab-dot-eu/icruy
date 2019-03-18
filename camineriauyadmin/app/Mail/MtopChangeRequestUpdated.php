@@ -13,14 +13,17 @@ class MtopChangeRequestUpdated extends Mailable
     use Queueable, SerializesModels;
 
     protected $changeRequest;
+    protected $newComment;
+    
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(MtopChangeRequest $changeRequest)
+    public function __construct(MtopChangeRequest $changeRequest, $newComment=null)
     {
         $this->changeRequest = $changeRequest;
+        $this->newComment = $newComment;
     }
     
 
@@ -40,7 +43,9 @@ class MtopChangeRequestUpdated extends Mailable
             'layer'=>$this->changeRequest->layer,
             'operation'=>$this->changeRequest->operationLabel,
             'status'=>$this->changeRequest->statusLabel,
-            'changeRequestUrl' => $changeRequestUrl
+            'changeRequestUrl' => $changeRequestUrl,
+            'changeRequestId' => $this->changeRequest->id,
+            'newComment' => $this->newComment
         ]);
     }
 }

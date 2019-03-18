@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\ChangeRequest;
 use App\MtopChangeRequest;
+use App\Role;
+use App\User;
 use App\Mail\MtopChangeRequestUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\MtopChangeRequestComment;
 
 class MtopChangeRequestController extends Controller
 {
@@ -87,6 +90,29 @@ class MtopChangeRequestController extends Controller
     {
         //
     }
+    
+    protected function addComment(MtopChangeRequest $changeRequest, $message, User $user) {
+        $comment = new MtopChangeRequestComment();
+        $comment->message = $message;
+        $comment->updated_at = now();
+        $comment->created_at = now();
+        $comment->user_id = $user->id;
+        $changeRequest->comments()->save($comment);
+        return $comment;
+    }
+    
+    protected function sendNotification(MtopChangeRequest $changerequest, User $requestorUser, $newComment = null) {
+        $notification = new MtopChangeRequestUpdated($changerequest, $newComment);
+        $notification->onQueue('email');
+        if ($requestorUser->isMtopManager()) {
+            Mail::to($changerequest->author)->queue($notification);
+        }
+        else {
+            $admins = Role::mtopManagers()->first()->users()->get();
+            Mail::to($admins)->queue($notification);
+        }
+    }
+    
 
     /**
      * Show the form for editing the specified resource.
@@ -96,6 +122,8 @@ class MtopChangeRequestController extends Controller
      */
     public function edit(MtopChangeRequest $mtopchangerequest)
     {
+        $comments = $mtopchangerequest->comments()->with('user')->get();
+        
         $user = request()->user();
         if ((!$user->isMtopManager()) && (!$user->isAdmin()) &&
             ($user->id != $mtopchangerequest->requested_by_id)) {
@@ -113,7 +141,8 @@ class MtopChangeRequestController extends Controller
 
         return view('mtopchangerequest.edit', ['mtopchangerequest'=>$mtopchangerequest,
             'previousFeature'=>$previousFeature,
-            'proposedFeature'=>$proposedFeature
+            'proposedFeature'=>$proposedFeature,
+            'comments'=>$comments
         ]);
     }
 
@@ -124,10 +153,17 @@ class MtopChangeRequestController extends Controller
      * @param  \App\ChangeRequest  $changeRequest
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, MtopChangeRequest $mtopchangerequest)
     {
-        $origChangerequest = MtopChangeRequest::findOrFail($id);
-        if (!$origChangerequest->isOpen) {
+        $user = $request->user();
+        $newComment = $request->input('newcomment');
+        
+        if (!empty($request->action_comment)) {
+            $this->addComment($mtopchangerequest, $newComment, $user);
+            $this->sendNotification($mtopchangerequest, $user, $newComment);
+            return redirect()->to(route('mtopchangerequests.edit', $mtopchangerequest->id).'#theComments');
+        }
+        if (!$mtopchangerequest->isOpen) {
             $message = 'Se intentó modificar una petición ya cerrada';
             Log::error($message);
             $error = \Illuminate\Validation\ValidationException::withMessages([
@@ -135,13 +171,9 @@ class MtopChangeRequestController extends Controller
             ]);
             throw $error;
         }
-        /*
-        $feature = json_decode($origChangerequest->feature, true);
-        $geom = Geometry::fromJson($origChangerequest->feature);*/
-        $user = $request->user();
         if (!empty($request->action_cancel)) {
             // FIXME: we need a more meaningful name
-            if ($user->id != $origChangerequest->requested_by_id) {
+            if ($user->id != $mtopchangerequest->requested_by_id) {
                 $message = 'El usuario intentó cancelar una petición que no inició: '.$request->user()->email;
                 Log::error($message);
                 $error = \Illuminate\Validation\ValidationException::withMessages([
@@ -149,8 +181,9 @@ class MtopChangeRequestController extends Controller
                 ]);
                 throw $error;
             }
-            MtopChangeRequest::setCancelled($origChangerequest, $user);
-            return redirect()->route('mtopchangerequests.index');
+            MtopChangeRequest::setCancelled($mtopchangerequest, $user);
+            $this->sendNotification($mtopchangerequest, $user, $newComment);
+            return redirect()->route('mtopchangerequests.edit', $mtopchangerequest->id);
         }
         if (!$user->isMtopManager()) {
             $message = 'Un usuario no-administrador MTOP intentó modificar una petición: '.$request->user()->email;
@@ -161,25 +194,26 @@ class MtopChangeRequestController extends Controller
             throw $error;
         }
         
+        if (!empty($newComment)) {
+            $this->addComment($mtopchangerequest, $newComment, $user);
+        }
         if (!empty($request->action_validate)) {
-            MtopChangeRequest::setValidated($origChangerequest, $user);
+            MtopChangeRequest::setValidated($mtopchangerequest, $user);
         }
         elseif (!empty($request->action_reject)) {
             // FIXME: we need a more meaningful name
-            MtopChangeRequest::setRejected($origChangerequest, $user);
+            MtopChangeRequest::setRejected($mtopchangerequest, $user);
         }
         try {
-            $origChangerequest = $origChangerequest->fresh();
-            $notification = new MtopChangeRequestUpdated($origChangerequest);
-            $notification->onQueue('email');
-            Mail::to($origChangerequest->author)->queue($notification);
+            $mtopchangerequest = $mtopchangerequest->fresh();
+            $this->sendNotification($mtopchangerequest, $user, $newComment);
         }
         catch(\Exception $ex) {
             Log::error($ex->getMessage());
             Log::error($ex);
         }
         
-        return redirect()->route('mtopchangerequests.index');
+        return redirect()->route('mtopchangerequests.edit', $mtopchangerequest->id);
     }
 
     public function feature(Request $request, $id)

@@ -16,6 +16,7 @@ use App\Mail\ChangeRequestCreated;
 use Grimzy\LaravelMysqlSpatial\Types\Geometry;
 use App\User;
 use App\Http\Controllers\ChangeRequestApiController;
+use App\Helpers\Helpers;
 
 class ChangeRequestProcessor
 {
@@ -222,6 +223,9 @@ class ChangeRequestProcessor
     
     public static function equalValues($values1, $values2) {
         $ignoredFields = [
+            'gid'=>true,
+            'id'=>true,
+            'version'=>true,
             'status'=>true,
             'updated_at'=>true,
             'created_at'=>true,
@@ -239,17 +243,25 @@ class ChangeRequestProcessor
         Log::debug("values2:");
         Log::debug(json_encode($values2));
         foreach ($values1 as $field => $value) {
+            /*Log::debug("ignored1");
+            Log::debug(array_get($ignoredFields, $field));
+            Log::debug("values2");
+            Log::debug(array_get($values2, $field));*/
             if (!array_get($ignoredFields, $field) &&
-                array_get($values2, $field)!=$value) {
-                    Log::debug("diferentes: ".$value." - ".array_get($values2, $field));
+                Helpers::getValue($values2, $field)!=$value) {
+                    Log::debug("diferentes: ".$field.' - '.$value." - ".Helpers::getValue($values2, $field));
                     return false;
                 }
                 $ignoredFields[$field] = true;
         }
         foreach ($values2 as $field => $value) {
+            /*Log::debug("ignored2");
+            Log::debug(array_get($ignoredFields, $field));
+            Log::debug("values1");
+            Log::debug(array_get($values1, $field));*/
             if (!array_get($ignoredFields, $field) &&
-                (array_get($values1, $field)!=$value)) {
-                    Log::debug("diferentes: ".$value." - ".array_get($values1, $field));
+                (Helpers::getValue($values1, $field)!=$value)) {
+                    Log::debug("diferentes: ".$field.' - '.$value." - ".Helpers::getValue($values1, $field));
                     return false;
                 }
         }

@@ -13,12 +13,13 @@
                 @include('mtopchangerequest._fields')
                 <br>
                 <a href="{!! route('mtopchangerequests.index') !!}" role="button" class="btn btn-info">{{ __('Volver') }}</a>
+                <input type="submit" class="btn btn-info" name="action_comment" value="{{ __('Comentar') }}">
                 @if ($mtopchangerequest->isOpen)
                     @if (Auth::user()->isMtopManager())
                     <input type="submit" class="btn btn-info" name="action_validate" value="{{ __('Validar') }}">
                     <input type="submit" class="btn btn-warning" name="action_reject" value="{{ __('Rechazar') }}">
                     @elseif (Auth::user()->id == $mtopchangerequest->requested_by_id)
-                    <input type="submit" class="btn btn-warning" name="action_cancel" value="{{ __('Cancelar') }}">
+                    <input type="submit" class="btn btn-warning" name="action_cancel" value="{{ __('Cancelar petición') }}">
                     @endif
                 @endif
             {{ Form::close() }}
@@ -67,6 +68,12 @@
 
     var proposedFeatStr = '{!! $mtopchangerequest->feature !!}';
     var previousFeatStr = '{!! $mtopchangerequest->feature_previous !!}';
+    try {
+        var previousFeat =  JSON.parse(previousFeatStr);
+    }
+    catch(e) {
+        var previousFeat = null;
+    }
     
     var operation = '{{ $mtopchangerequest->operation }}';
     var zoom = 12;
@@ -75,12 +82,12 @@
         var previousFeatMap = createMap('map-previous-feat', null, zoom, proposedFeatMap.getCenter());
     }
     else if (operation == 'delete') {
-        var previousFeatMap = createMap('map-previous-feat', JSON.parse(previousFeatStr), zoom);
+        var previousFeatMap = createMap('map-previous-feat', previousFeat, zoom);
         var proposedFeatMap = createMap('map-proposed-feat', null, zoom, previousFeatMap.getCenter());
         
     }
     else {
-        var previousFeatMap = createMap('map-previous-feat', JSON.parse(previousFeatStr), zoom);
+        var previousFeatMap = createMap('map-previous-feat', previousFeat, zoom);
         var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
     }
     </script>

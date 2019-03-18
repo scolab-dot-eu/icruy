@@ -13,7 +13,7 @@ class CreateMtopchangerequestcommentsTable extends Migration
      */
     public function up()
     {
-        Schema::create('mtopchangerequestscomments', function (Blueprint $table) {
+        Schema::create('mtopchangerequestcomments', function (Blueprint $table) {
             $table->increments('id');
             $table->text('message');
             $table->integer('user_id')->unsigned();
@@ -33,6 +33,6 @@ class CreateMtopchangerequestcommentsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mtopchangerequestscomments');
+        Schema::dropIfExists('mtopchangerequestcomments');
     }
 }
