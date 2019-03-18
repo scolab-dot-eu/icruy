@@ -19,7 +19,7 @@ Utils.prototype = {
 
         for (i in fields) {
             if (fields[i].name == key) {
-                if (value == 'null') {
+                if (value == 'null' || value == null) {
                     value = '';
                 }
                 if (fields[i].type == 'string') {

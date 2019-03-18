@@ -112,11 +112,13 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
 
     selectLayer: function(layer) {
         this._map.addLayer(layer);
+        //this._map.getPane(this._layers[layerId].layer.name).style.display = '';
         this._update();
     },
 
     unSelectLayer: function(layer) {
         this._map.removeLayer(layer);
+        //this._map.getPane(this._layers[layerId].layer.name).style.display = 'none';
         this._update();
     },
 
@@ -326,14 +328,60 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
         var currentZoom = this._map.getZoom();
 
         for (layerId in this._layers) {
-            if (this._layers[layerId].layer.options && (this._layers[layerId].layer.options.minZoom || this._layers[layerId].layer.options.maxZoom)) {
+            var esCamino = false;
+            if (this._layers[layerId].layer && this._layers[layerId].layer.name && this._layers[layerId].layer.name.indexOf('caminerias_intendencias') !== -1) {
+                esCamino = true;
+            }
+
+            if (currentZoom < 11 || currentZoom > 18) {
+                if (this._layers[layerId].layer.isGeojsonLayer) {
+                    if (this._map.hasLayer(this._layers[layerId].layer)) {
+                        this._map.getPane(this._layers[layerId].layer.name).style.display = 'none';
+                    }
+                }
+                
+                
+            } else {
+                if (this._layers[layerId].layer.isGeojsonLayer) {                      
+                    if (this._map.hasLayer(this._layers[layerId].layer)) {
+                        this._map.getPane(this._layers[layerId].layer.name).style.display = '';
+                        if (!esCamino) {
+                            try {
+                                this._layers[layerId].layer.bringToFront();
+                            } catch(error) {
+                                console.log(error);
+                            }                           
+                        }
+                    }
+                }
+                
+            }
+
+            /*if (this._layers[layerId].layer.options && (this._layers[layerId].layer.options.minZoom || this._layers[layerId].layer.options.maxZoom)) {
                 var el = document.getElementById('ac_layer_input_' + this._layers[layerId].layer._leaflet_id);
                 if (currentZoom < this._layers[layerId].layer.options.minZoom || currentZoom > this._layers[layerId].layer.options.maxZoom) {
-                    el.disabled = 'disabled';
+                    if (!esCamino && this._layers[layerId].layer.isGeojsonLayer) {
+                        //el.disabled = 'disabled';
+                        //this.unSelectLayer(this._layers[layerId].layer);
+                        if (this._map.hasLayer(this._layers[layerId].layer)) {
+                            this._map.getPane(this._layers[layerId].layer.name).style.display = 'none';
+                            console.log('No visible');
+                        }
+                    }
+                    
+                    
                 } else {
-                    el.disabled = '';
+                    if (!esCamino && this._layers[layerId].layer.isGeojsonLayer) {
+                        //this.selectLayer(this._layers[layerId].layer);
+                        //el.disabled = '';                       
+                        if (this._map.hasLayer(this._layers[layerId].layer)) {
+                            this._map.getPane(this._layers[layerId].layer.name).style.display = '';
+                            console.log('Visible');
+                        }
+                    }
+                    
                 }
-            }
+            }*/
         }
     },
 
@@ -458,19 +506,7 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     label.appendChild(bt_metadata);
                 }
 
-                if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.showTable) {
-                    var bt_show_table = document.createElement("button");
-                    bt_show_table.type = "button";
-                    bt_show_table.className = "bt_show_table";
-                    bt_show_table.title = "Tabla de atributos";
-                    bt_show_table.dataset.layerLID = obj.layer._leaflet_id;
-                    bt_show_table.id = 'bt_show_table_' + obj.layer._leaflet_id;
-                    var bt_show_table_icon = document.createElement("i");
-                    bt_show_table_icon.className = "fa fa-table";
-                    bt_show_table.appendChild(bt_show_table_icon);
-                    L.DomEvent.on(bt_show_table, 'click', this._onShowTableClick, this);
-                    label.appendChild(bt_show_table);
-                }
+                
 
                 if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.download) {
                     var bt_download = document.createElement("a");
@@ -484,7 +520,6 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                     bt_download.appendChild(bt_download_icon);
                     label.appendChild(bt_download);
                 }
-
                 
                 var bt_ogc_services = document.createElement("button");
                 bt_ogc_services.type = "button";
@@ -497,6 +532,20 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                 bt_ogc_services.appendChild(bt_ogc_services_icon);
                 L.DomEvent.on(bt_ogc_services, 'click', this._onShowOGCServices, this);
                 label.appendChild(bt_ogc_services);
+            }
+
+            if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.showTable) {
+                var bt_show_table = document.createElement("button");
+                bt_show_table.type = "button";
+                bt_show_table.className = "bt_show_table";
+                bt_show_table.title = "Tabla de atributos";
+                bt_show_table.dataset.layerLID = obj.layer._leaflet_id;
+                bt_show_table.id = 'bt_show_table_' + obj.layer._leaflet_id;
+                var bt_show_table_icon = document.createElement("i");
+                bt_show_table_icon.className = "fa fa-table";
+                bt_show_table.appendChild(bt_show_table_icon);
+                L.DomEvent.on(bt_show_table, 'click', this._onShowTableClick, this);
+                label.appendChild(bt_show_table);
             }
 
             // configure the visible attribute to layer

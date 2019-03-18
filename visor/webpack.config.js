@@ -11,7 +11,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'app.bundle.js'
   },
-  //devtool: 'inline-source-map',
+  devtool: 'inline-source-map',
   plugins: [
     new CleanWebpackPlugin(['dist']),
     new HtmlWebpackPlugin({template: './src/index.html'}),
@@ -60,7 +60,13 @@ module.exports = {
         datatables_buttons_css: __dirname + "/vendors/DataTables/Buttons-1.5.4/css/buttons.dataTables.min.css",
         leaflet_graphic_scale_css: __dirname + "/node_modules/leaflet-graphicscale/dist/Leaflet.GraphicScale.min.css",
         leaflet_timedimension_css: __dirname + "/node_modules/leaflet-timedimension/dist/leaflet.timedimension.control.min.css",
-        leaflet_timedimension_js: __dirname + "/node_modules/leaflet-timedimension/dist/leaflet.timedimension.min.js"
+        leaflet_timedimension_js: __dirname + "/node_modules/leaflet-timedimension/dist/leaflet.timedimension.min.js",
+        notify: __dirname + "/vendors/bootstrap-notify.min.js",
+        responsive_js: __dirname + "/vendors/DataTables/responsive/js/dataTables.responsive.min.js",
+        responsive_css: __dirname + "/vendors/DataTables/responsive/css/responsive.dataTables.min.css",
+        fixed_header_js: __dirname + "/vendors/DataTables/FixedHeader-3.1.4/js/dataTables.fixedHeader.min.js",
+        fixed_header_css: __dirname + "/vendors/DataTables/FixedHeader-3.1.4/css/fixedHeader.dataTables.min.css",
+
     }
   },
   module: {

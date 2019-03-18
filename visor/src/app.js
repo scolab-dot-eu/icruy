@@ -52,6 +52,7 @@ require('leaflet_measure_js');
 require('leaflet_coordinates_css');
 require('leaflet_coordinates_js');
 require('leaflet-geometryutil');
+require('notify');
 
 var config = null;
 var departamento = null;
@@ -59,7 +60,7 @@ var departamento = null;
 L_PREFER_CANVAS = true;
 
 var editableLayers = [];
-var inEdition = false;
+window.inEdition = false;
 
 window.isMobile = false;
 if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
@@ -223,8 +224,10 @@ function loadOverlays(map) {
             f.properties['rodadura'] = '';
             f.properties['senaliz_horiz'] = '';
             f.properties['status'] = '';
+            f.properties['statusmtop'] = '';
             f.properties['created_at'] = '';
             f.properties['updated_at'] = '';
+            f.properties['validated_by_id'] = '';     
             for (var i in caminos) {
                 if (caminos[i].codigo_camino == codigoMTOP) {
                     $.extend(f.properties, caminos[i]);
@@ -249,10 +252,14 @@ function loadOverlays(map) {
             html += '</div>';
             html += '<table>';
             for (var key in f.properties) {
+                var v = f.properties[key];
+                if (f.properties[key] == 'null' || f.properties[key] == null) {
+                    v = '';
+                }
                 if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin') {
                     html += '<tr>';
                     html +=     '<td style="padding: 2px; text-transform: uppercase; color: #e0a800;">' + key + '</td>';
-                    html +=     '<td style="padding: 2px;">' + f.properties[key] + '</td>';
+                    html +=     '<td style="padding: 2px;">' + v + '</td>';
                     html += '</tr>';
                 }
     
@@ -345,11 +352,15 @@ function loadOverlays(map) {
                         } else {
                             styles[config.overlays.groups[i].layers[j].name] = config.overlays.groups[i].layers[j].style;
                         }
-
+                        var pane = map.createPane(config.overlays.groups[i].layers[j].name);
+                        //pane.style.zIndex = 650;
                         layer = L.geoJson.ajax(
                             config.overlays.groups[i].layers[j].url + L.Util.getParamString(parameters),
                             {
                                 onEachFeature: popUp,
+                                style: {
+                                    pane: pane
+                                },
                                 pointToLayer: function (feature, latlng) {
                                     var pointStyle = styles[feature.id.split('.')[0]];
                                     if (feature.properties.status == 'PENDIENTE:BORRADO' || feature.properties.status == 'PENDIENTE:CREACIÓN' || feature.properties.status == 'PENDIENTE:ACTUALIZACIÓN') {
@@ -364,11 +375,24 @@ function loadOverlays(map) {
                             },
                         );
                         layer.geom_style = 'point';
+                        layer.on('data:loading', function() {
+                            var mask = '<div id="animationload" class="animationload"><div class="osahanloading"></div></div>';
+                            $('body').append(mask);
+                        });
+                        layer.on('data:loaded', function() {
+                            $('#animationload').remove();
+                        });
 
                     } else if  (config.overlays.groups[i].layers[j].geom_style == 'line') {
                         var lineStyle = config.overlays.groups[i].layers[j].style;
+                        var pane2 = map.createPane(config.overlays.groups[i].layers[j].name);
+                        //pane2.style.zIndex = 400;
+                        lineStyle['pane'] = pane2;
+                        var p = L.Util.extend(parameters, {
+                            cql_filter: "jurisdiccion='Departamental'"
+                        }); 
                         layer = L.geoJson.ajax(
-                            config.overlays.groups[i].layers[j].url + L.Util.getParamString(parameters),
+                            config.overlays.groups[i].layers[j].url + L.Util.getParamString(p),
                             {
                                 onEachFeature:popUp,
                                 style: lineStyle
@@ -567,34 +591,42 @@ function registerMapEvents(map, controls, utils, printUtils) {
         });
 
         $('.popup-toolbar-button-edit').click(function(e){
-            if (!inEdition) {
+            if (!window.inEdition) {
                 for (i in editableLayers) {
                     if (editableLayers[i].name == this.dataset.layername) {
                         var id = this.dataset.fid;
                         var editableLayer = editableLayers[i].layer;
                         editableLayer.eachLayer(function(layer) {
-                            if (layer.feature.id == id) {
-                                var clonedLayer = null;
-                                if (layer instanceof L.CircleMarker) {
-                                    clonedLayer = L.circleMarker(layer.getLatLng(), {});
-                                } else if (layer instanceof L.Polyline) {
-                                    clonedLayer = L.polyline(layer.getLatLngs(), {});
+                            if (layer.feature) {
+                                if (layer.feature.id == id) {
+                                    var clonedLayer = null;
+                                    if (layer instanceof L.CircleMarker) {
+                                        clonedLayer = L.circleMarker(layer.getLatLng(), {});
+                                    } else if (layer instanceof L.Polyline) {
+                                        clonedLayer = L.polyline(layer.getLatLngs(), {});
+                                    }
+                                    if (layer.feature.geometry.type == 'Point') {
+                                        map.setView(layer.getLatLng(), 15);
+                                    } else {
+                                        var bounds = layer.getBounds();
+                                        map.fitBounds(bounds);
+                                    }
+                                    layer.editing.enable();
+                                    window.inEdition = true;
+                                    loadFeatureForm(map, controls.toc, layer, clonedLayer, editableLayer, utils);
                                 }
-                                if (layer.feature.geometry.type == 'Point') {
-                                    map.setView(layer.getLatLng(), 15);
-                                } else {
-                                    var bounds = layer.getBounds();
-                                    map.fitBounds(bounds);
-                                }
-                                layer.editing.enable();
-                                inEdition = true;
-                                loadFeatureForm(map, controls.toc, layer, clonedLayer, editableLayer, utils);
                             }
+                            
                         });
                     }
                 }
             } else {
-                alert('Existe otro elemento en edición');
+                $.notify({
+                    message: 'Existe otro elemento en edición'
+                },{
+                    type: 'danger',
+                    placement:{align: 'center'}
+                });
             }
             
             
@@ -657,8 +689,12 @@ function deleteElement(editableLayer, element) {
 
     }).done(function(resp) {
         if (c.user.isadmin) {
-            //element.remove();
-            deleteTrams(editableLayer, element.feature.properties.codigo_camino);
+            if (esCamino) {
+                deleteTrams(editableLayer, element.feature.properties.codigo_camino);
+            } else {
+                element.remove();
+            }
+            
 
         } else {
             element.feature.properties.status = 'PENDIENTE:BORRADO';
@@ -680,9 +716,11 @@ function deleteElement(editableLayer, element) {
 
 function deleteTrams(layer, codigo_camino) {
     layer.eachLayer(function(l) {
-        if (l.feature.properties.codigo_camino == codigo_camino) {
-            l.remove();
-        }
+        if (l.feature) {
+            if (l.feature.properties.codigo_camino == codigo_camino) {
+                l.remove();
+            }
+        }       
     });
 }
 
@@ -713,7 +751,7 @@ function updateElement(map, toc, element, editableLayer) {
     }).done(function(resp) {
         if (resp.status == 10) {
             element.feature.properties.status = 'VALIDADO';
-            element.feature.properties.id = resp.id;
+            element.feature.properties.id = resp.feature.properties.id;
             element.feature.properties.created_at = resp.created_at;
             element.feature.properties.updated_at = resp.updated_at;
             if (esCamino) {
@@ -739,7 +777,7 @@ function updateElement(map, toc, element, editableLayer) {
         map.closePopup();
         $('#toc-result-content').empty();
         toc.getSideBar().open('toc-layers');
-        inEdition = false;
+        window.inEdition = false;
         
 
     }).fail(function(resp) {
@@ -757,12 +795,15 @@ function updateElement(map, toc, element, editableLayer) {
 
 function updateTrams(layer, properties, codigo) {
     layer.eachLayer(function(l) {
-        if (l.feature.properties) {
-            if (l.feature.properties.codigo_camino == codigo) {
-                l.feature.properties = {};
-                $.extend(l.feature.properties, properties);
-            }
-        }       
+        if (l.feature) {
+            if (l.feature.properties) {
+                if (l.feature.properties.codigo_camino == codigo) {
+                    l.feature.properties = {};
+                    $.extend(l.feature.properties, properties);
+                }
+            } 
+        }
+              
     });
 }
 
@@ -773,12 +814,14 @@ function loadInfo(toc, layer) {
     var html = '';
     html += '<div class="list-group">';
     for(key in layer.feature.properties){
-        html += '<a href="#" class="list-group-item list-group-item-action flex-column align-items-start">';
-        html +=     '<div class="d-flex w-100 justify-content-between">';
-        html +=         '<h6 style="color: #e0a800;" class="mb-1">' + key + '</h6>';
-        html +=     '</div>';
-        html +=     '<p class="mb-1">' + layer.feature.properties[key] + '</p>';
-        html += '</a>';
+        if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {
+            html += '<a href="#" class="list-group-item list-group-item-action flex-column align-items-start">';
+            html +=     '<div class="d-flex w-100 justify-content-between">';
+            html +=         '<h6 style="color: #e0a800;" class="mb-1">' + key + '</h6>';
+            html +=     '</div>';
+            html +=     '<p class="mb-1">' + layer.feature.properties[key] + '</p>';
+            html += '</a>';
+        }
     }
     html += '</div>';
 
@@ -803,7 +846,7 @@ function loadFeatureForm(map, toc, layer, clonedLayer, editableLayer, utils) {
     html +=     '<div id="modification-errors" class="form-group row">';
     html +=     '</div>';
     for(key in layer.feature.properties){
-        if (key != 'created_at' && key != 'updated_at' != key != 'id') {
+        if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {
             html += utils.getAttributeInput(editableLayer.fields, key, layer.feature.properties[key]);
         }      
     }
@@ -829,7 +872,7 @@ function loadFeatureForm(map, toc, layer, clonedLayer, editableLayer, utils) {
         map.closePopup();
         $('#toc-result-content').empty();
         toc.getSideBar().open('toc-layers');
-        inEdition = false;
+        window.inEdition = false;
     });
     
     toc.getSideBar().open('toc-result');
