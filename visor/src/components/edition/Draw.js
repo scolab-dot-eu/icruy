@@ -427,12 +427,17 @@ Draw.prototype = {
     },
 
     updateTrams: function(layer, properties, codigo) {
+        var sharedProps = [];
+        for (const prop in properties) {
+            if (prop != 'gid') {
+                sharedProps[prop] = properties[prop];
+            }
+        }
         layer.eachLayer(function(l) {
             if (l.feature) {
                 if (l.feature.properties) {
                     if (l.feature.properties.codigo_camino == codigo) {
-                        l.feature.properties = {};
-                        $.extend(l.feature.properties, properties);
+                        $.extend(l.feature.properties, sharedProps);
                     }
                 } 
             }

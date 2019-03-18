@@ -2,8 +2,9 @@
  * Importamos las librerías, estilos y componentes
  */
 
+window.serviceURL = window.location.protocol+"//"+window.location.host;
 //window.serviceURL = 'http://geoportal.opp.com';
-window.serviceURL = 'http://icr-test.opp.gub.uy';
+//window.serviceURL = 'http://icr-test.opp.gub.uy';
 //window.serviceURL = 'http://geoportal.opp.localhost';
 //window.serviceURL = 'http://localhost:8000';
 window.editionMode = false;
@@ -794,12 +795,17 @@ function updateElement(map, toc, element, editableLayer) {
 }
 
 function updateTrams(layer, properties, codigo) {
+    var sharedProps = [];
+    for (const prop in properties) {
+        if (prop != 'gid') {
+            sharedProps[prop] = properties[prop];
+        }
+    }
     layer.eachLayer(function(l) {
         if (l.feature) {
             if (l.feature.properties) {
                 if (l.feature.properties.codigo_camino == codigo) {
-                    l.feature.properties = {};
-                    $.extend(l.feature.properties, properties);
+                    $.extend(l.feature.properties, sharedProps);
                 }
             } 
         }
