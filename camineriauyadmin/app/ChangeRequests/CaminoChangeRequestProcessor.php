@@ -46,8 +46,6 @@ class CaminoChangeRequestProcessor extends ChangeRequestProcessor
         $codigo_camino = array_get($properties, "codigo_camino");
         
         $feature_previous = $this->getCurrentFeature($layer, $codigo_camino);
-        Log::debug("feature_previous");
-        Log::debug(json_encode($feature_previous));
         // la operación para el camino MTOP no es la misma que la operación en la tabla de caminos
         if ($feature_previous == null) {
             if ($mtopOperation==ChangeRequest::OPERATION_UPDATE) {

@@ -53,7 +53,8 @@ class MtopChangeRequestApiController extends Controller
         // always pending status since they have to be validated by MTOP
         $mtopchangerequest->status = ChangeRequest::STATUS_PENDING;
         // encode to keep only the geometry (the rest of properties will be cleaned)
-        $feature_previous = MtopChangeRequest::getCurrentMtopFeature($mtopchangerequest->departamento, $mtopchangerequest->codigo_camino, $gid);
+        //$feature_previous = MtopChangeRequest::getCurrentMtopFeature($mtopchangerequest->departamento, $mtopchangerequest->codigo_camino, $gid);
+        $feature_previous = null;
         Log::info("feature_previous:");
         Log::info(json_encode($feature_previous));
         if ($feature_previous!==null) {
