@@ -2,10 +2,12 @@
  * Importamos las librerías, estilos y componentes
  */
 
-window.serviceURL = window.location.protocol+"//"+window.location.host;
+window.serviceURL = window.location.protocol+'//'+window.location.host;
+window.safeServiceURL = 'https://'+window.location.host;
 //window.serviceURL = 'http://geoportal.opp.com';
 //window.serviceURL = 'http://icr-test.opp.gub.uy';
 //window.serviceURL = 'http://geoportal.opp.localhost';
+//window.safeServiceURL = 'http://geoportal.opp.localhost';
 //window.serviceURL = 'http://localhost:8000';
 window.editionMode = false;
 
