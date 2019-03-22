@@ -37,7 +37,7 @@ class EditableLayerDefUpdateFormRequest extends FormRequest
             'title'  => 'required',
             'geom_type' => 'sometimes|nullable',
             'fields'  => 'required|json',
-            'color' => 'required|regex:/^#[a-fA-F0-9]{6}$/',
+            'color' => 'required_if:geom_type,point|nullable|regex:/^#[a-fA-F0-9]{6}$/',
             'metadata' => 'sometimes|nullable',
             'isvisible' => 'sometimes|nullable',
             'download' => 'sometimes|nullable',
