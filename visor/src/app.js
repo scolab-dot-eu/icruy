@@ -93,11 +93,10 @@ function initialize() {
                 [config.department.maxy, config.department.maxx]
             ]);
 
-        }).fail(function(error) {
-            console.log( "Error al cargar configuración" );
-
-        }).always(function (resp, textStatus, xhr) {
-            if(xhr.status == 401) {
+        }).fail(function(xhr, textStatus, errorThrown) {
+			console.log( "Error al cargar configuración" );
+			if(xhr.status == 401) {
+				console.log( "Ha expirado la sesión" );
                 alert('Ha expirado la sesión');
                 location.href = window.serviceURL + '/viewer_login';
             }
@@ -115,14 +114,14 @@ function initialize() {
                 preferCanvas: true
             }).setView(config.map.center, config.map.zoom);
 
-        }).fail(function() {
+        }).fail(function(xhr, textStatus, errorThrown) {
             console.log( "Error al cargar configuración" );
-
-        }).always(function (resp, textStatus, xhr) {
-            if(xhr.status == 401) {
+            if (xhr.status == 401) {
+				console.log( "Ha expirado la sesión" );
                 alert('Ha expirado la sesión');
                 location.href = window.serviceURL + '/viewer_login';
             }
+
         });
     }
 
@@ -196,13 +195,13 @@ function loadOverlays(map) {
     
         }).done(function(resp) {
             caminos = resp;
-        }).fail(function(error) {
-            console.log( "Error al obtener caminos" );
-        }).always(function (resp, textStatus, xhr) {
-            if(xhr.status == 401) {
-                alert('Ha expirado la sesión');
-                location.href = window.serviceURL + '/viewer_login';
-            }
+        }).fail(function(xhr, textStatus, errorThrown) {
+           console.log( "Error al obtener caminos" );
+           if(xhr.status == 401) {
+               console.log( "Ha expirado la sesión" );
+               alert('Ha expirado la sesión');
+               location.href = window.serviceURL + '/viewer_login';
+           }
         });
     }   
 
@@ -706,11 +705,10 @@ function deleteElement(editableLayer, element) {
             element.setStyle(style);
         }
 
-    }).fail(function(error) {
+    }).fail(function(xhr, textStatus, errorThrown) {
         console.log( "Error al eliminar" );
-
-    }).always(function (resp, textStatus, xhr) {
         if(xhr.status == 401) {
+            console.log( "Ha expirado la sesión" );
             alert('Ha expirado la sesión');
             location.href = window.serviceURL + '/viewer_login';
         }
@@ -784,15 +782,15 @@ function updateElement(map, toc, element, editableLayer) {
         
 
     }).fail(function(resp) {
+        if(xhr.status == 401) {
+            console.log("Ha expirado la sesión");
+            alert('Ha expirado la sesión');
+            location.href = window.serviceURL + '/viewer_login';
+        }
         $('#modification-errors').empty();
         for (var key in resp.responseJSON.errors) {
             $('#modification-errors').append('<p style="padding: 5px 20px; color: #ff0000;">' + key + ': ' + resp.responseJSON.errors[key][0] + '</p>');
         } 
-    }).always(function (resp, textStatus, xhr) {
-        if(xhr.status == 401) {
-            alert('Ha expirado la sesión');
-            location.href = window.serviceURL + '/viewer_login';
-        }
     });
 }
 
