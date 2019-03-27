@@ -107,16 +107,7 @@ class ChangeRequestProcessor
         $user->changeRequests()->save($changerequest);
         
         if (!$user->isAdmin()) {
-            try {
-                $notification = new ChangeRequestCreated($changerequest);
-                $notification->onQueue('email');
-                $admins = Role::admins()->first()->users()->get();
-                Mail::to($admins)->queue($notification);
-            }
-            catch(\Exception $ex) {
-                Log::error($ex->getMessage());
-                Log::error($ex);
-            }
+            ChangeRequestProcessor::notifyChangeRequest($user, $changerequest);
         }
         
         $response = $changerequest->toArray();
@@ -142,6 +133,19 @@ class ChangeRequestProcessor
         }
         else {
             return (new ChangeRequestProcessor());
+        }
+    }
+    
+    public static function notifyChangeRequest(User $user, ChangeRequest $changerequest) {
+        try {
+            $notification = new ChangeRequestCreated($changerequest);
+            $notification->onQueue('email');
+            $admins = Role::admins()->first()->users()->get();
+            Mail::to($admins)->queue($notification);
+        }
+        catch(\Exception $ex) {
+            Log::error($ex->getMessage());
+            Log::error($ex);
         }
     }
     
@@ -416,7 +420,7 @@ class ChangeRequestProcessor
         return $feature;
     }
     
-    protected function prepareGeom($geom) {
+    public static function prepareGeom($geom) {
         $raw_expression = "ST_GeomFromText('".$geom->toWKT()."')";
         return DB::raw($raw_expression);
     }
@@ -437,7 +441,7 @@ class ChangeRequestProcessor
         try {
             //DB::enableQueryLog();
             if ($geom !== null) {
-                $values_array['thegeom'] = $this->prepareGeom($geom);
+                $values_array['thegeom'] = ChangeRequestProcessor::prepareGeom($geom);
             }
             $values_array['id'] = DB::table($table_name)->insertGetId($values_array);
             return $values_array['id'];
@@ -456,7 +460,7 @@ class ChangeRequestProcessor
     protected function updateFeature($table_name, $id, &$values_array, $geom=null) {
         try {
             if ($geom !== null) {
-                $values_array['thegeom'] = $this->prepareGeom($geom);
+                $values_array['thegeom'] = ChangeRequestProcessor::prepareGeom($geom);
             }
             DB::table($table_name)
             ->where('id', '=', $id)

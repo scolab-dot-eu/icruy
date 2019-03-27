@@ -14,7 +14,7 @@
                     </button>
                 </h5>
             </div>
-            <div id="collapseOne" class="collapse{!! (Route::is(['home', 'changerequests.*', 'mtopchangerequests.*', 'interventions.*', 'reports.*'])) ? ' show' : '' !!}" aria-labelledby="headingOne" data-parent="#sidebar">
+            <div id="collapseOne" class="collapse{!! (Route::is(['home', 'changerequests.*', 'mtopchangerequests.*', 'interventions.*', 'reports.*', 'imports.*'])) ? ' show' : '' !!}" aria-labelledby="headingOne" data-parent="#sidebar">
                 <div class="card-body">
                 <ul class="list-group list-group-flush" id="permissionsSubmenu">
                     <li class="{!! (Route::is('home')) ? ' active' : '' !!}">
@@ -31,6 +31,9 @@
                     </li>
                     <li class="{!! (Route::is('reports.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('reports.query') !!}">{{ __('Reportes') }}</a>
+                    </li>
+                    <li class="{!! (Route::is('imports.*')) ? ' active' : '' !!}">
+                        <a class="list-group-item" href="{!! route('imports.query') !!}">{{ __('Importación de datos') }}</a>
                     </li>
                 </ul>
                 </div>

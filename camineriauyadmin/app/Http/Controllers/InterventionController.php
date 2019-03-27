@@ -35,21 +35,12 @@ class InterventionController extends Controller
             $changeRequests = ChangeRequest::open()
             ->where('layer', Intervention::LAYER_NAME)
             ->where('requested_by_id', $user->id)->get();
-            Log::debug("changeRequests:");
-            Log::debug(json_encode($changeRequests));
             $interventionIds = $changeRequests->pluck('feature_id')->all();
 
             // get user departments
             $user->load('departments');
             $userDepartmentIds = $user->departments->pluck('code');
-            Log::debug("departamentos:");
-            Log::debug(json_encode($userDepartmentIds));
             $consolidatedData = Intervention::consolidated()->whereIn('departamento', $userDepartmentIds);
-            
-            //$consolidatedData = $user->departments()->get()->first()->interventions()->consolidated();
-            $consolicatedDataCol = $consolidatedData->get();
-            Log::debug("consolidated:");
-            Log::debug(json_encode($consolicatedDataCol));
             $data = Intervention::whereIn('id', $interventionIds)
                 ->union($consolidatedData)->get();
         }

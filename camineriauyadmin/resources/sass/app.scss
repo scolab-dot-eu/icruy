@@ -145,3 +145,7 @@ select.es-input::-ms-expand {
         padding: 5px\9;
     } 
 }
+
+.custom-file-label:after {
+    content: "Elegir";
+}

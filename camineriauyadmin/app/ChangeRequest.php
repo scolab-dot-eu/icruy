@@ -181,7 +181,13 @@ class ChangeRequest extends Model
         return null;
     }
     
-    public static function comprobarEstructuraCodigoCamino($codigo_camino, $codigo_dep) {
+    /**
+     * Checks the structure of a department code
+     * @param string $codigo_camino
+     * @param string $codigo_dep
+     * @return boolean True if the department structure is valid, false otherwise
+     */
+    public static function comprobarEstructuraCodigoCamino(string $codigo_camino, string $codigo_dep) {
         if ($codigo_camino!=null && strlen($codigo_camino)==8) {
             if (substr($codigo_camino, 0, 4)==$codigo_dep) {
                 if (is_numeric(substr($codigo_camino, 4, 4))) {

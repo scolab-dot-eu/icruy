@@ -88,7 +88,7 @@
             <div class="col">
                 @if ($previousFeature!==null)
                     @foreach($previousFeature->properties as $key => $value)
-                        @if ($key!='origin' && $key!='status' && $key!='created_at' && $key!='updated_at')
+                        @if ($key!='origin' && $key!='status' && $key!='created_at' && $key!='updated_at' && $key!='thegeom')
                         <span style="text-transform: uppercase; color: #e0a800">{{ $key }}:</span> {{ $value }} <br>
                         @endif 
                     @endforeach
@@ -97,7 +97,7 @@
             <div class="col">
                 @if ($proposedFeature!==null)
                     @foreach($proposedFeature->properties as $key => $value)
-                        @if ($key!='origin' && $key!='status' && $key!='created_at' && $key!='updated_at')
+                        @if ($key!='origin' && $key!='status' && $key!='created_at' && $key!='updated_at' && $key!='thegeom')
                         <span style="text-transform: uppercase; color: #e0a800">{{ $key }}:</span> {{ $value }} <br>
                         @endif 
                     @endforeach

@@ -40,6 +40,9 @@ Route::prefix('dashboard')
         Route::resource('interventions', 'InterventionController', ['except' => [
             'show'
         ]]);
+        Route::get('imports', 'ImportLayerController@query')->name('imports.query');
+        Route::post('imports', 'ImportLayerController@import')->name('imports.import');
+        
     Route::group(['middleware' => ['isadmin']], function() {
         
         //Route::resource('users', 'UsersController');
@@ -112,7 +115,6 @@ Route::post('password/reset', 'Auth\ResetPasswordController@reset')->name('passw
 Route::get('dashboard/reports', 'ReportController@query')->name('reports.query');
 //Route::post('dashboard/reports', 'ReportController@download')->name('reports.download');
 Route::post('dashboard/reports', 'ReportController@export')->name('reports.download');
-
 
 Route::prefix('/api/layers')->group(function () {
     Route::resource('cr_caminos', 'CaminoLayerApiController', ['only' => [
