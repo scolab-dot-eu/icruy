@@ -211,7 +211,14 @@ class ImportLayerController extends Controller
                 return $values;
             } catch (\Illuminate\Database\QueryException $e) {
                 Log::error($e);
-                $errors['sql'] = "Error insertando el registro. El registro contiene datos inválidos. \nError: ".$e->getMessage()."\nSQL: ".$e->getSql();
+            
+                if ($e->getCode()=="01000"
+                    && (strpos($e->getMessage(), 'Warning: 1265'))) {
+                        $errors['sql'] = "El valor del campo no pertenece al dominio de valores definido para el campo. Error: ".$e->getMessage();
+                }
+                else {
+                    $errors['sql'] = "Error insertando el registro. El registro contiene datos inválidos. \nError: ".$e->getMessage()."\nSQL: ".$e->getSql();
+                }
             }
         }
         $error = new ImportLayerException($errors, $values);
