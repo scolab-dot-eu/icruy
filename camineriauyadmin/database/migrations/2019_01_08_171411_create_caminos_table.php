@@ -29,8 +29,7 @@ class CreateCaminosTable extends Migration
                 'status',
                 'departamento',
                 'codigo_camino',
-                'version',
-                'validated_by_id'
+                'version'
             ];
             EditableLayerDef::createFields($table, $fieldsDef, $ignoredFields, $errors);
             $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
@@ -47,7 +46,6 @@ class CreateCaminosTable extends Migration
             $table->date('updated_at')->nullable();
             $table->date('created_at')->nullable();
             */
-            $table->integer('validated_by_id')->unsigned()->nullable();
             $table->foreign('departamento')->references('code')->on('departments');
             $table->index(['status', 'codigo_camino']);
             $table->index(['departamento', 'status', 'codigo_camino']);
