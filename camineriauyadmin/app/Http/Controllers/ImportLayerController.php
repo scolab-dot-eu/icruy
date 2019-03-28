@@ -122,9 +122,27 @@ class ImportLayerController extends Controller
                         $values['updated_at'] = date('Y-m-d');
                     }
                     elseif ($value!==null) {
-                        $theDate = Date::excelToDateTimeObject($value);
-                        $theDateStr = $theDate->format('Y-m-d');
-                        $values[$fieldDef->name] = $theDateStr;
+                        $theDate = false;
+                        try {
+                            $theDate = Date::excelToDateTimeObject($value);
+                        }
+                        catch (\Exception $e) {
+                            $theDate = \DateTime::createFromFormat('d/m/Y', $value);
+                            if ($theDate===false) {
+                                $theDate = \DateTime::createFromFormat('Y/m/d', $value);
+                            }
+                            if ($theDate===false) {
+                                $theDate = \DateTime::createFromFormat('Y-m-d', $value);
+                            }
+                        }
+                        if ($theDate===false) {
+                            $errors[] = [$fieldDef->name => 'El formato de fecha del campo '.$fieldDef->name.' no es válido: '.$value];
+                            $values[$fieldDef->name] = $value;
+                        }
+                        else {
+                            $theDateStr = $theDate->format('Y-m-d');
+                            $values[$fieldDef->name] = $theDateStr;
+                        }
                     }
                     elseif ($fieldDef->name == 'created_at') {
                         $values['created_at'] = date('Y-m-d');;
@@ -132,9 +150,27 @@ class ImportLayerController extends Controller
                 }
                 elseif ($fieldDef->type == 'dateTime') {
                     if ($value!==null) {
-                        $theDate = Date::excelToDateTimeObject($value);
-                        $theDateStr = $theDate->format('Y-m-d H:i:s');
-                        $values[$fieldDef->name] = $theDateStr;
+                        $theDate = false;
+                        try {
+                            $theDate = Date::excelToDateTimeObject($value);
+                        }
+                        catch (\Exception $e) {
+                            $theDate = \DateTime::createFromFormat('d/m/Y H:i:s', $value);
+                            if ($theDate===false) {
+                                $theDate = \DateTime::createFromFormat('Y/m/d H:i:s', $value);
+                            }
+                            if ($theDate===false) {
+                                $theDate = \DateTime::createFromFormat('Y-m-d H:i:s', $value);
+                            }
+                        }
+                        if ($theDate===false) {
+                            $errors[] = [$fieldDef->name => 'El formato de fecha del campo '.$fieldDef->name.' no es válido: '.$value];
+                            $values[$fieldDef->name] = $value;
+                        }
+                        else {
+                            $theDateStr = $theDate->format('Y-m-d H:i:s');
+                            $values[$fieldDef->name] = $theDateStr;
+                        }
                     }
                 }
                 else {
@@ -241,8 +277,11 @@ class ImportLayerController extends Controller
                     $fieldDefWithGeom = $fieldDef;
                     $fieldDefWithGeom[] = (object)["name"=>'x','type'=>'double','label'=>'x','definition'=>'Coordenada X'];
                     $fieldDefWithGeom[] = (object)["name"=>'y','type'=>'double','label'=>'y','definition'=>'Coordenada Y'];
+                    $fieldMapping  = $this->getFieldMapping($headerRow, $fieldDefWithGeom);
                 }
-                $fieldMapping  = $this->getFieldMapping($headerRow, $fieldDefWithGeom);
+                else {
+                    $fieldMapping  = $this->getFieldMapping($headerRow, $fieldDef);
+                }
             }
             else {
                 $row = [];
@@ -255,7 +294,8 @@ class ImportLayerController extends Controller
                 }
                 catch (ImportLayerException $e) {
                     $messages = $e->messages;
-                    $messages["registro.".$count] = ["El registro número ".$count." no es válido. No se importarán los registros restantes. Registro: ".json_encode($result['errorvalues'])];
+                    $values = $e->values;
+                    $messages["registro.".$count] = ["El registro número ".$count." no es válido. No se importarán los registros restantes. Registro: ".json_encode($values)];
                     $error = \Illuminate\Validation\ValidationException::withMessages($messages);
                     throw $error;
                 }
