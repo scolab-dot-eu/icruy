@@ -50,7 +50,7 @@ class InterventionFormRequest extends FormRequest
                     $fail('El código de camino no es válido: '.$value);
                 }
             }],
-            'longitud'             => 'nullable|between:0,9.99',
+            'longitud'             => 'nullable|between:0,999.99',
             'monto'             => 'required|between:0,9999999999.99',
             'forma_ejecucion'             => 'nullable',
             'tarea'             => 'nullable',
