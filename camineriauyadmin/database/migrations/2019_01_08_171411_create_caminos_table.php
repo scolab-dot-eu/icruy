@@ -34,18 +34,6 @@ class CreateCaminosTable extends Migration
             EditableLayerDef::createFields($table, $fieldsDef, $ignoredFields, $errors);
             $table->string('status', 23)->default(ChangeRequest::FEATURE_STATUS_PENDING_CREATE);
             $table->integer('version')->unsigned();
-            /*
-            $table->string('nombre', 255)->nullable(true)->default(null);
-            $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
-            $table->string('rodadura')->nullable(true)->default(null);
-            $table->boolean('banquina')->nullable(true)->default(null);
-            $table->boolean('cordon')->nullable(true)->default(null);
-            $table->string('cuneta')->nullable(true)->default(null);
-            $table->string('senaliz_horiz')->nullable(true)->default(null);
-            $table->string('observaciones')->nullable(true)->default(null);
-            $table->date('updated_at')->nullable();
-            $table->date('created_at')->nullable();
-            */
             $table->foreign('departamento')->references('code')->on('departments');
             $table->index(['status', 'codigo_camino']);
             $table->index(['departamento', 'status', 'codigo_camino']);
@@ -58,7 +46,7 @@ class CreateCaminosTable extends Migration
                 $table->string('departamento', 4);
                 $table->integer('feat_id');
                 $table->string('nombre', 255)->nullable(true)->default(null);
-                $table->decimal('ancho_calzada', 2, 1)->nullable(true)->default(null);
+                $table->decimal('ancho_calzada', 3, 1)->nullable(true)->default(null);
                 $table->string('rodadura')->nullable(true)->default(null);
                 $table->boolean('banquina')->nullable(true)->default(null);
                 $table->boolean('cordon')->nullable(true)->default(null);
