@@ -21,8 +21,8 @@ class ViewerConfigApiController extends Controller
         $baselayers[] = ['type'=>'empty', 'name'=>'empty', 'title'=>'Capa vacía', 'visible'=>false];
         $overlays = [];
         
-        $camineria_wfs_url = env('CAMINERIA_WMS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WFS_URL);
-        $camineria_wms_url = env('CAMINERIA_WFS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WMS_URL);
+        $camineria_wfs_url = env('CAMINERIA_WFS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WFS_URL);
+        $camineria_wms_url = env('CAMINERIA_WMS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WMS_URL);
         
         if ($department_code!=null) {
             $dep = Department::where('code', $department_code)->first();

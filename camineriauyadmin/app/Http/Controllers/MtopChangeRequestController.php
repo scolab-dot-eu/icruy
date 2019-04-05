@@ -140,7 +140,7 @@ class MtopChangeRequestController extends Controller
             $proposedFeature = json_decode($mtopchangerequest->feature);
         }
 
-        $camineria_wfs_url = env('CAMINERIA_WMS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WFS_URL);
+        $camineria_wfs_url = env('CAMINERIA_WFS_URL', ViewerConfigApiController::CAMINERIA_DEFAULT_WFS_URL);
         $dep_code = $mtopchangerequest->departamento;
         $gid = $mtopchangerequest->feature_id;
         $dep = Department::where('code', $dep_code)->first();
