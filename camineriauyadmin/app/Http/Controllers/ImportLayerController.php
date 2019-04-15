@@ -201,6 +201,11 @@ class ImportLayerController extends Controller
         unset($values['id']);
         if ($tableName == Intervention::LAYER_NAME) {
             unset($values['version']);
+            $tipo_elem = array_get($values, 'tipo_elem', '');
+            $tipo_elem_found = EditableLayerDef::enabled()->where('name', $tipo_elem)->first();
+            if ($tipo_elem_found == null) {
+                $errors['tipo_elem'] = ['Tipo de elemento no válido: '.$tipo_elem];
+            }
         }
         else {
             $values['version'] = 1;
