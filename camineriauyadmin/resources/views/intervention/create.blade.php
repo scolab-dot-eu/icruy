@@ -23,14 +23,4 @@
 @endsection
 
 @section('custom_scripts')
-<script type="text/javascript">
-    $( document ).ready(function() {
-        $('#tarea_es').editableSelect();
-        $('#tarea_es').on('select.editable-select', function (e, el) {
-            if (el!=null) {
-                $('#tarea').val(el.attr('value'));
-            }
-        });
-    });
-</script>
 @endsection

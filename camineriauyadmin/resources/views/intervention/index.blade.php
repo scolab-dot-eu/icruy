@@ -18,8 +18,9 @@
             </tr>
         </thead>
     </table>
-    <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/interventions/create') }}">Nueva intervención</a>
-
+    @if (Auth::user()->isAdmin() || Auth::user()->isManager())
+        <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/interventions/create') }}">Nueva intervención</a>
+    @endif
     <div class="modal" id="deleteModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -102,7 +103,12 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
             { data: 'tipo_elem', name: 'tipo_elem' },
             { data: 'fecha_interv', name: 'fecha_interv', render:  formatDate},
             { data: 'departamento', name: 'departamento' },
-            { data: 'status', name: 'status' },
+            { data: 'status', name: 'status', render: function ( data, type, row ) {
+                if (typeof data == "string") {
+                    return data.substr(0, 14);
+                }
+                return "";
+            }},
             { data: 'codigo_camino', name: 'codigo_camino' },
             { data: 'tarea', name: 'tarea' },
             { data: 'monto', name: 'monto' },
@@ -111,7 +117,11 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
                 searchable: false,
                 render: function ( data, type, row ) {
                     var consultarBtn = '<a class="btn btn-small btn-secondary" href="'+'{{ URL::to("dashboard/interventions/") }}/'+row.id+'/edit">Consultar</a>';
+                    @if (Auth::user()->isAdmin() || Auth::user()->isManager())
                     var borrarBtn = '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="'+row.id+'" data-name="'+row.fecha_interv+' - '+row.codigo_camino+'">Borrar</button>';
+                    @else
+                    var borrarBtn = "";
+                    @endif
                     return consultarBtn + borrarBtn;
                 }
               }

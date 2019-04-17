@@ -17,6 +17,9 @@ use Yajra\Datatables\Datatables;
 
 class InterventionController extends Controller
 {
+    const CREATE_MODE = "CREATE";
+    const UPDATE_MODE = "UPDATE";
+    
     /**
      * Display a listing of the resource.
      *
@@ -35,10 +38,20 @@ class InterventionController extends Controller
     }
     
     protected function isEditable(Intervention $intervention, User $user): bool {
-        if ($intervention->status==ChangeRequest::FEATURE_STATUS_VALIDATED) {
-            return true;
+        if ($intervention->status!=ChangeRequest::FEATURE_STATUS_VALIDATED) {
+            return false;
         }
-        return false;
+        if (!$user->isAdmin()) {
+            if (!$user->isManager()) {
+                return false;
+            }
+            if (isset($intervention->departamento)) {
+                if ($user->departments()->where('code', $intervention->departamento)->count()==0) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -50,16 +63,30 @@ class InterventionController extends Controller
     {
         $intervention = new Intervention();
         $user = Auth::user();
-        $formVariables = $this->getFormVariables($intervention, $user);
+        $formVariables = $this->getFormVariables($intervention, $user, InterventionController::CREATE_MODE);
         return view('intervention.create', $formVariables);
     }
     
-    protected function getFormVariables(Intervention $intervention, $user) {
+    protected function getFormVariables(Intervention $intervention, User $user, string $mode=InterventionController::UPDATE_MODE) {
         $all_layers = EditableLayerDef::enabled()->get();
-        $user->load(['departments']);
-        $user_departments = [];
-        foreach ($user->departments as $current_dep) {
-            $user_departments[$current_dep->code] = $current_dep->code.' - '.$current_dep->name;
+        if ($mode==InterventionController::CREATE_MODE) {
+            $editable = true;
+        }
+        else {
+            $editable = $this->isEditable($intervention, $user);
+        }
+        if ($editable) {
+            $user->load(['departments']);
+            $user_departments = [];
+            foreach ($user->departments as $current_dep) {
+                $user_departments[$current_dep->code] = $current_dep->code.' - '.$current_dep->name;
+            }
+        }
+        else {
+            $departments = Department::all()->sortBy('name');
+            foreach ($departments as $current_dep) {
+                $user_departments[$current_dep->code] = $current_dep->name;
+            }
         }
         $inventory_layers = [];
         $inventoryDef = [];
@@ -109,7 +136,7 @@ class InterventionController extends Controller
             'tareaSelect'=>$tareaSelect,
             'financiacionSelect'=>$financiacionSelect,
             'formaEjecucionSelect'=>$formaEjecucionSelect,
-            'editable' => $this->isEditable($intervention, $user),
+            'editable' => $editable,
             'changeRequestUrl' => $changeRequestUrl
         ];
     }
@@ -124,17 +151,6 @@ class InterventionController extends Controller
     {
         $validated = $request->validated();
         $user = $request->user();
-        /* 
-        if ($user->isAdmin()) {
-            $validated['status'] = ChangeRequest::FEATURE_STATUS_VALIDATED;
-        }
-        else {
-            $validated['status'] = ChangeRequest::FEATURE_STATUS_PENDING_CREATE;
-        }*/
-        /*$intervention = Intervention::create($validated);
-        $properties = $intervention->toArray();
-        Log::debug('$intervention->toArray():');
-        Log::debug(json_encode($properties));*/
         $changeRequestProcessor = new InterventionChangeRequestProcessor();
         $changeRequestProcessor->createChangeRequest(Intervention::LAYER_NAME,
             ChangeRequest::OPERATION_CREATE, $validated, $user);
@@ -181,8 +197,6 @@ class InterventionController extends Controller
          * Will be done on the change request if needed
          * $intervention->update($validated);
          */
-        Log::debug('$intervention->toArray():');
-        Log::debug(json_encode($properties));
         
         $changeRequestProcessor = new InterventionChangeRequestProcessor();
         $changeRequestProcessor->createChangeRequest(Intervention::LAYER_NAME,
@@ -199,8 +213,19 @@ class InterventionController extends Controller
      */
     public function destroy(Intervention $intervention)
     {
-        $intervention->delete();
-        return redirect()->route('interventions.index');
+        $user = Auth::user();
+        if ($this->isEditable($intervention, $user)) {
+            $intervention->delete();
+            return redirect()->route('interventions.index');
+        }
+        else {
+            $message = 'No tienes permisos para borrar la intervención: '.$user->email;
+            Log::error($message);
+            $error = \Illuminate\Validation\ValidationException::withMessages([
+                'user' => [$message],
+            ]);
+            throw $error;
+        }
     }
     
     
