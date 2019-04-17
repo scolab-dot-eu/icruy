@@ -32,81 +32,83 @@
 
 @section('custom_scripts')
     <script type="text/javascript">
-    function createMap(div_id, feature, zoom, center=null) {
+    $(document).on('icrLeafletJsLibLoaded', function() {
+        function createMap(div_id, feature, zoom, center=null) {
+            var zoom = 12;
+            var center;
+            if (feature) {
+                var layer = L.geoJSON(feature, {
+                    pointToLayer: function (feature, latlng) {
+                        var myIcon = L.icon({
+                            iconUrl: '/images/vendor/leaflet/dist/marker-icon.png',
+                            iconSize:    [25, 41],
+                            iconAnchor:  [12, 41],
+                            popupAnchor: [1, -34],
+                            tooltipAnchor: [16, -28],
+                        });
+                        var markerOptions = {
+                            "icon": myIcon
+                        };
+                        return L.marker(latlng, markerOptions);
+                    }
+                });
+            }
+            if (center==null && layer && layer.getBounds()) {
+                center = layer.getBounds().getCenter();
+            }
+            var theMap = L.map(div_id, {"zoom": zoom, "center": center});
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(theMap);
+            if (layer) {
+                layer.addTo(theMap);
+            }
+            return theMap;
+        }
+    
+        var proposedFeatStr = '{!! $mtopchangerequest->feature !!}';
+        var previousFeatStr = '{!! $mtopchangerequest->feature_previous !!}';
+        try {
+            var previousFeat =  JSON.parse(previousFeatStr);
+        }
+        catch(e) {
+            var previousFeat = null;
+        }
+        
+        var operation = '{{ $mtopchangerequest->operation }}';
         var zoom = 12;
-        var center;
-        if (feature) {
-            var layer = L.geoJSON(feature, {
-                pointToLayer: function (feature, latlng) {
-                    var myIcon = L.icon({
-                        iconUrl: '/images/vendor/leaflet/dist/marker-icon.png',
-                        iconSize:    [25, 41],
-                        iconAnchor:  [12, 41],
-                        popupAnchor: [1, -34],
-                        tooltipAnchor: [16, -28],
-                    });
-                    var markerOptions = {
-                        "icon": myIcon
-                    };
-                    return L.marker(latlng, markerOptions);
+        if (operation == 'create') {
+            var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
+            var previousFeatMap = createMap('map-previous-feat', null, zoom, proposedFeatMap.getCenter());
+        }
+        else {
+            if (operation == 'update') {
+                var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
+            }
+    
+            var currentFeatureUrl = '{!! $currentFeatureUrl !!}';
+            $.ajax({
+                url: currentFeatureUrl,
+                async: true
+            }).done(function(existingFeature) {
+                $('#map-previous-feat').empty();
+                if (operation == 'delete') {
+                    var previousFeatMap = createMap('map-previous-feat', existingFeature, zoom);
+                    var proposedFeatMap = createMap('map-proposed-feat', null, zoom, previousFeatMap.getCenter());
+                }
+                else { // update
+                    var previousFeatMap = createMap('map-previous-feat', existingFeature, zoom);
+                }
+            }).fail(function(error) {
+                console.log( "Error al cargar configuración" );
+                $('#map-previous-feat').text('El geoservicio de Caminería no está disponible. Inténtelo de nuevo más tarde.');
+            }).always(function (resp, textStatus, xhr) {
+                if(xhr.status != 200) {
+                    console.log( "Error al cargar configuración" );
+                    $('#map-previous-feat').text('El geoservicio de Caminería no está disponible. Inténtelo de nuevo más tarde.');
                 }
             });
         }
-        if (center==null && layer && layer.getBounds()) {
-            center = layer.getBounds().getCenter();
-        }
-        var theMap = L.map(div_id, {"zoom": zoom, "center": center});
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(theMap);
-        if (layer) {
-            layer.addTo(theMap);
-        }
-        return theMap;
-    }
-
-    var proposedFeatStr = '{!! $mtopchangerequest->feature !!}';
-    var previousFeatStr = '{!! $mtopchangerequest->feature_previous !!}';
-    try {
-        var previousFeat =  JSON.parse(previousFeatStr);
-    }
-    catch(e) {
-        var previousFeat = null;
-    }
-    
-    var operation = '{{ $mtopchangerequest->operation }}';
-    var zoom = 12;
-    if (operation == 'create') {
-        var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
-        var previousFeatMap = createMap('map-previous-feat', null, zoom, proposedFeatMap.getCenter());
-    }
-    else {
-        if (operation == 'update') {
-            var proposedFeatMap = createMap('map-proposed-feat', JSON.parse(proposedFeatStr), zoom);
-        }
-
-        var currentFeatureUrl = '{!! $currentFeatureUrl !!}';
-        $.ajax({
-            url: currentFeatureUrl,
-            async: true
-        }).done(function(existingFeature) {
-            $('#map-previous-feat').empty();
-            if (operation == 'delete') {
-                var previousFeatMap = createMap('map-previous-feat', existingFeature, zoom);
-                var proposedFeatMap = createMap('map-proposed-feat', null, zoom, previousFeatMap.getCenter());
-            }
-            else { // update
-                var previousFeatMap = createMap('map-previous-feat', existingFeature, zoom);
-            }
-        }).fail(function(error) {
-            console.log( "Error al cargar configuración" );
-            $('#map-previous-feat').text('El geoservicio de Caminería no está disponible. Inténtelo de nuevo más tarde.');
-        }).always(function (resp, textStatus, xhr) {
-            if(xhr.status != 200) {
-                console.log( "Error al cargar configuración" );
-                $('#map-previous-feat').text('El geoservicio de Caminería no está disponible. Inténtelo de nuevo más tarde.');
-            }
-        });
-    }
+    });
     </script>
 @endsection

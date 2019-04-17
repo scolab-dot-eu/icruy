@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Intervention;
-use App\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use App\EditableLayerDef;
-use App\ChangeRequests\ChangeRequestProcessor;
 use App\Helpers\Helpers;
 use App\Http\Requests\InterventionFormRequest;
 use App\ChangeRequest;
@@ -16,6 +13,7 @@ use App\ChangeRequests\InterventionChangeRequestProcessor;
 use function GuzzleHttp\json_encode;
 use App\Department;
 use App\User;
+use Yajra\Datatables\Datatables;
 
 class InterventionController extends Controller
 {
@@ -26,25 +24,14 @@ class InterventionController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        if ($user->isAdmin()) {
-            $data = Intervention::consolidated()->get();
+        $all_departments = [''=>''];
+        $departments = Department::all()->sortBy('name');
+        foreach ($departments as $current_dep) {
+            $all_departments[$current_dep->code] = $current_dep->name;
         }
-        else {
-            // get the interventions opened by the user
-            $changeRequests = ChangeRequest::open()
-            ->where('layer', Intervention::LAYER_NAME)
-            ->where('requested_by_id', $user->id)->get();
-            $interventionIds = $changeRequests->pluck('feature_id')->all();
-
-            // get user departments
-            $user->load('departments');
-            $userDepartmentIds = $user->departments->pluck('code');
-            $consolidatedData = Intervention::consolidated()->whereIn('departamento', $userDepartmentIds);
-            $data = Intervention::whereIn('id', $interventionIds)
-                ->union($consolidatedData)->get();
-        }
-        return view('intervention.index', ['interventions' => $data]);
+        
+        
+        return view('intervention.index', ['all_departments' => $all_departments]);
     }
     
     protected function isEditable(Intervention $intervention, User $user): bool {
@@ -214,5 +201,33 @@ class InterventionController extends Controller
     {
         $intervention->delete();
         return redirect()->route('interventions.index');
+    }
+    
+    
+    /**
+     * Process datatables ajax request.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function anyData()
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            $query = Intervention::consolidated();
+        }
+        else {
+            // get the interventions opened by the user
+            $changeRequests = ChangeRequest::open()
+            ->where('layer', Intervention::LAYER_NAME)
+            ->where('requested_by_id', $user->id)->get();
+            $interventionIds = $changeRequests->pluck('feature_id')->all();
+            
+            $query = Intervention::where(function($groupedQuery) use ($interventionIds, $user) {
+                $groupedQuery->where('status', '!=', ChangeRequest::FEATURE_STATUS_PENDING_CREATE)
+                    ->orWhereIn('id', $interventionIds);
+            });
+            
+        }
+        return Datatables::make($query)->toJson();
     }
 }

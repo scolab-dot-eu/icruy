@@ -3,42 +3,20 @@
 @section('content')
 
     <h2>{{ __('Intervenciones') }}</h2>
-    <table class="table table-striped table-bordered">
+    <table class="table table-striped table-bordered" id="dt-icr-index">
         <thead>
             <tr>
                 <td>ID</td>
                 <td>{{ __('Tipo elemento') }}</td>
-                <td>{{ __('Año') }}</td>
+                <td>{{ __('Fecha') }}</td>
                 <td>{{ __('Dep.') }}</td>
-                @if (!Auth::user()->isAdmin())
                 <td>{{ __('Estado') }}</td>
-                @endif
                 <td>{{ __('Camino') }}</td>
                 <td>{{ __('Tarea') }}</td>
                 <td>{{ __('Monto') }}</td>
                 <td></td>
             </tr>
         </thead>
-        <tbody>
-        @foreach($interventions as $value)
-            <tr>
-                <td>{{ $value->id }}</td>
-                <td>{{ $value->tipo_elem }}</td>
-                <td>{{ $value->anyo_interv }}</td>
-                <td>{{ $value->departamento }}</td>
-                @if (!Auth::user()->isAdmin())
-                <td>{{ $value->status }}</td>
-                @endif
-                <td>{{ $value->codigo_camino }}</td>
-                <td>{{ $value->tarea }}</td>
-                <td>{{ $value->monto }}</td>
-                <td>
-                    <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/interventions/' . $value->id . '/edit') }}">Consultar</a>
-                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="{{$value->id}}" data-name="{{ $value->anyo }} - {{$value->codigo_camino}}">Borrar</button>
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
     </table>
     <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/interventions/create') }}">Nueva intervención</a>
 
@@ -57,7 +35,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Cancelar</button>
-                    <!-- <button id="confirmDeleteButton" type="button" class="btn btn-danger">Borrar</button> -->
+                    <button id="confirmDeleteButton" type="button" class="btn btn-danger">Borrar</button>
                 </div>
                 <form id="deleteForm" method="POST" action="">
                     {{ csrf_field() }} {{ method_field('DELETE') }}
@@ -70,6 +48,7 @@
 @endsection
 
 @section('custom_scripts')
+
 <script type="text/javascript">
     $( document ).ready(function() {
         $('#deleteModal').on('show.bs.modal', function (event) {
@@ -85,5 +64,72 @@
             $('#deleteForm').submit();
         });
     });
+</script>
+
+<script type="text/javascript">
+$(document).on('icrDataTablesJsLibLoaded', function() {
+    var formatDate = function(date, type) {
+        var dateStr = "";
+        if (date) {
+            if (type == 'display' || type == 'filter') {
+                var dateParts = date.split("-");
+                if (dateParts.length == 3) {
+                    return dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0];
+                }
+            }
+            return date;
+        }
+        return dateStr;
+    };
+    
+    var theTable = $('#dt-icr-index').DataTable({
+        language: dataTablesSpanishLang,
+        processing: true,
+        serverSide: true,
+        dom: "<'row'<'col-sm-12 col-md-6'f>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        ajax: {
+            "url": '{!! route('interventions.datatables') !!}',
+            "data": function (d) {
+                var re = new RegExp("/", "g");
+                d.search.value = d.search.value.replace(re, " ");
+                return d;
+            }
+        },
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'tipo_elem', name: 'tipo_elem' },
+            { data: 'fecha_interv', name: 'fecha_interv', render:  formatDate},
+            { data: 'departamento', name: 'departamento' },
+            { data: 'status', name: 'status' },
+            { data: 'codigo_camino', name: 'codigo_camino' },
+            { data: 'tarea', name: 'tarea' },
+            { data: 'monto', name: 'monto' },
+            {
+                data: null,
+                searchable: false,
+                render: function ( data, type, row ) {
+                    var consultarBtn = '<a class="btn btn-small btn-secondary" href="'+'{{ URL::to("dashboard/interventions/") }}/'+row.id+'/edit">Consultar</a>';
+                    var borrarBtn = '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="'+row.id+'" data-name="'+row.fecha_interv+' - '+row.codigo_camino+'">Borrar</button>';
+                    return consultarBtn + borrarBtn;
+                }
+              }
+        ]
+    });
+    var departments = {!! json_encode($all_departments, JSON_HEX_TAG) !!};
+    var depSelect = $('<select class="es-input form-control form-control-sm"></select>');
+    var depLabel = $('<label>Departamento</label>');
+    for (const code in departments) {
+        depSelect.append('<option value="'+code+'">'+departments[code]+'</option>');
+    }
+    depLabel.append(depSelect);
+    //var depSelect = $('<label>Departamento<select class="es-input form-control form-control-sm"><option value=""></option><option value="Test">test</option></select></label>');
+    $("#dt-icr-index_filter").prepend(depLabel);
+    depSelect.change(function() {
+        var selectedDepCode = $(this).val(); 
+        theTable.column("departamento:name").search(selectedDepCode).draw();
+        });
+});
 </script>
 @endsection

@@ -13,6 +13,9 @@
 
 @import '~jquery-editable-select/dist/jquery-editable-select.css';
 
+@import '~datatables.net-bs4/css/dataTables.bootstrap4.css';
+
+
 .navbar-laravel {
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
@@ -148,4 +151,19 @@ select.es-input::-ms-expand {
 
 .custom-file-label:after {
     content: "Elegir";
+}
+
+div.dataTables_wrapper div.dataTables_filter select {
+  margin-left: 0.5em;
+  display: inline-block;
+  width: auto;
+}
+
+div.dataTables_wrapper div.dataTables_filter label {
+  margin-right: 0.5em;
+  display: inline-block;
+  width: auto;
+}
+div.dataTables_wrapper table.dataTable button,  div.dataTables_wrapper table.dataTable a,{
+  margin-left: 0.2em;
 }

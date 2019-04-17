@@ -37,9 +37,12 @@ Route::prefix('dashboard')
             Route::get('mtopchangerequests/{id}/feature-{codigo_camino}-{feature_id}.geojson', 'MtopChangeRequestController@feature')
             ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+', 'feature_id' => '[0-9]+'])
             ->name('mtopchangerequests.feature.gid');
+
+            Route::get('interventions/datatables', 'InterventionController@anyData')->name('interventions.datatables');
         Route::resource('interventions', 'InterventionController', ['except' => [
             'show'
         ]]);
+        
         Route::get('imports', 'ImportLayerController@query')->name('imports.query');
         Route::post('imports', 'ImportLayerController@import')->name('imports.import');
         
