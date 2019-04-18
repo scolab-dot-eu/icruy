@@ -82,6 +82,19 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
         }
         return dateStr;
     };
+
+    $.fn.dataTable.ext.errMode = function ( settings, helpPage, message ) {
+        if (settings.jqXHR.status) {
+            if (settings.jqXHR.status != 200) {
+                console.log("Error de la petición ajax cargando datatables");
+                console.log("Http status code: "+settings.jqXHR.status);
+                if (settings.jqXHR.status == 401) {
+                    alert("La sesión ha expirado. Vuelva a iniciar sesión");
+                    window.location = '{{ route("login") }}';
+                }
+            }
+        }
+    };
     
     var theTable = $('#dt-icr-index').DataTable({
         language: dataTablesSpanishLang,
