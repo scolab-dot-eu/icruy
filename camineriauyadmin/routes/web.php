@@ -65,6 +65,7 @@ Route::prefix('dashboard')
         Route::resource('users', 'UserController', ['except' => [
             'show'
         ]]);
+        Route::get('users/datatables', 'UserController@anyData')->name('users.datatables');
         Route::post('users/{id}/enable', 'UserController@enable')->name('users.enable');
         Route::post('users/{id}/disable', 'UserController@disable')->name('users.disable');
     });

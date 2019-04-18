@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Department;
+use Yajra\Datatables\Datatables;
 
 class UserController extends Controller
 {
@@ -22,8 +23,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $data = User::orderBy('enabled', 'DESC')->orderBy('created_at', 'ASC')->get();
-        return view('user.index', ['users' => $data]);
+        return view('user.index');
         
     }
 
@@ -212,5 +212,23 @@ class UserController extends Controller
         $user->enabled = False;
         $user->save();
         return redirect()->route('users.index');
+    }
+    
+    /**
+     * Process datatables ajax request.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function anyData(Request $request)
+    {
+        $query = User::query();
+        return Datatables::make($query)->filterColumn('enabled', function($query, $keyword) {
+            if (strpos(strtolower("Sí"), strtolower($keyword)) !== false) {
+                $query->where('enabled', 1);
+            }
+            elseif (strpos(strtolower("No"), strtolower($keyword)) !== false) {
+                $query->where('enabled', 0);
+            }
+        })->toJson();
     }
 }

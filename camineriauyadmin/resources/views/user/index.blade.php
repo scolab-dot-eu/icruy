@@ -3,7 +3,7 @@
 @section('content')
 
     <h2>{{ __('Usuarios') }}</h2>
-    <table class="table table-striped table-bordered">
+    <table class="table table-striped table-bordered" id="dt-icr-index">
         <thead>
             <tr>
                 <td>ID</td>
@@ -15,26 +15,6 @@
                 <td></td>
             </tr>
         </thead>
-        <tbody>
-        @foreach($users as $value)
-            <tr>
-                <td>{{ $value->id }}</td>
-                <td>{{ $value->name }}</td>
-                <td>{{ $value->email }}</td>
-                <td>{{ $value->phone }}</td>
-                <td>@if ($value->enabled) {{ __('Sí') }} @else {{ __('No') }} @endif</td>
-                <!-- <td>{{ $value->email_verified_at }}</td>  -->
-                <td>
-                    <a class="btn btn-small btn-secondary" href="{{ URL::to('dashboard/users/' . $value->id . '/edit') }}">{{__('Editar') }}</a>
-                    @if ($value->enabled)
-                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-enabled="true" data-id="{{$value->id}}" data-name="{{$value->name}}">{{__('Deshabilitar') }}</button>
-                    @else
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#deleteModal" data-enabled="false" data-id="{{$value->id}}" data-name="{{$value->name}}">{{__('Habilitar') }}</button>
-                    @endif
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
     </table>
     <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/users/create') }}">Nuevo usuario</a>
 
@@ -88,5 +68,73 @@
             $('#deleteForm').submit();
         });
     });
+</script>
+
+<script type="text/javascript">
+$(document).on('icrDataTablesJsLibLoaded', function() {
+    $.fn.dataTable.ext.errMode = function ( settings, helpPage, message ) {
+        if (settings.jqXHR.status) {
+            if (settings.jqXHR.status != 200) {
+                console.log("Error de la petición ajax cargando datatables");
+                console.log("Http status code: "+settings.jqXHR.status);
+                if (settings.jqXHR.status == 401) {
+                    alert("La sesión ha expirado. Vuelva a iniciar sesión");
+                    window.location = '{{ route("login") }}';
+                }
+            }
+        }
+    };
+    
+    var theTable = $('#dt-icr-index').DataTable({
+        language: dataTablesSpanishLang,
+        processing: true,
+        serverSide: true,
+        dom: "<'row'<'col-sm-12 col-md-12'f>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        ajax: {
+            "url": '{!! route("users.datatables") !!}',
+            "data": function (d) {
+                var re = new RegExp("/", "g");
+                d.search.value = d.search.value.replace(re, " ");
+                return d;
+            }
+        },
+        order: [[1, 'asc'],[4, 'desc']],
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'name', name: 'name' },
+            { data: 'email', name: 'email' },
+            { data: 'phone', name: 'phone' },
+            { data: 'enabled', name: 'enabled', render: function ( data, type, row ) {
+                if (type == 'display' || type == 'filter') {
+                    console.log("enabled");
+                    console.log(data);
+                    if (data==0) {
+                        return "No";
+                    }
+                    else {
+                        return "Sí";
+                    }
+                };
+                return data;
+            }},
+            {
+                data: null,
+                searchable: false,
+                render: function(data, type, row) {
+                    var consultarBtn = '<a class="btn btn-small btn-secondary" href="'+"{{ URL::to('dashboard/users/') }}/"+row.id+'/edit">'+"{{ __('Editar') }}"+"</a>";
+                    if (row.enabled) {
+                        var enableBtn = '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-enabled="true" data-id="'+row.id+'" data-name="'+row.name+'">{{ __("Deshabilitar") }}</button>';
+                    }
+                    else {
+                        var enableBtn = '<button type="button" class="btn btn-success" data-toggle="modal" data-target="#deleteModal" data-enabled="false" data-id="'+row.id+'" data-name="'+row.name+'">{{ __("Habilitar") }}</button>';
+                    }
+                    return consultarBtn+enableBtn;
+                }
+            }
+        ]
+    });
+});
 </script>
 @endsection
