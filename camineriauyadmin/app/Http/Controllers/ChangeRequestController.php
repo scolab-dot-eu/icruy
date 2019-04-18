@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ChangeRequest;
+use App\Department;
 use App\User;
 use App\ChangeRequests\ChangeRequestProcessor;
 use App\Mail\ChangeRequestUpdated;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Intervention;
 use function GuzzleHttp\json_encode;
 use App\ChangeRequestComment;
+use Illuminate\Support\Facades\Auth;
+use Yajra\Datatables\Datatables;
 
 class ChangeRequestController extends Controller
 {
@@ -23,42 +26,14 @@ class ChangeRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $status = $request->query('status');
-        if (empty($status) || $status=='open') {
-            $data = ChangeRequest::open();
+        $all_departments = [''=>''];
+        $departments = Department::all()->sortBy('name');
+        foreach ($departments as $current_dep) {
+            $all_departments[$current_dep->code] = $current_dep->name;
         }
-        elseif ($status=='pending') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
-        }
-        elseif ($status=='all') {
-            $data = ChangeRequest::with(['author', 'validator']);
-        }
-        elseif ($status=='closed') {
-            $data = ChangeRequest::closed();
-        }
-        elseif ($status=='admininfo') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_ADMININFO);
-        }
-        elseif ($status=='userinfo') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_USERINFO);
-        }
-        elseif ($status=='validated') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_VALIDATED);
-        }
-        elseif ($status=='rejected') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_REJECTED);
-        }
-        elseif ($status=='cancelled') {
-            $data = ChangeRequest::where('status', ChangeRequest::STATUS_CANCELLED);
-        }
-        else {
-            $data = ChangeRequest::open();
-        }
-        if (!$request->user()->isAdmin()) {
-            $data = $data->where('requested_by_id', $request->user()->id);
-        }
-        $data->with(['author', 'validator'])->orderBy('updated_at', 'desc');
-        return view('changerequest.index', ['changerequests' => $data->get()]);
+        
+        
+        return view('changerequest.index', ['all_departments' => $all_departments]);
     }
 
     /**
@@ -233,4 +208,84 @@ class ChangeRequestController extends Controller
     {
         //
     }
+    
+    /**
+     * Process datatables ajax request.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function anyData(Request $request)
+    {
+        
+        $status = $request->query('status');
+        Log::debug("status");
+        Log::debug($status);
+        
+        if (empty($status) || $status=='open') {
+            $query = ChangeRequest::open();
+        }
+        elseif ($status=='pending') {
+            $query = ChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
+        }
+        elseif ($status=='all') {
+            $query = ChangeRequest::with(['author', 'validator']);
+        }
+        elseif ($status=='closed') {
+            $query = ChangeRequest::closed();
+        }
+        elseif ($status=='admininfo') {
+            $query = ChangeRequest::where('status', ChangeRequest::STATUS_ADMININFO);
+        }
+        elseif ($status=='userinfo') {
+            $query = ChangeRequest::where('status', ChangeRequest::STATUS_USERINFO);
+        }
+        elseif ($status=='validated') {
+            $query = ChangeRequest::where('status', ChangeRequest::STATUS_VALIDATED);
+        }
+        elseif ($status=='rejected') {
+            $query = ChangeRequest::where('status', ChangeRequest::STATUS_REJECTED);
+        }
+        elseif ($status=='cancelled') {
+            $query = ChangeRequest::where('status', ChangeRequest::STATUS_CANCELLED);
+        }
+        else {
+            $query = ChangeRequest::open();
+        }
+        if (!$request->user()->isAdmin()) {
+            $query = $query->where('requested_by_id', $request->user()->id);
+        }
+        $query->with(['author', 'validator']);
+
+        return Datatables::make($query)
+            ->filterColumn('operation', function($query, $keyword) {
+                $isCreate = false;
+                $isUpdate = false;
+                $isDelete = false;
+                if (strpos(strtolower(ChangeRequest::OPERATION_CREATE_LABEL), strtolower($keyword)) !== false) {
+                    $isCreate = true;
+                }
+                if (strpos(strtolower(ChangeRequest::OPERATION_UPDATE_LABEL), strtolower($keyword)) !== false) {
+                    $isUpdate = true;
+                }
+                if (strpos(strtolower(ChangeRequest::OPERATION_DELETE_LABEL), strtolower($keyword)) !== false) {
+                    $isDelete = true;
+                }
+                if ($isCreate || $isUpdate || $isDelete) {
+                    $query->where(function($groupedQuery) use ($isCreate, $isUpdate, $isDelete) {
+                        if ($isCreate) {
+                            $groupedQuery->where('operation', ChangeRequest::OPERATION_CREATE);
+                        }
+                        if ($isUpdate) {
+                            $groupedQuery->where('operation', ChangeRequest::OPERATION_UPDATE);
+                        }
+                        if ($isDelete) {
+                            $groupedQuery->where('operation', ChangeRequest::OPERATION_DELETE);
+                        }
+                    });
+                }
+            })
+            ->toJson();
+            
+    }
+    
 }

@@ -12,6 +12,7 @@ use Grimzy\LaravelMysqlSpatial\Types\Geometry;
 class ChangeRequest extends Model
 {
     protected $table = 'changerequests';
+    protected $appends = ['created_at_formatted', 'updated_at_formatted', 'operation_label', 'status_label'];
     protected $fillable = [
     ];
     
@@ -63,13 +64,17 @@ class ChangeRequest extends Model
     const OPERATION_UPDATE = 'update';
     const OPERATION_DELETE = 'delete';
     
+    const OPERATION_CREATE_LABEL = 'Creación';
+    const OPERATION_UPDATE_LABEL = 'Modificación';
+    const OPERATION_DELETE_LABEL = 'Borrado';
+    
     const FEATURE_ORIGIN_ICRWEB = 'icrweb';
     const FEATURE_ORIGIN_BATCHLOAD = 'batchload';
     
     public static $OPERATION_LABELS = [
-        ChangeRequest::OPERATION_CREATE => 'Creación',
-        ChangeRequest::OPERATION_UPDATE => 'Modificación',
-        ChangeRequest::OPERATION_DELETE => 'Borrado',
+        ChangeRequest::OPERATION_CREATE => ChangeRequest::OPERATION_CREATE_LABEL,
+        ChangeRequest::OPERATION_UPDATE => ChangeRequest::OPERATION_UPDATE_LABEL,
+        ChangeRequest::OPERATION_DELETE => ChangeRequest::OPERATION_DELETE_LABEL,
     ];
     
     const MAX_DATETIME = '9999-12-31 23:59:59';

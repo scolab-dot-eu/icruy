@@ -25,6 +25,7 @@ Route::get('/', function () {
 Route::prefix('dashboard')
 ->middleware(['auth'])
 ->group(function () {
+        Route::get('changerequests/datatables', 'ChangeRequestController@anyData')->name('changerequests.datatables');
         Route::resource('changerequests', 'ChangeRequestController', ['except' => [
             'show', 'create', 'store', 'destroy'
         ]]);
@@ -38,7 +39,7 @@ Route::prefix('dashboard')
             ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+', 'feature_id' => '[0-9]+'])
             ->name('mtopchangerequests.feature.gid');
 
-            Route::get('interventions/datatables', 'InterventionController@anyData')->name('interventions.datatables');
+        Route::get('interventions/datatables', 'InterventionController@anyData')->name('interventions.datatables');
         Route::resource('interventions', 'InterventionController', ['except' => [
             'show'
         ]]);
