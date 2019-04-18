@@ -114,6 +114,7 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
                 return d;
             }
         },
+        order: [[6, 'desc']],
         columns: [
             { data: 'id', name: 'id' },
             { data: 'operation', name: 'operation',  render: function ( data, type, row ) {
@@ -139,7 +140,6 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
             { data: 'author', name: 'author.email', searchable: true, visible: false},
             { data: 'departamento', name: 'departamento'},
             { data: 'created_at', name: 'created_at', render: formatDate},
-            //{ data: 'created_at_formatted', name: 'created_at_formatted'},
             {
                 data: null,
                 searchable: false,

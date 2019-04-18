@@ -111,6 +111,7 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
                 return d;
             }
         },
+        order: [[2, 'desc']],
         columns: [
             { data: 'id', name: 'id' },
             { data: 'tipo_elem', name: 'tipo_elem' },
