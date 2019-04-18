@@ -29,6 +29,7 @@ Route::prefix('dashboard')
         Route::resource('changerequests', 'ChangeRequestController', ['except' => [
             'show', 'create', 'store', 'destroy'
         ]]);
+        Route::get('mtopchangerequests/datatables', 'MtopChangeRequestController@anyData')->name('mtopchangerequests.datatables');
         Route::resource('mtopchangerequests', 'MtopChangeRequestController', ['except' => [
             'show', 'create', 'store', 'destroy'
         ]]);

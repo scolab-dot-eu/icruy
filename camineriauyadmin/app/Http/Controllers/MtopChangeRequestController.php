@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\MtopChangeRequestComment;
+use Yajra\Datatables\Datatables;
 
 class MtopChangeRequestController extends Controller
 {
@@ -22,44 +23,14 @@ class MtopChangeRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $status = $request->query('status');
-        if (empty($status) || $status=='open') {
-            $data = MtopChangeRequest::open();
+        $all_departments = [''=>''];
+        $departments = Department::all()->sortBy('name');
+        foreach ($departments as $current_dep) {
+            $all_departments[$current_dep->code] = $current_dep->name;
         }
-        elseif ($status=='pending') {
-            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
-        }
-        elseif ($status=='all') {
-            $data = MtopChangeRequest::with(['author', 'validator']);
-        }
-        elseif ($status=='closed') {
-            $data = MtopChangeRequest::closed();
-        }
-        elseif ($status=='admininfo') {
-            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_ADMININFO);
-        }
-        elseif ($status=='userinfo') {
-            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_USERINFO);
-        }
-        elseif ($status=='validated') {
-            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_VALIDATED);
-        }
-        elseif ($status=='rejected') {
-            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_REJECTED);
-        }
-        elseif ($status=='cancelled') {
-            $data = MtopChangeRequest::where('status', ChangeRequest::STATUS_CANCELLED);
-        }
-        else {
-            $data = MtopChangeRequest::open();
-        }
-        if (!$request->user()->isMtopManager() && !$request->user()->isAdmin()) {
-            $data = $data->where('requested_by_id', $request->user()->id);
-        }
-        $data->with(['author', 'validator'])->orderBy('updated_at', 'desc');
-        return view('mtopchangerequest.index', ['changerequests' => $data->get()]);
+        return view('mtopchangerequest.index', ['all_departments' => $all_departments]);
     }
-
+    
     /**
      * Show the form for creating a new resource.
      *
@@ -246,4 +217,84 @@ class MtopChangeRequestController extends Controller
     {
         //
     }
+    
+    
+    /**
+     * Process datatables ajax request.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function anyData(Request $request)
+    {
+        
+        $status = $request->query('status');
+        
+        if (empty($status) || $status=='open') {
+            $query = MtopChangeRequest::open();
+        }
+        elseif ($status=='pending') {
+            $query = MtopChangeRequest::where('status', ChangeRequest::STATUS_PENDING);
+        }
+        elseif ($status=='all') {
+            $query = MtopChangeRequest::with(['author', 'validator']);
+        }
+        elseif ($status=='closed') {
+            $query = MtopChangeRequest::closed();
+        }
+        elseif ($status=='admininfo') {
+            $query = MtopChangeRequest::where('status', ChangeRequest::STATUS_ADMININFO);
+        }
+        elseif ($status=='userinfo') {
+            $query = MtopChangeRequest::where('status', ChangeRequest::STATUS_USERINFO);
+        }
+        elseif ($status=='validated') {
+            $query = MtopChangeRequest::where('status', ChangeRequest::STATUS_VALIDATED);
+        }
+        elseif ($status=='rejected') {
+            $query = MtopChangeRequest::where('status', ChangeRequest::STATUS_REJECTED);
+        }
+        elseif ($status=='cancelled') {
+            $query = MtopChangeRequest::where('status', ChangeRequest::STATUS_CANCELLED);
+        }
+        else {
+            $query = MtopChangeRequest::open();
+        }
+        
+        if (!$request->user()->isAdmin()) {
+            $query = $query->where('requested_by_id', $request->user()->id);
+        }
+        $query->with(['author', 'validator']);
+        
+        return Datatables::make($query)
+        ->filterColumn('operation', function($query, $keyword) {
+            $isCreate = false;
+            $isUpdate = false;
+            $isDelete = false;
+            if (strpos(strtolower(ChangeRequest::OPERATION_CREATE_LABEL), strtolower($keyword)) !== false) {
+                $isCreate = true;
+            }
+            if (strpos(strtolower(ChangeRequest::OPERATION_UPDATE_LABEL), strtolower($keyword)) !== false) {
+                $isUpdate = true;
+            }
+            if (strpos(strtolower(ChangeRequest::OPERATION_DELETE_LABEL), strtolower($keyword)) !== false) {
+                $isDelete = true;
+            }
+            if ($isCreate || $isUpdate || $isDelete) {
+                $query->where(function($groupedQuery) use ($isCreate, $isUpdate, $isDelete) {
+                    if ($isCreate) {
+                        $groupedQuery->where('operation', ChangeRequest::OPERATION_CREATE);
+                    }
+                    if ($isUpdate) {
+                        $groupedQuery->where('operation', ChangeRequest::OPERATION_UPDATE);
+                    }
+                    if ($isDelete) {
+                        $groupedQuery->where('operation', ChangeRequest::OPERATION_DELETE);
+                    }
+                });
+            }
+        })
+        ->toJson();
+        
+    }
+    
 }

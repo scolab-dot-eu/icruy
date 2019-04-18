@@ -15,7 +15,7 @@ use App\ChangeRequests\CaminoChangeRequestProcessor;
 class MtopChangeRequest extends Model
 {
     protected $table = 'mtopchangerequests';
-    
+    protected $appends = ['created_at_formatted', 'updated_at_formatted', 'operation_label', 'status_label'];
     protected $fillable = [
     ];
     
