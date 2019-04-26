@@ -42,7 +42,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-33.02976';
         $dptmn->maxy = '-31.65128';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_cerro_largo";
-        $dptmn->color = '#f6f507';
+        $dptmn->color = '#ff8a33';
         $dptmn->save();
 
         $dptmn = new Department();
@@ -86,7 +86,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-34.42403';
         $dptmn->maxy = '-33.10234';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_florida";
-        $dptmn->color = '#f6f507';
+        $dptmn->color = '#ff8a33';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -97,7 +97,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-34.63581';
         $dptmn->maxy = '-33.31899';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_lavalleja";
-        $dptmn->color = '#98dd4a';
+        $dptmn->color = '#dd9f2b';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -119,7 +119,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-34.93572';
         $dptmn->maxy = '-34.70156';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_montevideo";
-        $dptmn->color = '#98dd4a';
+        $dptmn->color = '#dd9f2b';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -130,7 +130,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-32.59594';
         $dptmn->maxy = '-31.45239';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_paysandu";
-        $dptmn->color = '#ebcef2';
+        $dptmn->color = '#ffb200';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -141,7 +141,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-33.40496';
         $dptmn->maxy = '-32.34250';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_rio_negro";
-        $dptmn->color = '#f6f507';
+        $dptmn->color = '#ff8a33';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -163,7 +163,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-33.14703';
         $dptmn->maxy = '-34.80383';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_rocha";
-        $dptmn->color = '#f6f507';
+        $dptmn->color = '#ff8a33';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -174,7 +174,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-31.87124';
         $dptmn->maxy = '-30.74526';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_salto";
-        $dptmn->color = '#f6f507';
+        $dptmn->color = '#ff8a33';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -185,7 +185,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-34.78844';
         $dptmn->maxy = '-33.83214';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_san_jose";
-        $dptmn->color = '#ebcef2';
+        $dptmn->color = '#ffb200';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -196,7 +196,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-33.95656';
         $dptmn->maxy = '-33.00021';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_soriano";
-        $dptmn->color = '#98dd4a';
+        $dptmn->color = '#dd9f2b';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -207,7 +207,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-32.86662';
         $dptmn->maxy = '-31.23060';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_tacuarembo";
-        $dptmn->color = '#98dd4a';
+        $dptmn->color = '#dd9f2b';
         $dptmn->save();
         
         $dptmn = new Department();
@@ -218,7 +218,7 @@ class DepartmentTableSeeder extends Seeder
         $dptmn->miny = '-33.46417';
         $dptmn->maxy = '-32.69748';
         $dptmn->layer_name = "caminerias_intendencias:v_camineria_treinta_y_tres";
-        $dptmn->color = '#ebcef2';
+        $dptmn->color = '#ffb200';
         $dptmn->save();
     }
 }
