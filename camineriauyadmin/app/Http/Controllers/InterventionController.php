@@ -14,6 +14,7 @@ use function GuzzleHttp\json_encode;
 use App\Department;
 use App\User;
 use Yajra\Datatables\Datatables;
+use Illuminate\Http\Request;
 
 class InterventionController extends Controller
 {
@@ -234,7 +235,7 @@ class InterventionController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function anyData()
+    public function anyData(Request $request)
     {
         $user = Auth::user();
         if ($user->isAdmin()) {
@@ -251,8 +252,20 @@ class InterventionController extends Controller
                 $groupedQuery->where('status', '!=', ChangeRequest::FEATURE_STATUS_PENDING_CREATE)
                     ->orWhereIn('id', $interventionIds);
             });
-            
         }
+        $codigo_camino = $request->query('codigo_camino');
+        if (!empty($codigo_camino)) {
+            $query = $query->where('codigo_camino', $codigo_camino);
+        }
+        $id_elem = $request->query('id_elem');
+        if (!empty($id_elem)) {
+            $query = $query->where('id_elem', $id_elem);
+        }
+        $tipo_elem = $request->query('tipo_elem');
+        if (!empty($tipo_elem)) {
+            $query = $query->where('tipo_elem', $tipo_elem);
+        }
+        
         return Datatables::make($query)->toJson();
     }
 }

@@ -95,7 +95,7 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
             }
         }
     };
-    
+    var searchParams = new URLSearchParams(window.location.search);
     var theTable = $('#dt-icr-index').DataTable({
         language: dataTablesSpanishLang,
         processing: true,
@@ -108,6 +108,15 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
             "data": function (d) {
                 var re = new RegExp("/", "g");
                 d.search.value = d.search.value.replace(re, " ");
+                if (searchParams.get('codigo_camino')) {
+                    d.codigo_camino = searchParams.get('codigo_camino');
+                }
+                if (searchParams.get('id_elem')) {
+                    d.id_elem = searchParams.get('id_elem');
+                }
+                if (searchParams.get('tipo_elem')) {
+                    d.tipo_elem = searchParams.get('tipo_elem');
+                }
                 return d;
             }
         },

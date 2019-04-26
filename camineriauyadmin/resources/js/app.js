@@ -6,6 +6,7 @@
  */
 import "core-js/modules/es6.promise";
 import "core-js/modules/es6.array.iterator";
+import 'url-search-params-polyfill';
 
 require('./bootstrap');
 //require('jquery-editable-select');
