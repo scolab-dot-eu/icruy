@@ -218,8 +218,6 @@ class ChangeRequestController extends Controller
     {
         
         $status = $request->query('status');
-        Log::debug("status");
-        Log::debug($status);
         
         if (empty($status) || $status=='open') {
             $query = ChangeRequest::open();
