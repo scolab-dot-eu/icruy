@@ -139,7 +139,7 @@ class EditableLayerDefController extends Controller
     public function update(EditableLayerDefUpdateFormRequest $request, EditableLayerDef $editablelayerdef)
     {
         $validated = $request->validated();
-        if ($editablelayerdef->geom == 'point') {
+        if ($editablelayerdef->geom_type == 'point') {
             $old_color = $this->get_previous_colour($editablelayerdef->style);
             if ($old_color!==null && strcasecmp($validated['color'], $old_color)!=0){
                 $validated['style'] = $this->get_leaflet_color_def($validated['color']);
