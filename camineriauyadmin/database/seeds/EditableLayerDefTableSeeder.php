@@ -57,7 +57,7 @@ class EditableLayerDefTableSeeder extends Seeder
     
     protected function create_intervenciones_def() {
         $lyr = new EditableLayerDef();
-        $lyr->name = 'interventions';
+        $lyr->name = Intervention::LAYER_NAME;
         $lyr->title = 'Intervenciones';
         $lyr->geom_type = 'none';
         $lyr->fields = Intervention::FIELD_DEF;
