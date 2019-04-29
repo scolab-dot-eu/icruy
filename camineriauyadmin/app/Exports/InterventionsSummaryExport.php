@@ -116,11 +116,14 @@ class InterventionsSummaryExport
     
     public function getDomainDef($fieldName, $domainElemCode) {
         try {
-            return $this->fieldDefs[$fieldName][$domainElemCode];
+            if ($domainElemCode) {
+                return $this->fieldDefs[$fieldName][$domainElemCode];
+            }
         }
         catch (\Exception $ex) {
             Log::error("algo falló: ".$fieldName. " - ". $domainElemCode);
         }
+        return "";
     }
 
     public function map($summaryRow): array

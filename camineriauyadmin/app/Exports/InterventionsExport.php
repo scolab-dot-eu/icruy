@@ -59,7 +59,7 @@ class InterventionsExport
         else {
             $this->tipoElemLabel = 'Cualquiera';
         }
-        $interventionsDef = EditableLayerDef::where('name', 'interventions')->get()->first();
+        $interventionsDef = EditableLayerDef::where('name', Intervention::LAYER_NAME)->get()->first();
         if ($interventionsDef) {
             $fields = json_decode($interventionsDef->fields, true);
             $this->fieldDefs = [];
@@ -75,7 +75,7 @@ class InterventionsExport
             }
         }
         else {
-            Log::error("algo falló");
+            Log::error("InterventionsExport: algo falló");
         }
     }
     
@@ -123,11 +123,15 @@ class InterventionsExport
     
     public function getDomainDef($fieldName, $domainElemCode) {
         try {
-            return $this->fieldDefs[$fieldName][$domainElemCode];
+            if ($domainElemCode) {
+                return $this->fieldDefs[$fieldName][$domainElemCode];
+            }
         }
         catch (\Exception $ex) {
             Log::error("algo falló: ".$fieldName. " - ". $domainElemCode);
+            Log::error($this->fieldDefs);
         }
+        return "";
     }
 
     public function map($intervention): array
@@ -168,12 +172,7 @@ class InterventionsExport
         if ($this->to_year) {
             $titleToYearFilter = $titleToYearFilter . $this->to_year;
         }
-        if ($this->tipoElem = 'any') {
-            $tipoElemFilterTitle = 'Tipo de elemento: '.$this->tipoElemLabel;
-        }
-        else {
-            $tipoElemFilterTitle = 'Tipo de elemento: '.$this->tipoElemLabel;
-        }
+        $tipoElemFilterTitle = 'Tipo de elemento: '.$this->tipoElemLabel;
         if ($this->id_elem!==null) {
             $header = ['ID', 'DEPARTAMENTO', 'FECHA INTERVENCIÓN', 'CAMINO', 'ID ELEMENTO','LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
         }
