@@ -48,18 +48,18 @@ class ImportLayerController extends Controller
         $errors = [];
         $mapping = [];
         $presentFields = [];
-        Log::debug("fieldDefs");
-        Log::debug(json_encode($layerFieldDefs));
+
         foreach ($headerRow as $fieldName) {
             foreach ($layerFieldDefs as $fieldDef) {
-                Log::debug("fieldDef");
-                Log::debug(json_encode($fieldDef));
-                if ($fieldDef->name == $fieldName || substr($fieldDef->name, 0, 10) == $fieldName) {
+                if (strcasecmp($fieldName, $fieldDef->name)==0 ||
+                    strcasecmp(explode(",", $fieldName)[0], $fieldDef->name)==0 ||
+                    strcasecmp($fieldName, substr($fieldDef->name, 0, 10))==0 ||
+                    strcasecmp(explode(",", $fieldName)[0], substr($fieldDef->name, 0, 10))==0) {
                     $mapping[$count] = $fieldDef;
                     $presentFields[] = $fieldDef->name;
-                    $count = $count + 1;
                 }
             }
+            $count = $count + 1;
         }
         foreach ($layerFieldDefs as $fieldDef) {
             if (isset($fieldDef->mandatory) && !in_array($fieldDef->name, $presentFields)) {
@@ -307,7 +307,8 @@ class ImportLayerController extends Controller
                 catch (ImportLayerException $e) {
                     $messages = $e->messages;
                     $values = $e->values;
-                    $messages["registro.".$count] = ["El registro número ".$count." no es válido. No se importarán los registros restantes. Registro: ".json_encode($values)];
+                    $messages["registro.".$count] = ["El registro número ".$count." no es válido. No se importarán los registros restantes. Registro: ".json_encode($row)." - Insertando: ".json_encode($values)];
+                    
                     $error = \Illuminate\Validation\ValidationException::withMessages($messages);
                     throw $error;
                 }
