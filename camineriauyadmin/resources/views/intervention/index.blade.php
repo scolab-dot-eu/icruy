@@ -18,7 +18,7 @@
             </tr>
         </thead>
     </table>
-    @if (Auth::user()->isAdmin() || Auth::user()->isManager())
+    @if (Auth::check() and (Auth::user()->isAdmin() || Auth::user()->isManager()))
         <a class="btn btn-small btn-info" href="{{ URL::to('dashboard/interventions/create') }}">Nueva intervención</a>
     @endif
     <div class="modal" id="deleteModal" tabindex="-1" role="dialog">
@@ -140,7 +140,7 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
                 searchable: false,
                 render: function ( data, type, row ) {
                     var consultarBtn = '<a class="btn btn-small btn-secondary" href="'+'{{ URL::to("dashboard/interventions/") }}/'+row.id+'/edit">Consultar</a>';
-                    @if (Auth::user()->isAdmin() || Auth::user()->isManager())
+                    @if (Auth::check() and (Auth::user()->isAdmin() || Auth::user()->isManager()))
                     var borrarBtn = '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#deleteModal" data-id="'+row.id+'" data-name="'+row.fecha_interv+' - '+row.codigo_camino+'">Borrar</button>';
                     @else
                     var borrarBtn = "";
@@ -157,7 +157,6 @@ $(document).on('icrDataTablesJsLibLoaded', function() {
         depSelect.append('<option value="'+code+'">'+departments[code]+'</option>');
     }
     depLabel.append(depSelect);
-    //var depSelect = $('<label>Departamento<select class="es-input form-control form-control-sm"><option value=""></option><option value="Test">test</option></select></label>');
     $("#dt-icr-index_filter").prepend(depLabel);
     depSelect.change(function() {
         var selectedDepCode = $(this).val(); 

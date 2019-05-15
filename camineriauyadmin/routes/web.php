@@ -39,11 +39,6 @@ Route::prefix('dashboard')
             Route::get('mtopchangerequests/{id}/feature-{codigo_camino}-{feature_id}.geojson', 'MtopChangeRequestController@feature')
             ->where(['id' => '[0-9]+', 'name' => 'UY[A-Z][A-Z][A-Z0-9]+', 'feature_id' => '[0-9]+'])
             ->name('mtopchangerequests.feature.gid');
-
-        Route::get('interventions/datatables', 'InterventionController@anyData')->name('interventions.datatables');
-        Route::resource('interventions', 'InterventionController', ['except' => [
-            'show'
-        ]]);
         
         Route::get('imports', 'ImportLayerController@query')->name('imports.query');
         Route::post('imports', 'ImportLayerController@import')->name('imports.import');
@@ -84,17 +79,6 @@ Route::post('viewer_login', 'Auth\LoginController@login');
 
 Route::group(['middleware' => ['auth']], function() {
     Route::post('viewer_logout', 'Auth\LoginController@logout')->name('logout');
-    Route::get('home', function () {
-        $user = Auth::user();
-        /*
-        if ($user->isAdmin()) {
-            $departments = Department::orderBy('code')->get();
-        }
-        else {
-            $departments = $user->departments()->orderBy('code')->get();
-        }*/
-        return view('resumen', ['departments'=> $user->departments()->orderBy('code')->get(), 'userOpen'=>$user->changeRequests()->open()->count(), 'userMtopOpen'=>$user->mtopChangeRequests()->open()->count(), 'allOpen'=> ChangeRequest::open()->count(),  'mtopAllOpen'=> MtopChangeRequest::open()->count()]);
-    })->name('home');
     Route::get('seleccionar_departamento', function(){
         // Lo redirijo a /home, ya que Laravel se empeña en redirigir a esta dirección
         // si el usuario está autenticado
@@ -127,3 +111,24 @@ Route::prefix('/api/layers')->group(function () {
         'index', 'show'
     ]]);
 });
+
+Route::get('home', function () {
+    if (Auth::check()) {
+        $user = Auth::user();
+        /*
+         if ($user->isAdmin()) {
+         $departments = Department::orderBy('code')->get();
+         }
+         else {
+         $departments = $user->departments()->orderBy('code')->get();
+         }*/
+        return view('resumen', ['departments'=> $user->departments()->orderBy('code')->get(), 'userOpen'=>$user->changeRequests()->open()->count(), 'userMtopOpen'=>$user->mtopChangeRequests()->open()->count(), 'allOpen'=> ChangeRequest::open()->count(),  'mtopAllOpen'=> MtopChangeRequest::open()->count()]);
+    }
+    else {
+        return view('resumen', []);
+    }
+    })->name('home');
+Route::get('dashboard/interventions/datatables', 'InterventionController@anyData')->name('interventions.datatables');
+Route::resource('dashboard/interventions', 'InterventionController', ['except' => [
+    'show'
+]]);

@@ -6,7 +6,7 @@
                     @if ($editable)
                         {!! Form::select('departamento', $user_departments, null, ['class' => 'form-control es-input', 'required' => true]) !!}
                     @else
-                        {!! Form::select('departamento', $user_departments, null, ['readonly' => '', 'class' => 'form-control es-input', 'required' => true]) !!}
+                        {!! Form::select('departamento', $user_departments, null, ['readonly' => '', 'disabled' => '', 'class' => 'form-control es-input', 'required' => true]) !!}
                     @endif
                 </div>
             </div>
@@ -32,8 +32,6 @@
                     @else
                         {!! Form::date('fecha_interv', null, ['readonly' => '', 'class' => 'form-control', 'required' => true]) !!}
                     @endif
-                    <!-- {!! Form::number('anyo_interv', null, ['class' => 'form-control', 'required' => true]) !!}
-                     -->
                 </div>
             </div>
             <div class="col-md-6 col-12">
@@ -55,7 +53,7 @@
                     @if ($editable)
                         {!! Form::select('tipo_elem', $inventory_layers, null, ['class' => 'form-control es-input', 'required' => true]) !!}
                     @else
-                        {!! Form::select('tipo_elem', $inventory_layers, null, ['readonly' => '', 'class' => 'form-control es-input', 'required' => true]) !!}
+                        {!! Form::select('tipo_elem', $inventory_layers, null, ['readonly' => '', 'disabled' => '', 'class' => 'form-control es-input', 'required' => true]) !!}
                     @endif
                 </div>
             </div>
@@ -99,7 +97,7 @@
                     @if ($editable)
                         {!! Form::select('tarea', $tareaSelect, null, ['class' => 'form-control es-input', 'required'=>true]) !!}
                     @else
-                        {!! Form::select('tarea', $tareaSelect, null, ['readonly' => '', 'class' => 'form-control es-input', 'required'=>true]) !!}
+                        {!! Form::select('tarea', $tareaSelect, null, ['readonly' => '', 'disabled' => '', 'class' => 'form-control es-input', 'required'=>true]) !!}
                     @endif
                 </div>
             </div>
@@ -111,7 +109,7 @@
                     @if ($editable)
                         {!! Form::select('financiacion', $financiacionSelect, null, ['class' => 'form-control es-input', 'required'=>true]) !!}
                     @else
-                        {!! Form::select('financiacion', $financiacionSelect, null, ['readonly' => '', 'class' => 'form-control es-input', 'required'=>true]) !!}
+                        {!! Form::select('financiacion', $financiacionSelect, null, ['readonly' => '', 'disabled' => '', 'class' => 'form-control es-input', 'required'=>true]) !!}
                     @endif
                 </div>
             </div>
@@ -121,7 +119,7 @@
                     @if ($editable)
                         {!! Form::select('forma_ejecucion', $formaEjecucionSelect, null, ['class' => 'form-control es-input', 'required'=>true]) !!}
                     @else
-                        {!! Form::select('forma_ejecucion', $formaEjecucionSelect, null, ['readonly' => '', 'class' => 'form-control es-input', 'required'=>true]) !!}
+                        {!! Form::select('forma_ejecucion', $formaEjecucionSelect, null, ['readonly' => '', 'disabled' => '', 'class' => 'form-control es-input', 'required'=>true]) !!}
                     @endif
                 </div>
             </div>

@@ -81,8 +81,7 @@ class InterventionsExport
     
     public function query()
     {
-        $query = Intervention::query();
-        //$query = Intervention::query()->validated();
+        $query = Intervention::query()->validated();
         if ($this->ambitoGeografico != 'UY') {
             $query->where('departamento', $this->ambitoGeografico);
         }

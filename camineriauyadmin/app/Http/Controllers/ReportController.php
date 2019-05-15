@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Department;
 use App\EditableLayerDef;
 use App\Intervention;
 use Illuminate\Http\Request;
@@ -17,15 +18,10 @@ use App\User;
 
 class ReportController extends Controller
 {
-    protected function getFormVariables(User $user) {
+    protected function getFormVariables() {
         $all_layers = EditableLayerDef::enabled()->get();
-        if ($user===null || !$user->exists) {
-            $error = \Illuminate\Validation\ValidationException::withMessages([['error'=>'Sesión caducada']]);
-            throw $error;
-        }
-        $user->load(['departments']);
         $user_departments = ['UY'=>'Uruguay'];
-        foreach ($user->departments as $current_dep) {
+        foreach (Department::all() as $current_dep) {
             $user_departments[$current_dep->code] = $current_dep->code.' - '.$current_dep->name;
         }
         $inventory_layers = ['any'=>'Cualquiera'];

@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Camino;
+use App\ChangeRequest;
 use App\Intervention;
 use App\EditableLayerDef;
 //use Maatwebsite\Excel\Concerns\FromCollection;
@@ -75,7 +76,7 @@ class InterventionsSummaryExport
         $query = DB::table(Intervention::LAYER_NAME)
             ->select(DB::raw('count(*) as num, sum(monto) as monto_total, sum(longitud) as longitud_total'))
             ->orderBy('id', 'asc');
-        //$query = Intervention::query()->validated();
+        $query->where('status', ChangeRequest::FEATURE_STATUS_VALIDATED);
         if ($this->ambitoGeografico != 'UY') {
             $query->where('departamento', $this->ambitoGeografico);
         }

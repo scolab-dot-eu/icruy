@@ -38,7 +38,10 @@ class InterventionController extends Controller
         return view('intervention.index', ['all_departments' => $all_departments]);
     }
     
-    protected function isEditable(Intervention $intervention, User $user): bool {
+    protected function isEditable(Intervention $intervention, $user): bool {
+        if ($user == null) {
+            return false;
+        }
         if ($intervention->status!=ChangeRequest::FEATURE_STATUS_VALIDATED) {
             return false;
         }
@@ -68,7 +71,7 @@ class InterventionController extends Controller
         return view('intervention.create', $formVariables);
     }
     
-    protected function getFormVariables(Intervention $intervention, User $user, string $mode=InterventionController::UPDATE_MODE) {
+    protected function getFormVariables(Intervention $intervention, $user, string $mode=InterventionController::UPDATE_MODE) {
         $all_layers = EditableLayerDef::enabled()->get();
         if ($mode==InterventionController::CREATE_MODE) {
             $editable = true;
@@ -238,10 +241,7 @@ class InterventionController extends Controller
     public function anyData(Request $request)
     {
         $user = Auth::user();
-        if ($user->isAdmin()) {
-            $query = Intervention::consolidated();
-        }
-        else {
+        if ($user and $user->isManager()) {
             // get the interventions opened by the user
             $changeRequests = ChangeRequest::open()
             ->where('layer', Intervention::LAYER_NAME)
@@ -253,6 +253,9 @@ class InterventionController extends Controller
                     ->orWhereIn('id', $interventionIds);
             });
         }
+        else {
+            $query = Intervention::consolidated();
+        }
         $codigo_camino = $request->query('codigo_camino');
         if (!empty($codigo_camino)) {
             $query = $query->where('codigo_camino', $codigo_camino);
@@ -263,7 +266,7 @@ class InterventionController extends Controller
         }
         $tipo_elem = $request->query('tipo_elem');
         if (!empty($tipo_elem)) {
-            $query = $query->where('tipo_elem', $tipo_elem);
+            $query = $query->where('tipo_elem', ChangeRequest::getTableName($tipo_elem));
         }
         
         return Datatables::make($query)->toJson();

@@ -20,26 +20,30 @@
                     <li class="{!! (Route::is('home')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('home') !!}">{{ __('Resumen') }}</a>
                     </li>
+                    @if (Auth::check())
                     <li class="{!! (Route::is('changerequests.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('changerequests.index') !!}">{{ __('Peticiones de cambios') }}</a>
                     </li>
                     <li class="{!! (Route::is('mtopchangerequests.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('mtopchangerequests.index') !!}">{{ __('Peticiones de cambios MTOP') }}</a>
                     </li>
+                    @endif
                     <li class="{!! (Route::is('interventions.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('interventions.index') !!}">{{ __('Intervenciones') }}</a>
                     </li>
                     <li class="{!! (Route::is('reports.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('reports.query') !!}">{{ __('Reportes') }}</a>
                     </li>
+                    @if (Auth::check())
                     <li class="{!! (Route::is('imports.*')) ? ' active' : '' !!}">
                         <a class="list-group-item" href="{!! route('imports.query') !!}">{{ __('Importación de datos') }}</a>
                     </li>
+                    @endif
                 </ul>
                 </div>
             </div>
         </div>
-        @if (Auth::user()->isAdmin())
+        @if (Auth::check() and Auth::user()->isAdmin())
         <div class="card">
             <div class="card-header" id="headingTwo">
                 <h5 class="mb-0">
