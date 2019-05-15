@@ -193,10 +193,18 @@ Draw.prototype = {
                 html += '</tr>';
             }
         }
+        var interventionsUrl = window.safeServiceURL + '/dashboard/interventions?';
+        if (layer.feature.id.indexOf('v_camineria') !== -1) {
+            interventionsUrl += 'tipo_elem=cr_caminos&codigo_camino=' + layer.feature.properties.codigo_camino;
+        }
+        else {
+            interventionsUrl += 'tipo_elem=' + this.editableLayer.name + '&id_elem=' + layer.feature.properties.id;
+        }
         html += '</table>';
         html += '</div>';
         html += '<ul class="custom-actions">';
         html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+        html += '<li><a href="' + interventionsUrl + '" target="_blank" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-interventions" title="Intervenciones"><i class="fa fa-history m-r-5"></i></a></li>';
         html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
         html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-edit" title="Editar"><i class="fa fa-edit m-r-5"></i></a></li>';
         html +=     '<li><a href="#" data-layername="' + this.editableLayer.name + '" data-fid="' + layer.feature.id + '" class="popup-toolbar-button-delete" title="Eliminar"><i class="fa fa-trash m-r-5"></i></a></li>';

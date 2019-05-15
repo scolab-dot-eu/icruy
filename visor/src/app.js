@@ -270,14 +270,23 @@ function loadOverlays(map) {
             html += '</div>';
             if (!window.isMobile) {
                 html += '<ul class="custom-actions">';
+                var interventionsUrl = window.safeServiceURL + '/dashboard/interventions?';
+                if (f.id.indexOf('v_camineria') !== -1) {
+                    interventionsUrl += 'tipo_elem=cr_caminos&codigo_camino=' + f.properties.codigo_camino;
+                }
+                else {
+                    interventionsUrl += 'tipo_elem=' + fLayerName + '&id_elem=' + f.properties.id;
+                }
                 if (window.editionMode) {
                     html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+                    html += '<li><a href="' + interventionsUrl + '" target="_blank" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-interventions" title="Intervenciones"><i class="fa fa-history m-r-5"></i></a></li>';
                     html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
                     html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-edit" title="Editar"><i class="fa fa-edit m-r-5"></i></a></li>';
                     html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-delete" title="Eliminar"><i class="fa fa-trash m-r-5"></i></a></li>';
                     
                 } else {
                     html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-info" title="Información"><i class="fa fa-info m-r-5"></i></a></li>';
+                    html += '<li><a href="' + interventionsUrl + '" target="_blank" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-interventions" title="Intervenciones"><i class="fa fa-history m-r-5"></i></a></li>';
                     html += '<li><a href="#" data-layername="' + fLayerName + '" data-fid="' + f.id + '" class="popup-toolbar-button-print" title="Imprimir"><i class="fa fa-print m-r-5"></i></a></li>';
                 }
                 html += '</ul>';
@@ -563,7 +572,6 @@ function registerMapEvents(map, controls, utils, printUtils) {
     });
 
     map.on('popupopen', function() {
-
         $('.popup-toolbar-button-info').click(function(e){
             for (i in editableLayers) {
                 if (editableLayers[i].name == this.dataset.layername) {
