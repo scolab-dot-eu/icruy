@@ -197,7 +197,7 @@ class ViewerConfigApiController extends Controller
         $overlaysGroups[] = ['title'=>'Inventario caminería Rural', 'expanded'=>true, 'layers'=>$editableLayers];
         
         if ($department_code==null) {
-            $overlaysGroups[] = ['title'=>'Caminería MTOP', 'expanded'=>true, 'layers'=>$layersCamineria];
+            $overlaysGroups[] = ['title'=>'Caminos', 'expanded'=>true, 'layers'=>$layersCamineria];
         }
         $overlaysConf = ['groups'=> $overlaysGroups];
         if ($department_code!=null) {
