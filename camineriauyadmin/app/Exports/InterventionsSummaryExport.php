@@ -11,13 +11,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 
 class InterventionsSummaryExport 
-    implements FromQuery, WithMapping, WithHeadings, ShouldAutoSize, WithTitle
+implements FromQuery, WithMapping, WithHeadings, ShouldAutoSize, WithTitle, WithEvents
 {
     use Exportable;
     
@@ -50,6 +52,14 @@ class InterventionsSummaryExport
         $this->to_year = $to_year;
         $this->from_date = $from_date;
         $this->to_date = $to_date;
+        
+        if ($tipoElem != 'any') {
+            $lyr = EditableLayerDef::where('name', $tipoElem)->get()->first();
+            $this->tipoElemLabel = $lyr->title;
+        }
+        else {
+            $this->tipoElemLabel = 'Cualquiera';
+        }
         
         $interventionsDef = EditableLayerDef::where('name', 'interventions')->get()->first();
         if ($interventionsDef) {
@@ -155,7 +165,19 @@ class InterventionsSummaryExport
     }
     public function headings(): array
     {
-        $heading1 = ['Resumen de Intervenciones - Inventario de Caminería Rural'];
+        $titleFromYearFilter = "Desde: ";
+        $titleToYearFilter = "Hasta: ";
+        if ($this->from_year) {
+            $titleFromYearFilter = $titleFromYearFilter . $this->from_year." ";
+        }
+        if ($this->to_year) {
+            $titleToYearFilter = $titleToYearFilter . $this->to_year;
+        }
+        $tipoElemFilterTitle = 'Tipo de elemento: '.$this->tipoElemLabel;
+        
+        
+        $heading0 = ['Resumen de Intervenciones - Inventario de Caminería Rural'];
+        $heading1 = [$titleFromYearFilter, $titleToYearFilter, $tipoElemFilterTitle];
         $heading2 = ['ÁMBITO', 'MONTO TOTAL', 'LONGITUD TOTAL (KM)', 'NÚMERO INTERVENCIONES'];
         if ($this->codigo_camino) {
             $heading2[] = 'CAMINO';
@@ -178,13 +200,26 @@ class InterventionsSummaryExport
         if ($this->to_year) {
             $heading2[] = 'DESDE AÑO';
         }
-        return [$heading1, $heading2];
+        
+        return [$heading0, $heading1, $heading2];
     }
     public function title(): string
     {
         return "Resumen Intervenciones - ICR";
     }
 
-
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class    => function(AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+                $event->sheet->autoSize();
+                $columnA = $sheet->getColumnDimension('A');
+                $columnA->setAutoSize(false);
+                $columnA->setWidth(12);
+            }
+            ];
+    }
 
 }

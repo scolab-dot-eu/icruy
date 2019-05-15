@@ -52,6 +52,12 @@ class InterventionsExport
         $this->from_date = $from_date;
         $this->to_date = $to_date;
         
+        $layerLabels = [];
+        foreach (EditableLayerDef::enabled()->get() as $lyr) {
+            $layerLabels[$lyr->name] = $lyr->title;
+        }
+        $this->layerLabels = $layerLabels;
+        
         if ($tipoElem != 'any') {
             $lyr = EditableLayerDef::where('name', $tipoElem)->get()->first();
             $this->tipoElemLabel = $lyr->title;
@@ -142,6 +148,7 @@ class InterventionsExport
                 $intervention->fecha_interv,
                 $intervention->codigo_camino,
                 $intervention->id_elem,
+                array_get($this->layerLabels, $intervention->tipo_elem, ''),
                 $intervention->longitud,
                 $intervention->monto,
                 $this->getDomainDef('tarea', $intervention->tarea),
@@ -154,6 +161,7 @@ class InterventionsExport
             $intervention->departamento,
             $intervention->fecha_interv,
             $intervention->codigo_camino,
+            array_get($this->layerLabels, $intervention->tipo_elem, ''),
             $intervention->longitud,
             $intervention->monto,
             $this->getDomainDef('tarea', $intervention->tarea),
@@ -173,10 +181,10 @@ class InterventionsExport
         }
         $tipoElemFilterTitle = 'Tipo de elemento: '.$this->tipoElemLabel;
         if ($this->id_elem!==null) {
-            $header = ['ID', 'DEPARTAMENTO', 'FECHA INTERVENCIÓN', 'CAMINO', 'ID ELEMENTO','LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
+            $header = ['ID', 'DEPARTAMENTO', 'FECHA INTERVENCIÓN', 'CAMINO', 'ID ELEMENTO', 'TIPO ELEMENTO', 'LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
         }
         else {
-            $header = ['ID', 'DEPARTAMENTO', 'FECHA INTERVENCIÓN', 'CAMINO', 'LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
+            $header = ['ID', 'DEPARTAMENTO', 'FECHA INTERVENCIÓN', 'CAMINO', 'TIPO ELEMENTO', 'LONGITUD (KM)', 'MONTO', 'TAREA', 'FINANCIACIÓN', 'FORMA EJECUCIÓN'];
         }
     
         return [
