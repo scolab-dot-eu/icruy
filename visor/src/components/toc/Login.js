@@ -14,12 +14,14 @@ Login.prototype = {
     renderInitSession: function() {
         var html = '';
         var loginUrl = window.safeServiceURL + '/viewer_login';
+        var reportsUrl = window.serviceURL + '/dashboard/reports';
         
         html += '<div class="card" style="text-align: center; width: 100%; margin-top: 10px;">';
         html +=     '<img style="width: 200px; margin-left:90px;" class="card-img-top" src="' + loginImage + '" alt="Card image cap">';
         html +=     '<div class="card-body">';
         html +=         '<h5 class="card-title">Inciar sesión</h5>';
         html +=         '<p class="card-text">Si eres un usuario con rol departamental o de admisnitración, puedes inciar sesión para editar los elementos del inventario</p>';
+        html +=         '<a id="reports-button" href="' + reportsUrl + '" class="btn btn-warning m-r-5">Reportes</a>';
         html +=         '<a id="login-button" href="' + loginUrl + '" class="btn btn-warning">Iniciar sesión</a>';
         html +=     '</div>';
         html += '</div>';
