@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Camino;
 use App\Department;
 use App\SupportLayerDef;
 use App\EditableLayerDef;
@@ -54,6 +55,7 @@ class ViewerConfigApiController extends Controller
             ];*/
         }
         else {
+            $caminosDef = EditableLayerDef::where('name', Camino::LAYER_NAME)->first();
             $layersCamineria = [];
             foreach (Department::orderBy('name', 'ASC')->get() as $dep) {
                 $layersCamineria[] = [
@@ -61,6 +63,7 @@ class ViewerConfigApiController extends Controller
                     'url'=> $camineria_wfs_url,
                     'wms_url'=> $camineria_wms_url,
                     'name'=> $dep->layer_name,
+                    'fields'=> json_decode($caminosDef->fields),
                     'title'=> 'Caminería '.$dep->name,
                     'visible'=> false,
                     'editable'=> true,
@@ -133,13 +136,13 @@ class ViewerConfigApiController extends Controller
         
         foreach (EditableLayerDef::enabled()->geometricLayers()->get() as $lyr) {
             $conf = json_decode($lyr->conf, true);
-            if (($lyr->name == 'cr_caminos') && ($department_code==null)) {
+            if (($lyr->name == Camino::LAYER_NAME) && ($department_code==null)) {
                 continue;
             }
             $conf['title'] = $lyr->title;
             
             $conf['type'] = $protocol;
-            if ($lyr->name == 'cr_caminos') {
+            if ($lyr->name == Camino::LAYER_NAME) {
                 $inventory_layers[] = $dep->layer_name;
                 $conf['name'] = $dep->layer_name;
                 $conf['internal_name'] = $lyr->name;

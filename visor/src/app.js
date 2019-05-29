@@ -206,6 +206,7 @@ function loadOverlays(map) {
     }   
 
     function popUp(f,l){
+      try{
         var editable = false;
         var eLayer = null;
         var fLayerName = f.id.split('.')[0];
@@ -215,9 +216,7 @@ function loadOverlays(map) {
                 eLayer = editableLayers[i].layer;
             }
         }
-        console.log("editableLayer:");
-        console.log(eLayer);
-    
+
         if ((f.id.indexOf('v_camineria') !== -1) && eLayer) {
             var codigoMTOP = f.properties.codigo;
             var gidMTOP = f.properties.gid;
@@ -289,6 +288,10 @@ function loadOverlays(map) {
     
             
         }
+      }
+      catch(e) {
+          console.log(e);
+      }
     }
 
     var tocOverlays = [];
@@ -409,7 +412,15 @@ function loadOverlays(map) {
                             },
                         );
                         layer.geom_style = 'line';
-
+                        layer.on('data:loaded', function() {
+                            $('#animationload').remove();
+                            if (this.name) {
+                                console.log('data:loaded');
+                                console.log(this.name);
+                                var spinnerDomSelector = '#toc-layers #bt_loading_' +  this.name.replace(":", "_");
+                                $(spinnerDomSelector).remove();
+                            }
+                        });
                     }                 
 
                 } else {
