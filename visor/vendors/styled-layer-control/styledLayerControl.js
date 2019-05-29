@@ -437,6 +437,18 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
 
         if (obj.layer.StyledLayerControl) {
             if (!window.isMobile) {
+                if (obj.layer.fields || obj.layer.type == "wfs") { // loading
+                    var bt_loading = document.createElement("label");
+                    bt_loading.appendChild(document.createTextNode('\u00A0')); // blank
+                    bt_loading.className = "bt_loading";
+                    bt_loading.title = "Cargando capa";
+                    bt_loading.dataset.layerLID = obj.layer._leaflet_id;
+                    bt_loading.id = 'bt_loading_' +  obj.layer.name.replace(":", "_");
+                    var bt_loading_icon = document.createElement("i");
+                    bt_loading_icon.className = "fa fa-spinner fa-spin";
+                    bt_loading.appendChild(bt_loading_icon);
+                    label.appendChild(bt_loading);
+                }
                 if (obj.layer.StyledLayerControl.historyLayerName) {
                     var bt_start_time = document.createElement("button");
                     bt_start_time.type = "button";

@@ -208,28 +208,29 @@ function loadOverlays(map) {
     function popUp(f,l){
         var editable = false;
         var eLayer = null;
+        var fLayerName = f.id.split('.')[0];
+        for (i in editableLayers) {
+            if (editableLayers[i].name == fLayerName) {
+                editable = true;
+                eLayer = editableLayers[i].layer;
+            }
+        }
+        console.log("editableLayer:");
+        console.log(eLayer);
     
-        if (f.id.indexOf('v_camineria') !== -1) {
+        if ((f.id.indexOf('v_camineria') !== -1) && eLayer) {
             var codigoMTOP = f.properties.codigo;
             var gidMTOP = f.properties.gid;
             f.properties = {};
             f.properties['gid'] = gidMTOP;
-            f.properties['ancho_calzada'] = '';
-            f.properties['banquina'] = '';
-            f.properties['codigo_camino'] = codigoMTOP;
-            f.properties['cordon'] = '';
-            f.properties['cuneta'] = '';
+            var fieldName;
+            for(i in eLayer.fields){
+                 fieldName = eLayer.fields[i].name;
+                 f.properties[fieldName] = '';
+            }
             f.properties['departamento'] = departamento;
-            f.properties['id'] = '';
-            f.properties['observaciones'] = '';
-            f.properties['origin'] = '';
-            f.properties['rodadura'] = '';
-            f.properties['senaliz_horiz'] = '';
-            f.properties['status'] = '';
-            f.properties['statusmtop'] = '';
-            f.properties['created_at'] = '';
-            f.properties['updated_at'] = '';
-            f.properties['validated_by_id'] = '';     
+            f.properties['codigo_camino'] = codigoMTOP;
+
             for (var i in caminos) {
                 if (caminos[i].codigo_camino == codigoMTOP) {
                     $.extend(f.properties, caminos[i]);
@@ -239,14 +240,6 @@ function loadOverlays(map) {
     
         if (f.properties){
             var html = '';
-            var fLayerName = f.id.split('.')[0];
-            for (i in editableLayers) {
-                if (editableLayers[i].name == fLayerName) {
-                    editable = true;
-                    eLayer = editableLayers[i].layer;
-                }
-            }
-    
             
             html += '<div>';
             html += '<div style="text-align: center; width: 100%; padding: 15px;">';
@@ -392,6 +385,12 @@ function loadOverlays(map) {
                         });
                         layer.on('data:loaded', function() {
                             $('#animationload').remove();
+                            if (this.name) {
+                                console.log('data:loaded');
+                                console.log(this.name);
+                                var spinnerDomSelector = '#toc-layers #bt_loading_' +  this.name.replace(":", "_");
+                                $(spinnerDomSelector).remove();
+                            }
                         });
 
                     } else if  (config.overlays.groups[i].layers[j].geom_style == 'line') {
