@@ -1,0 +1,237 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+#canvasOne {
+    height: 100%;
+    width: 100%;
+    background-color: black;
+}
+
+.leaflet-container a {
+    color: #495057;
+}
+
+.leaflet-sidebar-tabs>ul>li.active {
+    background-color: #aaaaaa;
+}
+
+.leaflet-sidebar-header {
+    background-color: #aaaaaa;
+}
+
+.leaflet-logo-control {
+    margin-right: 0!important;
+    margin-bottom: 0!important;
+    height: 50px;
+    padding-right: 50px;
+    opacity: .9;
+    cursor: pointer;
+    border-radius: 1%;
+    background-color: rgba(255, 255, 255, 1.0);
+    /*border: 2px solid rgba(0,0,0,0.2);*/
+}
+
+.leaflet-touch .leaflet-control-layers{
+    border: none;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.leaflet-control-layers-selector {
+    margin: 5px;
+}
+
+.ac-container input.menu:checked ~ article.ac-large {
+    margin-left: 10px;   
+    /*max-height: 200px;*/
+    overflow: auto;
+}
+
+.m-t-10 {
+    margin-top: 10px;
+}
+
+.form-control:focus {
+    border-color: #929496;
+    box-shadow: 0 0 0 0.2rem rgba(142, 145, 148, 0.25);
+}
+
+.leaflet-container .leaflet-control-search {
+    margin-left: 0px;
+    margin-top: 10px;
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+.leaflet-control-search .search-input {
+    width: 324px;
+    height: 32px;
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+.leaflet-control-search .search-tooltip {
+    background-color: rgba(255, 255, 255, 0.25);
+    width: 100%;
+}
+
+@media (max-width: 767) {
+    .leaflet-control-search .search-input {
+        width: 595px;
+        height: 32px;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .leaflet-control-search .search-input {
+        width: 324px;
+        height: 32px;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .leaflet-control-search .search-input {
+        width: 254px;
+        height: 32px;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+}
+
+@media (min-width: 1200px) {
+    .leaflet-control-search .search-input {
+        width: 324px;
+        height: 32px;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+}
+
+.ui-dialog { z-index: 10000 !important ; /*min-width: 50%;*/}
+
+.ui-widget-header {
+    border: 1px solid #dddddd/*{borderColorHeader}*/;
+    background: #aaaaaa/*{bgColorHeader}*/ /*{bgImgUrlHeader}*/ /*{bgHeaderXPos}*/ /*{bgHeaderYPos}*/ /*{bgHeaderRepeat}*/;
+    color: #333333/*{fcHeader}*/;
+    font-weight: bold;
+}
+
+.ui-widget {
+    font-size: 12px;
+}
+
+.m-r-5 {
+    margin-right: 5px;
+}
+
+.custom-actions {
+    margin: 12px 0 0 0;
+    padding: 10px 0 0 0;
+    text-align: right;
+
+    list-style: none;
+    list-style-image: none;
+}
+
+.custom-actions li {
+    display: inline;
+    margin: 0 10px 0 0;
+  }
+.custom-actions a{
+    text-decoration: none;
+}
+
+.custom-actions i{
+    color: #e0a800;
+}
+
+
+table.dataTable,
+table.dataTable th,
+table.dataTable td {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+.leaflet-control-graphicscale {
+    background-color: rgba(255,255,255,0.8);
+    padding: 5px;
+    border-radius: 2px;
+    border: 2px solid rgba(0,0,0,0.2);
+}
+
+.leaflet-div-icon {
+    background:#ff66cc;
+    border-radius: 50px;
+    border: 1px doted #ff66cc;
+}
+
+.animationload {
+    background-color:rgba(255,255,255,0.5);
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 10000;
+}
+.osahanloading {
+    animation: 1.5s linear 0s normal none infinite running osahanloading;
+    background: #e0a631 none repeat scroll 0 0;
+    border-radius: 50px;
+    height: 50px;
+    left: 50%;
+    margin-left: -25px;
+    margin-top: -25px;
+    position: absolute;
+    top: 50%;
+    width: 50px;
+}
+.osahanloading::after {
+    animation: 1.5s linear 0s normal none infinite running osahanloading_after;
+    border-color: rgb(120, 120, 120) transparent;
+    border-radius: 80px;
+    border-style: solid;
+    border-width: 10px;
+    content: "";
+    height: 80px;
+    left: -15px;
+    position: absolute;
+    top: -15px;
+    width: 80px;
+}
+@keyframes osahanloading {
+    0% {
+        transform: rotate(0deg);
+    }
+    50% {
+        background: rgb(120, 120, 120) none repeat scroll 0 0;
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+#canvas-wrap { position:relative; height: 100%; width: 100%; padding: 0; margin: 0;} /* Make this a positioned parent */
+#logo-3d { position:absolute; top:20px; left:30px; }
+#controls-3d { position:absolute; top:100px; right:20px; }
+
+.leaflet-control-layers-scrollbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-right: 5px;
+    height: auto !important;
+}

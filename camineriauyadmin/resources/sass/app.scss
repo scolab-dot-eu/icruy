@@ -1,0 +1,147 @@
+
+// Fonts
+@import '~@fortawesome/fontawesome-free/css/all.css';
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import '~bootstrap/dist/css/bootstrap.css';
+
+// leaflet
+@import '~leaflet/dist/leaflet.css';
+
+@import '~jquery-editable-select/dist/jquery-editable-select.css';
+
+.navbar-laravel {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+// sidebar basic css
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+}
+
+#sidebar.active {
+    margin-left: -250px;
+}
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+.dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -250px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+}
+// additional sidebar css
+#sidebar {
+    background: #000;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#sidebar .card-body, #sidebar .card-header {
+    padding: 0px;
+}
+
+#sidebar .list-group-item {
+    background: rgb(44, 59, 65);
+    color: #fff;
+}
+#sidebar div, #sidebar ul, #sidebar li, #sidebar button, #sidebar .btn-link {
+    background: #000;
+    color: #fff;
+}
+
+#sidebar .btn-link {
+    color: #fff;
+    text-decoration: none;
+}
+
+#sidebar .sidebar-header {
+    padding: 11px;
+    background: #343a40;
+}
+
+#sidebar .sidebar-subheader {
+    padding: 7px;
+    background: #f68e2b;
+}
+
+#sidebar h1, #sidebar h2, #sidebar h3, #sidebar h4, #sidebar h5 {
+    margin-bottom: 0px;
+}
+
+#sidebar ul li.active > a {
+    color: #f68e2b;
+}
+
+#sidebar .card {
+    background-color: #000;
+}
+
+#sidebar .card .list-group-item {
+    background-color: #000;
+}
+
+.container-fluid {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.dashboard-map {
+    height: 300px;
+}
+
+.dashboard-text {
+    color:#888888;
+}
+
+.footer {
+    padding-top: 10px;
+}
+
+.titulo-resumen {
+    padding-top: 10px;
+}
+
+/** Apply custom arrow to es-input selects **/
+select.es-input {
+   -webkit-appearance: none; 
+   -moz-appearance: none;
+    appearance: none;       /* remove default arrow */
+    padding-right: 20px !important;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAICAYAAADJEc7MAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAG2YAABzjgAA4DIAAIM2AAB5CAAAxgwAADT6AAAgbL5TJ5gAAABGSURBVHjaYvz//z8DOYCJgUzA0tnZidPK8vJyRpw24pLEpwnuVHRFhDQxMDAwMPz//x+OOzo6/iPz8WFGuocqAAAA//8DAD/sORHYg7kaAAAAAElFTkSuQmCC) right center no-repeat; 
+}
+
+select.es-input::-ms-expand { 
+    display: none; /* hide the default arrow in ie10 and ie11 */
+}
+@media screen and (min-width:0\0) {
+    select.es-input {
+        background-image:none\9;
+        padding: 5px\9;
+    } 
+}
