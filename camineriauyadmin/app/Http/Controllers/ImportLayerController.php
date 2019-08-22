@@ -63,7 +63,7 @@ class ImportLayerController extends Controller
         }
         foreach ($layerFieldDefs as $fieldDef) {
             if (isset($fieldDef->mandatory) && !in_array($fieldDef->name, $presentFields)) {
-                $errors[$fieldDef->name] = 'El campo es obligatorio';
+                $errors[$fieldDef->name] = 'El campo es obligatorio: '. $fieldDef->name;
             }
         }
         if (count($errors)>0) {
@@ -189,7 +189,7 @@ class ImportLayerController extends Controller
         }
         if ($x != null && $y != null) {
             if (is_numeric($x) && is_numeric($y)) {
-                $geom = new Point($x, $y);
+                $geom = new Point($y, $x);
                 $values['thegeom'] = ChangeRequestProcessor::prepareGeom($geom);
             }
             else {
@@ -297,12 +297,20 @@ class ImportLayerController extends Controller
             }
             else {
                 $row = [];
+                // skip empty rows
+                $skipRow = true;
                 foreach ($cellIterator as $cell) {
-                    $row[] = $cell->getValue();
+                    $value = $cell->getValue();
+                    if ($value != null && $value != '') {
+                        $skipRow = false;
+                    }
+                    $row[] = $value;
                 }
                 try {
-                    $values = $this->insertRow($row, $layerName, $fieldMapping, $status, $departments);
-                    $this->createChangeRequest($layerName, $values);
+                    if (!$skipRow) {
+                        $values = $this->insertRow($row, $layerName, $fieldMapping, $status, $departments);
+                        $this->createChangeRequest($layerName, $values);
+                    }
                 }
                 catch (ImportLayerException $e) {
                     $messages = $e->messages;
