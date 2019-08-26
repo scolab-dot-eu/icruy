@@ -520,7 +520,7 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
 
                 
 
-                if (obj.layer.isGeojsonLayer && obj.layer.StyledLayerControl.download) {
+                if (obj.layer.definedUrl && obj.layer.StyledLayerControl.download) {
                     var bt_download = document.createElement("a");
                     bt_download.href = obj.layer.definedUrl + '?service=WFS&request=GetFeature&version=1.0.0&outputFormat=shape-zip&typeName=' + obj.layer.name;
                     bt_download.className = "bt_download";

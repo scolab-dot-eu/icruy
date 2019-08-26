@@ -320,7 +320,9 @@ function loadOverlays(map) {
                     layers: config.overlays.groups[i].layers[j].name
                 });
                 layer.type = 'wms';
-
+                if (config.overlays.groups[i].layers[j].wfs_url) {
+                    layer.definedUrl = config.overlays.groups[i].layers[j].wfs_url;
+                }
             } else if (config.overlays.groups[i].layers[j].type == 'wfs') {
 
                 var defaultParameters = {
