@@ -1,7 +1,6 @@
 /**
  * Importamos las librerías, estilos y componentes
  */
-
 window.serviceURL = window.location.protocol+'//'+window.location.host;
 window.safeServiceURL = 'https://'+window.location.host;
 //window.serviceURL = 'http://geoportal.opp.com';
@@ -142,6 +141,16 @@ function initialize() {
  */
 function loadBaseLayers(map) {
     var tocBaseLayers = [];
+
+    /*config.baselayers.groups[0].layers.push({
+        api_key: "",
+        name: "ORTOFOTOS_2019",
+        title: "ORTOFOTOS_2019",
+        type: "wms",
+        url: "https://mapas.ide.uy/geoserver-raster/ortofotos/ows",
+        visible: 0
+    });*/
+
     for (var i=0; i<config.baselayers.groups.length; i++) {
         var group = {
             groupName: config.baselayers.groups[i].title,
@@ -164,13 +173,15 @@ function loadBaseLayers(map) {
 
             } else if (config.baselayers.groups[i].layers[j].type == 'wms') {
                 layer = L.tileLayer.wms(config.baselayers.groups[i].layers[j].url, {
-                    layers: config.baselayers.groups[i].layers[j].name
+                    layers: config.baselayers.groups[i].layers[j].name,
+                    maxZoom: 21
                 });
 
             } else if (config.baselayers.groups[i].layers[j].type == 'empty') {
                 layer = L.tileLayer('');
             }
             layer.isBaseLayer = true;
+            layer.ctype = config.baselayers.groups[i].layers[j].type;
             if (config.baselayers.groups[i].layers[j].visible) {
                 layer.addTo(map);
             }

@@ -3,6 +3,7 @@ function PrintMF(map, toc, printUrl) {
     this.map = map;
     this.toc = toc;
     this.printUrl = printUrl + '/print';
+    //this.printUrl = 'http://icr-test.opp.gub.uy/print';
     this.detailsTab = $('#toc-result-content');
 	this.capabilities = null;
     this.initialize();
@@ -132,10 +133,32 @@ PrintMF.prototype = {
             }
         });
 
-        printLayers.push({
-            "baseURL": "http://a.tile.openstreetmap.org",
-            "type": "OSM",
-            "imageExtension": "png"
+        this.map.eachLayer(function(layer) {
+            if (layer.isBaseLayer) {
+                if( layer.ctype == 'wms' ) {
+                    if (layer.wmsParams) {
+                        var url = layer._url;
+                        printLayers.push({
+                            "baseURL": url,
+                            "layers": [layer.wmsParams.layers],
+                            "opacity": 1,
+                            "type": "WMS",
+                            "imageFormat": "image/png",
+                            "customParams": {
+                              "TRANSPARENT": "true"
+                            },
+                            "mergeableParams": {},
+                          }
+                        );
+                    }
+                } else if( layer.ctype == 'tilelayer' ) {
+                    printLayers.push({
+                        "baseURL": "http://a.tile.openstreetmap.org",
+                        "type": "OSM",
+                        "imageExtension": "png"
+                    });
+                }
+            }
         });
 
         var min_xy = window.proj4('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs',[this.map.getBounds().getSouthWest().lng, this.map.getBounds().getSouthWest().lat]);
