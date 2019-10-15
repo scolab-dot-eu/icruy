@@ -14,14 +14,16 @@ class MtopChangeRequestCreated extends Mailable
     use Queueable, SerializesModels;
 
     protected $mtopChangeRequest;
+    protected $selfNotification;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(MtopChangeRequest $mtopChangeRequest)
+    public function __construct(MtopChangeRequest $mtopChangeRequest, bool $selfNotification)
     {
         $this->mtopChangeRequest = $mtopChangeRequest;
+        $this->selfNotification = $selfNotification;
     }
 
     /**
@@ -38,9 +40,17 @@ class MtopChangeRequestCreated extends Mailable
         $fileName = $fileName.".geojson";
         
         $changeRequestUrl = route('mtopchangerequests.edit', $this->mtopChangeRequest->id);
-        return $this->from('icr@opp.gub.uy')
+        $from = env("MAIL_FROM_ADDRESS", "icr@opp.gub.uy");
+        
+        if ($this->selfNotification) {
+            $markdown = 'emails.mtopchangerequest.createdself';
+        }
+        else {
+            $markdown = 'emails.mtopchangerequest.created';
+        }
+        return $this->from($from)
                 ->subject('ICR - Nueva petición MTOP - '.$this->mtopChangeRequest->id)
-                ->markdown('emails.mtopchangerequest.created')
+                ->markdown($markdown)
                 ->attachData($this->mtopChangeRequest->feature, $fileName,  ['mime'=>'application/json'])
                 ->with([
                     'changeRequestUrl' => $changeRequestUrl

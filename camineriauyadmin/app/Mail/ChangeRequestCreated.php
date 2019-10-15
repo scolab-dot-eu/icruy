@@ -6,19 +6,22 @@ use App\ChangeRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ChangeRequestCreated extends Mailable
 {
     use Queueable, SerializesModels;
     protected $changeRequest;
+    protected $selfNotification;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(ChangeRequest $changeRequest)
+    public function __construct(ChangeRequest $changeRequest, bool $selfNotification)
     {
         $this->changeRequest = $changeRequest;
+        $this->selfNotification = $selfNotification;
     }
     
     
@@ -28,11 +31,18 @@ class ChangeRequestCreated extends Mailable
      * @return $this
      */
     public function build()
-    {        
+    {   
         $changeRequestUrl = route('changerequests.edit', $this->changeRequest->id);
-        return $this->from('icr@opp.gub.uy')
+        $from = env("MAIL_FROM_ADDRESS", "icr@opp.gub.uy");
+        if ($this->selfNotification) {
+            $markdown = 'emails.changerequest.createdself';
+        }
+        else {
+            $markdown = 'emails.changerequest.created';
+        }
+        return $this->from($from)
         ->subject('ICR - Nueva petición - '.$this->changeRequest->id)
-        ->markdown('emails.changerequest.created')
+        ->markdown($markdown)
         ->with([
             'departamento'=>$this->changeRequest->departamento,
             'layer'=>$this->changeRequest->layer,

@@ -35,7 +35,8 @@ class MtopChangeRequestUpdated extends Mailable
     public function build()
     {
         $changeRequestUrl = route('mtopchangerequests.edit', $this->changeRequest->id);
-        return $this->from('icr@opp.gub.uy')
+        $from = env("MAIL_FROM_ADDRESS", "icr@opp.gub.uy");
+        return $this->from($from)
         ->subject('ICR - Nueva actualizada - '.$this->changeRequest->id)
         ->markdown('emails.changerequest.updated')
         ->with([

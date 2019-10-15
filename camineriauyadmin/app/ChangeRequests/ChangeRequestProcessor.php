@@ -138,10 +138,14 @@ class ChangeRequestProcessor
     
     public static function notifyChangeRequest(User $user, ChangeRequest $changerequest) {
         try {
-            $notification = new ChangeRequestCreated($changerequest);
+            $notification = new ChangeRequestCreated($changerequest, false);
             $notification->onQueue('email');
             $admins = Role::admins()->first()->users()->get();
             Mail::to($admins)->queue($notification);
+            
+            $notification = new ChangeRequestCreated($changerequest, true);
+            $notification->onQueue('email');
+            Mail::to($user)->queue($notification);
         }
         catch(\Exception $ex) {
             Log::error($ex->getMessage());

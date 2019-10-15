@@ -80,8 +80,9 @@ class MtopChangeRequestController extends Controller
             Mail::to($changerequest->author)->queue($notification);
         }
         else {
-            $admins = Role::mtopManagers()->first()->users()->get();
-            Mail::to($admins)->queue($notification);
+            $receivers = Role::admins()->first()->users()->get();
+            $receivers->push($requestorUser);
+            Mail::to($receivers)->queue($notification);
         }
     }
     

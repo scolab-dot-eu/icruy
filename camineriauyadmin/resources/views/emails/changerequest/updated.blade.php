@@ -14,7 +14,7 @@ Tipo de elemento: {{ $layer }}
 Departamento: {{ $departamento }}  
 Operación: {{ $operation }}  
 
-Puede usar el siguiente enlace para [acceder a la petición de cambios]({{ $changeRequestUrl }}), donde podrá validar o rechazar la petición:
+Puede usar el siguiente enlace para [acceder a la petición de cambios]({{ $changeRequestUrl }}):
 [{{ $changeRequestUrl }}]({{ $changeRequestUrl }}).
 
 Saludos,  
