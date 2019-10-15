@@ -260,7 +260,7 @@ class MtopChangeRequestController extends Controller
             $query = MtopChangeRequest::open();
         }
         
-        if (!$request->user()->isAdmin()) {
+        if (!$request->user()->isAdmin() && !$request->user()->isMtopManager()) {
             $query = $query->where('requested_by_id', $request->user()->id);
         }
         $query->with(['author', 'validator']);
