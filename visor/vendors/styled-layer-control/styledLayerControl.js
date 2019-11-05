@@ -333,7 +333,7 @@ L.Control.StyledLayerControl = L.Control.Layers.extend({
                 esCamino = true;
             }
 
-            if (currentZoom < 11 || currentZoom > 18) {
+            if (currentZoom < 11) {
                 if (this._layers[layerId].layer.isGeojsonLayer) {
                     if (this._map.hasLayer(this._layers[layerId].layer)) {
                         this._map.getPane(this._layers[layerId].layer.name).style.display = 'none';
