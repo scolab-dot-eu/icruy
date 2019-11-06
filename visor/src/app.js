@@ -86,7 +86,7 @@ function initialize() {
 
         }).done(function(resp) {
             config = resp;
-            map = L.map('map', { zoomControl:false, preferCanvas: true});
+            map = L.map('map', { zoomControl:false, preferCanvas: true, maxZoom: 22});
             map.fitBounds([
                 [config.department.miny, config.department.minx],
                 [config.department.maxy, config.department.maxx]
@@ -110,7 +110,8 @@ function initialize() {
             config = resp;
             map = L.map('map', { 
                 zoomControl:false, 
-                preferCanvas: true
+                preferCanvas: true,
+                maxZoom: 22
             }).setView(config.map.center, config.map.zoom);
 
         }).fail(function(xhr, textStatus, errorThrown) {
@@ -163,18 +164,21 @@ function loadBaseLayers(map) {
             if (config.baselayers.groups[i].layers[j].type == 'bing') {
                 layer = L.tileLayer.bing({
                     bingMapsKey: config.baselayers.groups[i].layers[j].api_key,
-                    imagerySet: config.baselayers.groups[i].layers[j].name
+                    imagerySet: config.baselayers.groups[i].layers[j].name,
+                    maxZoom: 22,
+                    maxNativeZoom: 19
                 });
 
             } else if (config.baselayers.groups[i].layers[j].type == 'tilelayer') {
                 layer = L.tileLayer(config.baselayers.groups[i].layers[j].url, {
-                    maxZoom: 18
+                    maxZoom: 22,
+                    maxNativeZoom: 19
                 });
 
             } else if (config.baselayers.groups[i].layers[j].type == 'wms') {
                 layer = L.tileLayer.wms(config.baselayers.groups[i].layers[j].url, {
                     layers: config.baselayers.groups[i].layers[j].name,
-                    maxZoom: 21
+                    maxZoom: 22
                 });
 
             } else if (config.baselayers.groups[i].layers[j].type == 'empty') {
@@ -319,7 +323,7 @@ function loadOverlays(map) {
             var layer = null;
             if (config.overlays.groups[i].layers[j].type == 'tilelayer') {
                 layer = L.tileLayer(config.overlays.groups[i].layers[j].url, {
-                    maxZoom: 18
+                    maxZoom: 22
                 });
 
             } else if (config.overlays.groups[i].layers[j].type == 'wms') {
@@ -540,7 +544,7 @@ function loadControls(map, tocBaseLayers, overlays, utils, pUtils) {
     
     if (!window.isMobile) {
         var minimap_layer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18
+            maxZoom: 22
         });
         new MiniMap(minimap_layer, {toggleDisplay: true}).addTo(map);
 
