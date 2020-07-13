@@ -68,10 +68,14 @@ class MtopChangeRequestApiController extends Controller
         $user->mtopChangeRequests()->save($mtopchangerequest);
         
         try {
-            $notification = new MtopChangeRequestCreated($mtopchangerequest);
+            $notification = new MtopChangeRequestCreated($mtopchangerequest, false);
             $notification->onQueue('email');
             $managers = Role::mtopManagers()->first()->users()->get();
             Mail::to($managers)->queue($notification);
+            
+            $notification = new MtopChangeRequestCreated($mtopchangerequest, true);
+            $notification->onQueue('email');
+            Mail::to($user)->queue($notification);
         }
         catch(\Exception $ex) {
             Log::error($ex->getMessage());

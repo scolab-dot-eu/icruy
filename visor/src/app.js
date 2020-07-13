@@ -6,7 +6,8 @@ window.safeServiceURL = 'https://'+window.location.host;
 //window.serviceURL = 'http://geoportal.opp.com';
 //window.serviceURL = 'http://icr-test.opp.gub.uy';
 //window.serviceURL = 'http://geoportal.opp.localhost';
-//window.safeServiceURL = 'http://geoportal.opp.localhost';
+//window.serviceURL = 'https://geoportal.opp.localhost';
+//window.safeServiceURL = 'https://geoportal.opp.localhost';
 //window.serviceURL = 'http://localhost:8000';
 window.editionMode = false;
 
@@ -22,6 +23,8 @@ require('leaflet_graphic_scale_css');
 require('leaflet_measure_css');
 require('leaflet_timedimension_css');
 require('leaflet_locate_css');
+require('leaflet_search_css');
+//require('../node_modules/leaflet-search/dist/leaflet-search.min.css');
 
 require('fontawesome');
 var L = require('leaflet');
@@ -54,6 +57,8 @@ require('leaflet_measure_js');
 require('leaflet_coordinates_css');
 require('leaflet_coordinates_js');
 require('leaflet-geometryutil');
+require('leaflet-search');
+require('./components/GlobalSearch.js');
 require('notify');
 
 var config = null;
@@ -124,7 +129,6 @@ function initialize() {
 
         });
     }
-
     if (config.user) {
         window.editionMode = true;
     }
@@ -202,23 +206,26 @@ function loadBaseLayers(map) {
  */
 function loadOverlays(map) {
     var caminos = null;
+    var caminosUrl = window.serviceURL + '/api/layers/cr_caminos';
     if (window.editionMode) {
-        $.ajax({
-            url: window.serviceURL + '/api/layers/cr_caminos?dep=' + departamento,
-            type: 'GET',
-            async: false
+		caminosUrl += '?dep=' + departamento;
+    }
+	$.ajax({
+		url: caminosUrl,
+		type: 'GET',
+		async: false
+
+	}).done(function(resp) {
+		caminos = resp;
+	}).fail(function(xhr, textStatus, errorThrown) {
+	   console.log( "Error al obtener caminos" );
+	   if(xhr.status == 401) {
+		   console.log( "Ha expirado la sesión" );
+		   alert('Ha expirado la sesión');
+		   location.href = window.serviceURL + '/viewer_login';
+	   }
+	});
     
-        }).done(function(resp) {
-            caminos = resp;
-        }).fail(function(xhr, textStatus, errorThrown) {
-           console.log( "Error al obtener caminos" );
-           if(xhr.status == 401) {
-               console.log( "Ha expirado la sesión" );
-               alert('Ha expirado la sesión');
-               location.href = window.serviceURL + '/viewer_login';
-           }
-        });
-    }   
 
     function popUp(f,l){
       try{
@@ -235,6 +242,7 @@ function loadOverlays(map) {
         if ((f.id.indexOf('v_camineria') !== -1) && eLayer) {
             var codigoMTOP = f.properties.codigo;
             var gidMTOP = f.properties.gid;
+            var nombre = f.properties.nombre;
             f.properties = {};
             f.properties['gid'] = gidMTOP;
             var fieldName;
@@ -249,6 +257,9 @@ function loadOverlays(map) {
                 if (caminos[i].codigo_camino == codigoMTOP) {
                     $.extend(f.properties, caminos[i]);
                 }
+            }
+            if (f.properties.nombre == '') {
+                f.properties.nombre = nombre;
             }
         }
     
@@ -406,8 +417,8 @@ function loadOverlays(map) {
                         layer.on('data:loaded', function() {
                             $('#animationload').remove();
                             if (this.name) {
-                                console.log('data:loaded');
-                                console.log(this.name);
+                                //console.log('data:loaded');
+                                //console.log(this.name);
                                 var spinnerDomSelector = '#toc-layers #bt_loading_' +  this.name.replace(":", "_");
                                 $(spinnerDomSelector).remove();
                             }
@@ -419,7 +430,7 @@ function loadOverlays(map) {
                         //pane2.style.zIndex = 400;
                         lineStyle['pane'] = pane2;
                         var p = L.Util.extend(parameters, {
-                            cql_filter: "jurisdiccion='Departamental'"
+                            cql_filter: "jurisdiccion='DEPARTAMENTAL'"
                         }); 
                         layer = L.geoJson.ajax(
                             config.overlays.groups[i].layers[j].url + L.Util.getParamString(p),
@@ -432,8 +443,8 @@ function loadOverlays(map) {
                         layer.on('data:loaded', function() {
                             $('#animationload').remove();
                             if (this.name) {
-                                console.log('data:loaded');
-                                console.log(this.name);
+                                //console.log('data:loaded');
+                                //console.log(this.name);
                                 var spinnerDomSelector = '#toc-layers #bt_loading_' +  this.name.replace(":", "_");
                                 $(spinnerDomSelector).remove();
                             }
@@ -567,7 +578,33 @@ function loadControls(map, tocBaseLayers, overlays, utils, pUtils) {
             prefix: 'Latitud/Longitud: '
         }).addTo(map);
         appendEpsgSelector();
-    } 
+    }
+    var searchLayer = L.geoJSON().addTo(map);
+    $.ajax({
+        url: window.serviceURL + '/api/departamentos',
+        async: true
+    }).done(function(departamentos) {
+	    var camineriaLayer = getCaminoLayerName(departamentos, departamento);
+	    var camineriaUrls = getCamineriaUrls(overlays.overlays, camineriaLayer);
+        var searchControl = new L.Control.GlobalSearch({
+            url: '../api/globalsearch?q={s}',
+            camineriaUrls: camineriaUrls,
+            marker: false,
+            searchLayer: searchLayer,
+            overlays: overlays,
+            departamento: departamento,
+            departamentos: departamentos
+        });
+        map.addControl(searchControl);
+
+    }).fail(function(xhr, textStatus, errorThrown) {
+        console.log( "Error al cargar configuración de departamentos" );
+        if (xhr.status == 401) {
+            console.log( "Ha expirado la sesión" );
+            alert('Ha expirado la sesión');
+            location.href = window.serviceURL + '/viewer_login';
+        }
+    });
     var toc = new Toc(config, map, tocBaseLayers, overlays, utils, pUtils);
 
     new ToolBar(map, overlays, pUtils, toc);
@@ -576,6 +613,31 @@ function loadControls(map, tocBaseLayers, overlays, utils, pUtils) {
         toc: toc
     }
 
+}
+
+function getCaminoLayerName(departamentos, codigo_departamento) {
+	var dep;
+	for (var i = 0; i<departamentos.length; i++) {
+		dep = departamentos[i];
+		if (dep.code == codigo_departamento) {
+			return dep.layer_name;
+		}
+	}
+	return null;
+}
+
+function getCamineriaUrls(overlays, capaDepartamental) {
+	var urls = [];
+	var layer;
+	for (var i=0; i<overlays.length; i++) {
+		layer = overlays[i];
+		if (layer.name.indexOf('caminerias_intendencias') !== -1) {
+			if (capaDepartamental==null || layer.name == capaDepartamental) {
+				urls.push(layer.urls[0]);
+			}
+		}
+	}
+	return urls;
 }
 
 function appendEpsgSelector() {
@@ -855,7 +917,8 @@ function loadInfo(toc, layer) {
     var html = '';
     html += '<div class="list-group">';
     for(key in layer.feature.properties){
-        if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {
+        /*if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {*/
+        if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'gid' && key != 'origin' && key != 'version') {
             html += '<a href="#" class="list-group-item list-group-item-action flex-column align-items-start">';
             html +=     '<div class="d-flex w-100 justify-content-between">';
             html +=         '<h6 style="color: #e0a800;" class="mb-1">' + key + '</h6>';
@@ -887,7 +950,8 @@ function loadFeatureForm(map, toc, layer, clonedLayer, editableLayer, utils) {
     html +=     '<div id="modification-errors" class="form-group row">';
     html +=     '</div>';
     for(key in layer.feature.properties){
-        if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {
+        /*if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'id' && key != 'gid' && key != 'origin' && key != 'version') {*/
+        if (key != 'created_at' && key != 'updated_at' && key != 'modified_by' && key != 'last_modification' && key != 'gid' && key != 'origin' && key != 'version') {
             html += utils.getAttributeInput(editableLayer.fields, key, layer.feature.properties[key]);
         }      
     }

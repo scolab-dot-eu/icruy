@@ -66,7 +66,7 @@ html, body {
 }
 
 .leaflet-container .leaflet-control-search {
-    margin-left: 0px;
+    margin-left: 10px;
     margin-top: 10px;
     border: 1px solid rgba(0,0,0,0.2);
 }

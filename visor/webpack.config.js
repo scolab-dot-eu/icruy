@@ -12,6 +12,18 @@ module.exports = {
     filename: 'app.bundle.js'
   },
   //devtool: 'inline-source-map',
+  devServer: {
+    //public: "https://geoportal.opp.localhost:443",
+    //publicPath: "https://geoportal.opp.localhost:443/visor/assets/",
+    //sockHost: "geoportal.opp.localhost",
+    //sockPort: "443",
+    //sockPath: "/visor/sockjs-node",
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
+    },
+    allowedHosts: ['*']
+  },
   plugins: [
     new CleanWebpackPlugin(['dist']),
     new HtmlWebpackPlugin({template: './src/index.html'}),
@@ -66,6 +78,8 @@ module.exports = {
         responsive_css: __dirname + "/vendors/DataTables/responsive/css/responsive.dataTables.min.css",
         fixed_header_js: __dirname + "/vendors/DataTables/FixedHeader-3.1.4/js/dataTables.fixedHeader.min.js",
         fixed_header_css: __dirname + "/vendors/DataTables/FixedHeader-3.1.4/css/fixedHeader.dataTables.min.css",
+        leaflet_search_css: __dirname + "/node_modules/leaflet-search/dist/leaflet-search.min.css",
+        leaflet_search_js: __dirname + "/node_modules/leaflet-search/dist/leaflet-search.src.js",
 
     }
   },

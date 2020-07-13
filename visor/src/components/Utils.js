@@ -23,7 +23,7 @@ Utils.prototype = {
                     value = '';
                 }
                 if (fields[i].type == 'string') {
-                    if (fields[i].name == 'departamento' || fields[i].name == 'status') {
+                    if (fields[i].name == 'departamento' || fields[i].name == 'status' || fields[i].name == 'id') {
                         html += '<div class="form-group">';
                         html +=     '<label for="' + key + '">' + fields[i].label + '</label>';
                         html +=     '<input readOnly style="font-size: 12px;" type="text" class="form-control" name="' + key + '" id="' + key + '" value="' + value + '">';

@@ -20,6 +20,8 @@ use App\Exceptions\TableCreationException;
 
 class EditableLayerDef extends Model
 {
+    public const FTSEARCH_FIELD = 'texto';
+    public const FTSEARCH_TABLE = 'globalsearch';
     protected $table = 'editablelayerdefs';
     
     protected $fillable = [
@@ -169,6 +171,33 @@ class EditableLayerDef extends Model
         }
         return $createdFields;
     }
+
+    public static function getFTSearchExpression($layerFieldDefs) {
+        $expression = "(IF(status<>'PENDIENTE:CREACIÓN',CONCAT_WS(' '";
+        foreach ($layerFieldDefs as $fieldDef) {
+            if ($fieldDef->name!='id' && $fieldDef->name!='thegeom') {
+                $expression = $expression . ',' . $fieldDef->name;
+            }
+        }
+        $expression = $expression . "),''))";
+        return $expression;
+    }
+    public static function getFTSearchTriggerExpression($layerFieldDefs) {
+        $expression = "(IF(NEW.status<>'PENDIENTE:CREACIÓN',CONCAT_WS(' '";
+        foreach ($layerFieldDefs as $fieldDef) {
+            if ($fieldDef->name!='id' && $fieldDef->name!='thegeom') {
+                $expression = $expression . ', NEW.' . $fieldDef->name;
+            }
+        }
+        $expression = $expression . "),''))";
+        return $expression;
+    }
+    public static function getFTSearchNombreTriggerExpression() {
+        return "(IF(NEW.status<>'PENDIENTE:CREACIÓN',CONCAT_WS(' - ', NEW.nombre, NEW.codigo_camino),''))";
+    }
+    public static function getFTSearchNombreExpression() {
+        return "(IF(status<>'PENDIENTE:CREACIÓN',CONCAT_WS(' - ', nombre, codigo_camino),''))";
+    }
     
     public static function doCreateTable($name, $fields_str, $geom_type, $historic=false) {
         $fields = json_decode($fields_str);
@@ -253,7 +282,8 @@ class EditableLayerDef extends Model
         });
         
         if (!$historic) {
-            EditableLayerDef::doCreateTriggers($name, $specificFields);
+            EditableLayerDef::doCreateTriggers($name);
+            EditableLayerDef::createFTSTriggers($name, $fields);
         }
         if (count($errors) > 0) {
             Log::error('Error creating table'.$name);
@@ -328,7 +358,7 @@ class EditableLayerDef extends Model
             END
         ");
             
-            DB::unprepared("
+        DB::unprepared("
             CREATE TRIGGER ".$name."_before_update
             BEFORE UPDATE
                 ON ".$name." FOR EACH ROW BEGIN
@@ -349,7 +379,7 @@ class EditableLayerDef extends Model
             END
         ");
                 
-                DB::unprepared("
+        DB::unprepared("
             CREATE TRIGGER ".$name."_before_delete
             BEFORE DELETE
                ON ".$name." FOR EACH ROW
@@ -358,6 +388,46 @@ class EditableLayerDef extends Model
               UPDATE ".$historicName."
               SET valid_to = NOW()
               WHERE feat_id = OLD.id AND valid_to = '9999-12-31 23:59:59';
+            END
+        ");
+
+    }
+    public static function removeFTSTriggers(string $name) {
+        DB::unprepared("DROP TRIGGER IF EXISTS ".$name."_searchindex_insert");
+        DB::unprepared("DROP TRIGGER IF EXISTS ".$name."_searchindex_update");
+        DB::unprepared("DROP TRIGGER IF EXISTS ".$name."_searchindex_delete");
+    }
+    public static function createFTSTriggers(string $name, array $fieldsDef) {
+        DB::unprepared("
+            CREATE TRIGGER ".$name."_searchindex_insert
+            AFTER INSERT
+            ON ".$name." FOR EACH ROW BEGIN
+            IF NEW.status <> '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
+                INSERT INTO globalsearch
+                    (texto, layer, nombre, feat_id, departamento, codigo_camino)
+                VALUES
+                    (".EditableLayerDef::getFTSearchTriggerExpression($fieldsDef).", '".$name."', ".EditableLayerDef::getFTSearchNombreTriggerExpression().", NEW.id, NEW.departamento, NEW.codigo_camino);
+            END IF;
+        END
+        ");
+        DB::unprepared("
+            CREATE TRIGGER ".$name."_searchindex_update
+            AFTER UPDATE
+            ON ".$name." FOR EACH ROW BEGIN
+            IF NEW.status <> '".ChangeRequest::FEATURE_STATUS_PENDING_CREATE."' THEN
+                UPDATE globalsearch
+                   SET texto = (".EditableLayerDef::getFTSearchTriggerExpression($fieldsDef)."), nombre = ".EditableLayerDef::getFTSearchNombreTriggerExpression().",  departamento =  NEW.departamento, codigo_camino = NEW.codigo_camino
+                   WHERE layer = '".$name."' AND feat_id = NEW.id;
+            END IF;
+        END
+        ");
+        DB::unprepared("
+            CREATE TRIGGER ".$name."_searchindex_delete
+            BEFORE DELETE
+               ON ".$name." FOR EACH ROW
+            BEGIN
+              DELETE FROM globalsearch
+              WHERE layer = '".$name."' AND feat_id = OLD.id;
             END
         ");
     }

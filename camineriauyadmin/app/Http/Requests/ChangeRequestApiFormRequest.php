@@ -19,7 +19,7 @@ class ChangeRequestApiFormRequest extends JsonRequest
     
     protected function validationData()
     {
-        $validated = parent::validationData();;
+        $validated = parent::validationData();
         $validated['layer'] = ChangeRequest::getTableName($validated['layer']);
         return $validated;
     }

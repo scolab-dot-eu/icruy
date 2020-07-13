@@ -112,6 +112,10 @@ Route::prefix('/api/layers')->group(function () {
     ]]);
 });
 
+Route::get('/api/globalsearch', 'SearchController@search')->name('globalsearch');
+Route::get('/api/departamentos', 'DepartamentosController@list')->name('listadepartamentos');
+    
+
 Route::get('home', function () {
     if (Auth::check()) {
         $user = Auth::user();
